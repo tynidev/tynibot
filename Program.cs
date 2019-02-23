@@ -52,8 +52,6 @@ namespace TyniBot
 
         private async Task Client_MessageReceived(SocketMessage msg)
         {
-            Console.WriteLine(msg.Channel.Name);
-
             var message = msg as SocketUserMessage;
             if (message == null) return;
 
