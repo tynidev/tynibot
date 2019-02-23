@@ -6,6 +6,8 @@ using Discord.WebSocket;
 using Discord.Commands;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
+using System.IO;
+using Newtonsoft.Json;
 
 namespace TyniBot
 {
@@ -15,7 +17,8 @@ namespace TyniBot
         private CommandService Commands;
         private ServiceProvider Services;
 
-        private readonly string BotToken = "";
+        private string SettingsPath => $"{AssemblyDirectory}/botsettings.json";
+        private BotSettings Settings = null;
 
         private Dictionary<string, IChannelHandler> ChannelListeners = new Dictionary<string, IChannelHandler>()
         {
@@ -44,7 +47,9 @@ namespace TyniBot
             Client.MessageReceived += Client_MessageReceived;
             await Commands.AddModuleAsync(typeof(Ping), Services);
 
-            await Client.LoginAsync(TokenType.Bot, BotToken);
+            Settings = JsonConvert.DeserializeObject<BotSettings>(File.ReadAllText(SettingsPath));
+
+            await Client.LoginAsync(TokenType.Bot, Settings.BotToken);
             await Client.StartAsync();
 
             await Task.Delay(-1); // Wait forever
@@ -83,6 +88,17 @@ namespace TyniBot
         {
             Console.WriteLine(msg.ToString());
             return Task.CompletedTask;
+        }
+
+        public static string AssemblyDirectory
+        {
+            get
+            {
+                string codeBase = Assembly.GetExecutingAssembly().CodeBase;
+                UriBuilder uri = new UriBuilder(codeBase);
+                string path = Uri.UnescapeDataString(uri.Path);
+                return Path.GetDirectoryName(path);
+            }
         }
     }
 }
