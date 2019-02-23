@@ -4,15 +4,16 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace TyniBot
 {
-    public class Recruiting : IChannelHandler
+    public class Recruiting : DefaultHandler
     {
-        public async Task Execute(CommandContext context, ServiceProvider serviceProvider)
+        public Recruiting(IDiscordClient client, ServiceProvider services, BotSettings settings) : base(client, services, settings) { }
+
+        public override async Task<IResult> MessageReceived(CommandContext context)
         {
             var message = context.Message;
             var channel = context.Channel;
@@ -22,7 +23,7 @@ namespace TyniBot
 
             var boardMsg = (await channel.GetMessagesAsync(1).FlattenAsync()).FirstOrDefault();
 
-            Dictionary<string, string> board = ParseContent(boardMsg.Content);
+            Dictionary<string, string> board = StringToBoard(boardMsg.Content);
 
             if (board.ContainsKey(addition.Key))
             {
@@ -35,13 +36,9 @@ namespace TyniBot
 
             await boardMsg.DeleteAsync();
 
-            await channel.SendMessageAsync(WriteBoard(board));
-        }
+            await channel.SendMessageAsync(BoardToString(board));
 
-        private string WriteBoard(Dictionary<string, string> board)
-        {
-            var pairs = board.Select(x => $"{x.Key} | {x.Value}");
-            return string.Join("\r\n", pairs);
+            return ExecuteResult.FromSuccess();
         }
 
         private KeyValuePair<string, string> ParseMsg(IUserMessage message)
@@ -50,7 +47,7 @@ namespace TyniBot
             return new KeyValuePair<string, string>(message.Author.Username, uri.AbsoluteUri);
         }
 
-        private Dictionary<string, string> ParseContent(string content)
+        private Dictionary<string, string> StringToBoard(string content)
         {
             var lines = Regex.Split(content, "\r\n|\r|\n");
             return lines.Select(x =>
@@ -58,6 +55,12 @@ namespace TyniBot
                 var parts = x.Split('|');
                 return new KeyValuePair<string, string>(parts[0].Trim(), parts[1].Trim());
             }).ToDictionary(x => x.Key, x => x.Value);
+        }
+
+        private string BoardToString(Dictionary<string, string> board)
+        {
+            var pairs = board.Select(x => $"{x.Key} | {x.Value}");
+            return string.Join("\r\n", pairs);
         }
     }
 }

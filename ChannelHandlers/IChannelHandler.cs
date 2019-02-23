@@ -6,6 +6,6 @@ namespace TyniBot
 {
     public interface IChannelHandler
     {
-        Task Execute(CommandContext context, ServiceProvider serviceProvider);
+        Task<IResult> MessageReceived(CommandContext context);
     }
 }
