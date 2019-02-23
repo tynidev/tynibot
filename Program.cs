@@ -15,8 +15,7 @@ namespace TyniBot
         private CommandService Commands;
         private ServiceProvider Services;
 
-        private readonly string BotToken = "NTQ4Mjk1ODM5NTcxOTAyNDg4.D1DP-Q.4i5RQa_BdGOyD3jv_drW_f9ZsYo";
-        private readonly string ClientSecret = "n4KhBTx98emDFUkrR40NapI6rxvB34Qi";
+        private readonly string BotToken = "";
 
         private Dictionary<string, IChannelHandler> ChannelListeners = new Dictionary<string, IChannelHandler>()
         {
