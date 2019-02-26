@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
+using LiteDB;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ namespace TyniBot
 {
     public class Recruiting : DefaultHandler
     {
-        public Recruiting(IDiscordClient client, ServiceProvider services, BotSettings settings) : base(client, services, settings) { }
+        public Recruiting(IDiscordClient client, ServiceProvider services, LiteDatabase database, BotSettings settings) : base(client, services, database, settings) { }
 
         public override async Task<IResult> MessageReceived(CommandContext context)
         {

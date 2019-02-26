@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
+using LiteDB;
 
 namespace TyniBot
 {
@@ -16,6 +17,7 @@ namespace TyniBot
         private DiscordSocketClient Client;
         private ServiceProvider Services;
         private BotSettings Settings = null;
+        private LiteDatabase Database;
 
         private DefaultHandler DefaultHandler = null;
         private Dictionary<string, IChannelHandler> ChannelHandlers = new Dictionary<string, IChannelHandler>();
@@ -45,24 +47,22 @@ namespace TyniBot
 
             Services = new ServiceCollection().BuildServiceProvider();
 
-            Client.Log += Log;
-            Client.MessageReceived += MessageReceived;
+            using (Database = new LiteDatabase(@"tynibotdata.db")) // DB for long term state
+            {
+                DefaultHandler = new DefaultHandler(Client, Services, Database, Settings);
+                ChannelHandlers.Add("recruiting", new Recruiting(Client, Services, Database, Settings));
 
-            DefaultHandler = new DefaultHandler(Client, Services, Settings);
+                Client.Log += Log;
+                Client.MessageReceived += MessageReceived;
 
-            ChannelHandlers.Add("recruiting", new Recruiting(Client, Services, Settings));
-
-            await Client.LoginAsync(TokenType.Bot, Settings.BotToken);
-            await Client.StartAsync();
-            await Task.Delay(-1); // Wait forever
+                await Client.LoginAsync(TokenType.Bot, Settings.BotToken);
+                await Client.StartAsync();
+                await Task.Delay(-1); // Wait forever
+            }
         }
 
         #region EventHandlers
-        /// <summary>
-        /// Event handler for when a message is posted to a channel.
-        /// </summary>
-        /// <param name="msg"></param>
-        /// <returns></returns>
+
         private async Task MessageReceived(SocketMessage msg)
         {
             // Take input and Validate
@@ -86,16 +86,12 @@ namespace TyniBot
             }
         }
 
-        /// <summary>
-        /// Event handler for a log event.
-        /// </summary>
-        /// <param name="msg"></param>
-        /// <returns></returns>
         private Task Log(LogMessage msg)
         {
             Console.WriteLine(msg.ToString());
             return Task.CompletedTask;
         }
+
         #endregion
     }
 }

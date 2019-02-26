@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
+using LiteDB;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace TyniBot
@@ -13,8 +14,9 @@ namespace TyniBot
         protected CommandService Commands;
         protected ServiceProvider Services;
         protected BotSettings Settings;
+        protected LiteDatabase Database;
 
-        public DefaultHandler(IDiscordClient client, ServiceProvider services, BotSettings settings)
+        public DefaultHandler(IDiscordClient client, ServiceProvider services, LiteDatabase datbase, BotSettings settings)
         {
             Client = client;
             Services = services;
