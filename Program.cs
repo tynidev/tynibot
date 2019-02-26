@@ -49,8 +49,8 @@ namespace TyniBot
 
             using (Database = new LiteDatabase(@"tynibotdata.db")) // DB for long term state
             {
-                DefaultHandler = new DefaultHandler(Client, Services, Database, Settings);
-                ChannelHandlers.Add("recruiting", new Recruiting(Client, Services, Database, Settings));
+                DefaultHandler = new DefaultHandler(Client, Services);
+                ChannelHandlers.Add("recruiting", new Recruiting(Client, Services));
 
                 Client.Log += Log;
                 Client.MessageReceived += MessageReceived;
@@ -71,7 +71,7 @@ namespace TyniBot
 
             if (message.Author.IsBot) return; // We don't allow bots to talk to each other lest they take over the world!
 
-            var context = new CommandContext(Client, message);
+            var context = new TyniCommandContext(Client, Database, Settings, message);
             if (context == null || string.IsNullOrWhiteSpace(context.Message.Content)) return; // Context must be valid and message must not be empty
 
             // Do we have a custom channel listener?

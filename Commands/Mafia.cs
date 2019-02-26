@@ -9,7 +9,7 @@ using Discord.WebSocket;
 
 namespace TyniBot
 {
-    public class Mafia : ModuleBase
+    public class Mafia : ModuleBase<TyniCommandContext>
     {
         [Command("mafia"), Summary("Picks the mafia!")]
         public async Task mafiagame(int numMafias, [Remainder]string message = "")
@@ -21,7 +21,7 @@ namespace TyniBot
                 return;
             }
 
-            var mentions = Context.Message.MentionedUserIds;
+            var mentions = Context.Message.MentionedUsers;
             // Validate that more than one users were mentioned
             if (mentions.Count <= 1)
             {
@@ -35,36 +35,33 @@ namespace TyniBot
                 return;
             }
 
-            var shuffled = mentions.AsEnumerable().Shuffle(); // shuffle teams
+            var shuffled = mentions.Shuffle().ToList(); // shuffle teams we call ToList to solidfy the list
             var team1Size = mentions.Count / 2; // round down if odd
 
-            var mafia = shuffled.Shuffle().Take(numMafias); // shuffle again and pick mafia
+            var mafia = mentions.Shuffle().ToList().Take(numMafias); // shuffle again and pick mafia
 
             // separate teams
             var team1 = shuffled.Take(team1Size);
             var team2 = shuffled.Skip(team1Size);
 
             // Send messages to mafia
-            foreach(var u in mafia)
+            foreach(var user in mafia)
             {
-                var user = await Context.Guild.GetUserAsync(u);
                 await user.SendMessageAsync("You are in the Mafia!");
             }
 
             // Send messages to Team 1
             string msg = "Team1: ";
-            foreach (var u in team1)
+            foreach (var user in team1)
             {
-                var user = await Context.Guild.GetUserAsync(u);
                 await user.SendMessageAsync("You are to fight on Team 1!");
                 msg += $"{user.Mention} ";
             }
 
             // Send messages to team 2
             msg += "Team2: ";
-            foreach (var u in team2)
+            foreach (var user in team2)
             {
-                var user = await Context.Guild.GetUserAsync(u);
                 await user.SendMessageAsync("You are to fight on Team 2!");
                 msg += $"{user.Mention} ";
             }

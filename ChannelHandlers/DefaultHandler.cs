@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
-using LiteDB;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace TyniBot
@@ -13,14 +10,11 @@ namespace TyniBot
         protected IDiscordClient Client;
         protected CommandService Commands;
         protected ServiceProvider Services;
-        protected BotSettings Settings;
-        protected LiteDatabase Database;
 
-        public DefaultHandler(IDiscordClient client, ServiceProvider services, LiteDatabase datbase, BotSettings settings)
+        public DefaultHandler(IDiscordClient client, ServiceProvider services)
         {
             Client = client;
             Services = services;
-            Settings = settings;
 
             Commands = new CommandService(new CommandServiceConfig()
             {
@@ -33,12 +27,12 @@ namespace TyniBot
             Commands.AddModuleAsync(typeof(Mafia), services).Wait();
         }
 
-        public virtual async Task<IResult> MessageReceived(CommandContext context)
+        public virtual async Task<IResult> MessageReceived(TyniCommandContext context)
         {
             return await TryParseCommand(context);
         }
 
-        public async Task<IResult> TryParseCommand(CommandContext context)
+        public async Task<IResult> TryParseCommand(TyniCommandContext context)
         {
             var message = context.Message;
 
