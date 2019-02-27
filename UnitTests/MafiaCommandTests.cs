@@ -28,8 +28,8 @@ namespace UnitTests
                     var numMafia = (i % (mentions.Count - 1)) + 1;
                     var game = Mafia.CreateGame(mentions, numMafia);
 
-                    Assert.AreEqual(game.Mafia.Count(), numMafia);
-                    Assert.AreEqual(game.Team1.Count() + game.Team2.Count(), mentions.Count);
+                    Assert.AreEqual(game.Mafia.Count(), numMafia); // validate actual number of mafia was as requested
+                    Assert.AreEqual(game.Team1.Count() + game.Team2.Count(), mentions.Count); // validate members of both teams equals total count of mentions
 
                     var mafia = new Dictionary<string, string>();
                     var t1 = new Dictionary<string, string>();
@@ -37,24 +37,24 @@ namespace UnitTests
 
                     foreach (var u in game.Mafia)
                     {
-                        Assert.IsTrue(mentions.Contains(u));
-                        Assert.IsFalse(mafia.ContainsKey(u.Username));
+                        Assert.IsTrue(mentions.Contains(u)); // validate each mafia member was part of original mentions
+                        Assert.IsFalse(mafia.ContainsKey(u.Username)); // validate users weren't added to mafia twice
                         mafia.Add(u.Username, u.Username);
                     }
                     foreach (var u in game.Team1)
                     {
                         t1.Add(u.Username, u.Username);
-                        Assert.IsTrue(mentions.Contains(u));
+                        Assert.IsTrue(mentions.Contains(u)); // validate every team member was part of original mentions
                     }
                     foreach (var u in game.Team2)
                     {
                         t2.Add(u.Username, u.Username);
-                        Assert.IsTrue(mentions.Contains(u));
-                        Assert.IsFalse(t1.ContainsKey(u.Username));
+                        Assert.IsTrue(mentions.Contains(u)); // validate every team member was part of original mentions
+                        Assert.IsFalse(t1.ContainsKey(u.Username)); // validate every team2 member is not in team 1
                     }
                     foreach (var u in game.Team1)
                     {
-                        Assert.IsFalse(t2.ContainsKey(u.Username));
+                        Assert.IsFalse(t2.ContainsKey(u.Username)); // validate every team1 member is not in team 2
                     }
                 }
             }
@@ -71,7 +71,7 @@ namespace UnitTests
                 mentions.Add(user.Object);
             }
 
-            Assert.IsNotNull(Mafia.ValidateCommandInputs(null, 1)); // must have palyers
+            Assert.IsNotNull(Mafia.ValidateCommandInputs(null, 1)); // must have players
             Assert.IsNotNull(Mafia.ValidateCommandInputs(mentions, 0)); // Can not have zero mafia
             Assert.IsNotNull(Mafia.ValidateCommandInputs(mentions, -1)); // Can not have negative mafia
             Assert.IsNotNull(Mafia.ValidateCommandInputs(mentions, mentions.Count)); // Can not have same mafia as players
