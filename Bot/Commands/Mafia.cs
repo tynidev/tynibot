@@ -7,54 +7,24 @@ using Discord;
 using LiteDB;
 using Discord.WebSocket;
 using Discord.Rest;
+using TyniBot.Models;
 
 namespace TyniBot
 {
     [Group("mafia")]
     public class Mafia : ModuleBase<TyniCommandContext>
     {
-        public class MafiaGame
-        {
-            public int Id { get; set; }
-            public ulong MessageId { get; set; }
-            public ulong[] Team1Ids { get; set; }
-            public ulong[] Team2Ids{ get; set; }
-
-            public List<IUser> Team1 = null;
-            public List<IUser> Team2 = null;
-            public List<IUser> Mafia = null;
-
-            public override string ToString()
-            {
-                // Send messages to Team 1
-                string msg = $"**Mafia Game: {Id}**\r\n\r\n    Team1: ";
-                foreach (var user in Team1)
-                {
-                    msg += $"{user.Mention} ";
-                }
-
-                // Send messages to team 2
-                msg += "\r\n    Team2: ";
-                foreach (var user in Team2)
-                {
-                    msg += $"{user.Mention} ";
-                }
-
-                return msg;
-            }
-        }
-
+        #region Commands
         [Command("new"), Summary("Creates a new game of Mafia!")]
-        public async Task NewGame(int numMafias, [Remainder]string message = "")
+        public async Task NewGameCommand(int numMafias, [Remainder]string message = "")
         {
-            var errMsg = ValidateCommandInputs(Context.Message.MentionedUsers, numMafias);
-            if(errMsg != null)
+            var result = MafiaGame.CreateGame(Context.Message.MentionedUsers, numMafias);
+            if(result == null)
             {
-                await Context.Channel.SendMessageAsync(errMsg);
+                await Context.Channel.SendMessageAsync(result.ErrorMsg);
                 return;
             }
-
-            var game = CreateGame(Context.Message.MentionedUsers, numMafias);
+            var game = result.Game;
 
             var collection = Context.Database.GetCollection<MafiaGame>();
 
@@ -70,54 +40,98 @@ namespace TyniBot
         }
 
         [Command("get"), Summary("Gets a stored game of Mafia!")]
-        public async Task GetGame(int id)
+        public async Task GetGameCommand(int id)
         {
-            var collection = Context.Database.GetCollection<MafiaGame>();
             try
             {
-                var game = collection.FindById(id);
-                game.Team1 = game.Team1Ids.Select(x => (IUser)Context.Guild.GetUser(x)).ToList();
-                game.Team2 = game.Team2Ids.Select(x => (IUser)Context.Guild.GetUser(x)).ToList();
+                var game = GetGame(id, Context.Guild.GetUser);
                 await Context.Channel.SendMessageAsync(game.ToString());
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 await Context.Channel.SendMessageAsync($"Could not find Mafia game with Id: {id}");
             }
         }
 
-        public static string ValidateCommandInputs(IReadOnlyCollection<IUser> mentions, int numMafias)
+        [Command("vote"), Summary("Cast your vote for who is the Mafia!")]
+        public async Task VoteCommand(int id, [Remainder]string message = "")
         {
-            // Validate that we have more than zero mafia
-            if (numMafias <= 0)
-                return "Number must be positive dipstick!";
+            MafiaGame game = null;
+            try
+            {
+                game = GetGame(id, Context.Guild.GetUser);
+            }
+            catch (Exception e)
+            {
+                await Context.Channel.SendMessageAsync($"Could not find Mafia game with Id: {id}");
+                return;
+            }
 
-            // Validate that more than one users were mentioned
-            if (mentions == null || mentions.Count <= 1)
-                return "You need more than 1 person to play! Mention some friends! You have friends don't you?";
+            game.Vote(Context.User.Id, Context.Message.MentionedUsers);
 
-            // validate that number of mafia is less than number of players
-            if (numMafias >= mentions.Count)
-                return "Number of mafia can not exceed players moron!";
-
-            return null;
+            var collection = Context.Database.GetCollection<MafiaGame>();
+            collection.Update(game);
         }
 
-        public static MafiaGame CreateGame(IReadOnlyCollection<IUser> mentions, int numMafias)
+        [Command("score"), Summary("Reveal the Mafia and calculate the Score!")]
+        public async Task Score(int id, int team1Score, int team2Score)
         {
-            var shuffled = mentions.Shuffle().ToList(); // shuffle teams we call ToList to solidfy the list
-            var team1Size = mentions.Count / 2; // round down if odd
-
-            var game = new MafiaGame()
+            MafiaGame game = null;
+            try
             {
-                Mafia = mentions.Shuffle().ToList().Take(numMafias).ToList(), // shuffle again and pick mafia
-                Team1 = shuffled.Take(team1Size).ToList(),
-                Team2 = shuffled.Skip(team1Size).ToList(),
-            };
+                game = GetGame(id, Context.Guild.GetUser);
+            }
+            catch (Exception e)
+            {
+                await Context.Channel.SendMessageAsync($"Could not find Mafia game with Id: {id}");
+                return;
+            }
 
-            game.Team1Ids = game.Team1.Select(u => u.Id).ToArray();
-            game.Team2Ids = game.Team2.Select(u => u.Id).ToArray();
+            await Context.Channel.SendMessageAsync(GetScoreAnnouncement(game, team1Score, team2Score));
+        }
+        #endregion
 
+        #region Helpers
+        private string GetScoreAnnouncement(MafiaGame game, int team1Score, int team2Score)
+        {
+            var ordered = game.ScoreGame(team1Score, team2Score).OrderByDescending(x => x.Value);
+
+            string output = $"**Mafia Game: {game.Id}**\r\n    Mafia: ";
+            foreach (var mafia in game.Mafia)
+                output += $"{mafia.Mention }";
+
+            foreach (var score in ordered)
+                output += $"\r\n    {game.Users[score.Key].Mention} = {score.Value}";
+
+            return output;
+        }
+
+        private string GetGameAnnouncement(MafiaGame game)
+        {
+            // Send messages to Team 1
+            string output = $"**Mafia Game: {game.Id}**\r\n\r\n    Team1: ";
+            foreach (var user in game.Team1)
+            {
+                output += $"{user.Mention} ";
+            }
+
+            // Send messages to team 2
+            output += "\r\n    Team2: ";
+            foreach (var user in game.Team2)
+            {
+                output += $"{user.Mention} ";
+            }
+
+            return output;
+        }
+
+        private MafiaGame GetGame(int id, Func<ulong, IUser> GetUser)
+        {
+            var collection = Context.Database.GetCollection<MafiaGame>();
+            var game = collection.FindById(id);
+            game.Mafia = game.MafiaIds.Select(x => GetUser(x)).ToList();
+            game.Team1 = game.Team1Ids.Select(x => GetUser(x)).ToList();
+            game.Team2 = game.Team2Ids.Select(x => GetUser(x)).ToList();
             return game;
         }
 
@@ -132,5 +146,6 @@ namespace TyniBot
             // Send message to channel specifying teams
             await Context.Channel.SendMessageAsync(game.ToString());
         }
+        #endregion
     }
 }
