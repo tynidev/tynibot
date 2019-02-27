@@ -105,17 +105,24 @@ namespace UnitTests
 
             var mafia = g.Mafia[0];
             g.Vote(mafia.Id, new List<IUser>() { mafia });
-            
+
             g.Vote(user1.Object.Id, new List<IUser>() { mafia });
             g.Vote(user2.Object.Id, new List<IUser>() { mafia });
 
             Dictionary<ulong, int> score = null;
             if (g.Team1.Where(u => u.Id == mafia.Id).Count() > 0)
+            {
                 score = g.ScoreGame(0, 1);
+                Assert.AreEqual(score[g.Team2[0].Id], 1);
+            }
             else
+            {
                 score = g.ScoreGame(1, 0);
+                Assert.AreEqual(score[g.Team1[0].Id], 1);
+            }
 
             Assert.AreEqual(score[mafia.Id], 2);
+
         }
     }
 }
