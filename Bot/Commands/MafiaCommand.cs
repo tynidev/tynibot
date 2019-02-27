@@ -44,7 +44,7 @@ namespace TyniBot
         }
 
         [Command("vote"), Summary("**!mafia vote <game id> <@mafia1> <@mafia2>** | Records who you voted as the Mafia.")]
-        public async Task VoteCommand(int id, [Remainder]string message = "")
+        public async Task VoteGameCommand(int id, [Remainder]string message = "")
         {
             MafiaGame game = null;
             try
@@ -61,10 +61,12 @@ namespace TyniBot
 
             var collection = Context.Database.GetCollection<MafiaGame>();
             collection.Update(game);
+
+            await OutputVotes(game);
         }
 
         [Command("score"), Summary("**!mafia score <game id> <team1 score> <team2 score>** | Displays who is in the Mafia and each player's points. ")]
-        public async Task Score(int id, int team1Score, int team2Score)
+        public async Task ScoreGameCommand(int id, int team1Score, int team2Score)
         {
             MafiaGame game = null;
             try
@@ -97,7 +99,7 @@ namespace TyniBot
         }
 
         [Command("help"), Summary("**!mafia help** | Displays this help text.")]
-        public async Task Help()
+        public async Task HelpCommand()
         {
             var commands = typeof(MafiaCommand).GetMethods()
                       .Where(m => m.GetCustomAttributes(typeof(CommandAttribute), false).Length > 0)
@@ -138,6 +140,27 @@ namespace TyniBot
 
             embedBuilder.AddField("Team 1:", string.Join(' ', game.Team1.Select(u => u.Mention)));
             embedBuilder.AddField("Team 2:", string.Join(' ', game.Team2.Select(u => u.Mention)));
+
+            await ReplyAsync($"**Mafia Game: {game.Id}**", false, embedBuilder.Build());
+        }
+
+        private async Task OutputVotes(MafiaGame game)
+        {
+            EmbedBuilder embedBuilder = new EmbedBuilder();
+
+            var votes = new Dictionary<ulong, int>();
+            foreach(var playerVotes in game.Votes)
+            {
+                foreach(var vote in playerVotes.Value)
+                {
+                    if (votes.ContainsKey(vote))
+                        votes[vote] += 1;
+                    else
+                        votes[vote] = 1;
+                }
+            }
+
+            embedBuilder.AddField("Mafia Votes: ", string.Join("\r\n", votes.Select(o => $"{game.Users()[o.Key].Mention} = {o.Value}")));
 
             await ReplyAsync($"**Mafia Game: {game.Id}**", false, embedBuilder.Build());
         }
