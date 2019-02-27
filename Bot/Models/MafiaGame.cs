@@ -9,7 +9,7 @@ namespace TyniBot.Models
         public class CreateGameResult
         {
             public MafiaGame Game = null;
-            public string ErrorMsg = "";
+            public string ErrorMsg = null;
         }
 
         public int Id { get; set; }
@@ -24,14 +24,11 @@ namespace TyniBot.Models
         public List<IUser> Mafia = new List<IUser>();
 
         private Dictionary<ulong, IUser> users = null;
-        public Dictionary<ulong, IUser> Users
+        public Dictionary<ulong, IUser> Users()
         {
-            get
-            {
-                if (users == null)
-                    users = Team1.Concat(Team2).Select(x => x).ToDictionary(x => x.Id);
-                return users;
-            }
+            if (users == null)
+                users = Team1.Concat(Team2).Select(x => x).ToDictionary(x => x.Id);
+            return users;
         }
 
         public static CreateGameResult CreateGame(IReadOnlyCollection<IUser> mentions, int numMafias)
@@ -83,7 +80,7 @@ namespace TyniBot.Models
         public Dictionary<ulong, int> ScoreGame(int team1Score, int team2Score)
         {
             var scores = new Dictionary<ulong, int>();
-            foreach (var user in Users)
+            foreach (var user in Users())
             {
                 int score = 0;
                 if (Votes.ContainsKey(user.Key))
@@ -95,7 +92,7 @@ namespace TyniBot.Models
 
                     if (isMafia)
                     {
-                        bool guessedMe = Votes.Select(x => x.Value.Contains(user.Key)).Count() > 0;
+                        bool guessedMe = Votes.Where(x => x.Value.Contains(user.Key)).Count() > 0;
 
                         score += !wonGame ? 2 : 0; // two points for losing
                         score += guessedMe ? 3 : 0;

@@ -45,7 +45,7 @@ namespace TyniBot
             try
             {
                 var game = GetGame(id, Context.Guild.GetUser);
-                await Context.Channel.SendMessageAsync(game.ToString());
+                await Context.Channel.SendMessageAsync(GetGameAnnouncement(game));
             }
             catch (Exception e)
             {
@@ -98,10 +98,10 @@ namespace TyniBot
 
             string output = $"**Mafia Game: {game.Id}**\r\n    Mafia: ";
             foreach (var mafia in game.Mafia)
-                output += $"{mafia.Mention }";
+                output += $"{mafia.Mention } ";
 
             foreach (var score in ordered)
-                output += $"\r\n    {game.Users[score.Key].Mention} = {score.Value}";
+                output += $"\r\n    {game.Users()[score.Key].Mention} = {score.Value}";
 
             return output;
         }
@@ -144,7 +144,7 @@ namespace TyniBot
             }
 
             // Send message to channel specifying teams
-            await Context.Channel.SendMessageAsync(game.ToString());
+            await Context.Channel.SendMessageAsync(GetGameAnnouncement(game));
         }
         #endregion
     }

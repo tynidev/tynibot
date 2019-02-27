@@ -4,11 +4,12 @@ using Moq;
 using System.Collections.Generic;
 using System.Linq;
 using TyniBot;
+using TyniBot.Models;
 
 namespace UnitTests
 {
     [TestClass]
-    public class MafiaCommandTests
+    public class MafiaTests
     {
         [TestMethod]
         public void TestCreateGameGeneratesValidGame()
@@ -26,7 +27,7 @@ namespace UnitTests
                 for (int i = 0; i < 100; i++)
                 {
                     var numMafia = (i % (mentions.Count - 1)) + 1;
-                    var game = Mafia.CreateGame(mentions, numMafia);
+                    var game = (MafiaGame.CreateGame(mentions, numMafia)).Game;
 
                     Assert.AreEqual(game.Mafia.Count(), numMafia); // validate actual number of mafia was as requested
                     Assert.AreEqual(game.Team1.Count() + game.Team2.Count(), mentions.Count); // validate members of both teams equals total count of mentions
@@ -71,18 +72,18 @@ namespace UnitTests
                 mentions.Add(user.Object);
             }
 
-            Assert.IsNotNull(Mafia.ValidateCommandInputs(null, 1)); // must have players
-            Assert.IsNotNull(Mafia.ValidateCommandInputs(mentions, 0)); // Can not have zero mafia
-            Assert.IsNotNull(Mafia.ValidateCommandInputs(mentions, -1)); // Can not have negative mafia
-            Assert.IsNotNull(Mafia.ValidateCommandInputs(mentions, mentions.Count)); // Can not have same mafia as players
-            Assert.IsNotNull(Mafia.ValidateCommandInputs(mentions, mentions.Count + 1)); // can not have more mafia than players
+            Assert.IsNotNull(MafiaGame.CreateGame(null, 1).ErrorMsg); // must have players
+            Assert.IsNotNull(MafiaGame.CreateGame(mentions, 0).ErrorMsg); // Can not have zero mafia
+            Assert.IsNotNull(MafiaGame.CreateGame(mentions, -1).ErrorMsg); // Can not have negative mafia
+            Assert.IsNotNull(MafiaGame.CreateGame(mentions, mentions.Count).ErrorMsg); // Can not have same mafia as players
+            Assert.IsNotNull(MafiaGame.CreateGame(mentions, mentions.Count + 1).ErrorMsg); // can not have more mafia than players
 
             // Valid states
-            Assert.IsNull(Mafia.ValidateCommandInputs(mentions, 1));
-            Assert.IsNull(Mafia.ValidateCommandInputs(mentions, 2));
+            Assert.IsNull(MafiaGame.CreateGame(mentions, 1).ErrorMsg);
+            Assert.IsNull(MafiaGame.CreateGame(mentions, 2).ErrorMsg);
 
             mentions.Clear();
-            Assert.IsNotNull(Mafia.ValidateCommandInputs(mentions, 1)); // Can not have zero players
+            Assert.IsNotNull(MafiaGame.CreateGame(mentions, 1).ErrorMsg); // Can not have zero players
         }
     }
 }
