@@ -67,7 +67,7 @@ namespace TyniBot
                 return;
             }
 
-            game.Vote(Context.User.Id, Context.Message.MentionedUsers.Select(s => (IUser)s).ToList());
+            game.Vote(Context.User.Id, Context.Message.MentionedUsers.Select(s => s.Id));
 
             var collection = Context.Database.GetCollection<MafiaGame>();
             collection.Update(game);

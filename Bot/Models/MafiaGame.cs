@@ -1,4 +1,5 @@
 ﻿using Discord;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -63,17 +64,17 @@ namespace TyniBot.Models
             return new CreateGameResult() { Game = game };
         }
 
-        public void Vote(ulong userId, List<IUser> mentionedUsers)
+        public void Vote(ulong userId, IEnumerable<ulong> mafias)
         {
             if (Votes == null)
                 Votes = new Dictionary<ulong, ulong[]>();
 
             var users = Team1.Concat(Team2).ToDictionary(x => x.Id);
             if (!users.ContainsKey(userId)) return; // filter out people voting who aren't in the game
-
-            Votes[userId] = mentionedUsers
-                .Where(x => users.ContainsKey(x.Id)) // filter out votes for users not in the game
-                .Select(x => x.Id)
+                
+            Votes[userId] = mafias
+                .Where(x => users.ContainsKey(x))   // filter out votes for users not in the game
+                .Take(Mafia.Count)                  // only accept the first votes of up to the number of mafia
                 .ToArray();
         }
 
@@ -92,18 +93,17 @@ namespace TyniBot.Models
 
                     if (isMafia)
                     {
-                        bool guessedMe = Votes.Where(x => x.Value.Contains(user.Key)).Count() > 0;
+                        int guessedMe = Votes.Where(x => x.Key != user.Key && x.Value.Contains(user.Key)).Count();
 
-                        score += !wonGame ? 2 : 0; // two points for losing
-                        score += !guessedMe ? 3 : 0;
+                        score += !wonGame ? 3 : 0;           // three points for losing
+                        score += Math.Max(0, 2 - guessedMe); // two points - the number of people that guessed me
                     }
                     else
                     {
-                        score += wonGame ? 1 : 0; // one point for winning
-
-                        // How many votes did they get right?
                         int correctVotes = Mafia.Where(x => Votes[user.Key].Contains(x.Id)).Count();
-                        score = correctVotes;
+
+                        score += wonGame ? 1 : 0;  // one point for winning
+                        score += correctVotes * 2; // two points for each correct vote
                     }
                 }
 
