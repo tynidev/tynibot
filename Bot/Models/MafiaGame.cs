@@ -92,10 +92,11 @@ namespace TyniBot.Models
 
                     if (isMafia)
                     {
-                        bool guessedMe = Votes.Where(x => x.Value.Contains(user.Key)).Count() > 0;
+                        int numVotesGuessedMe = Votes.Where(x => x.Value.Contains(user.Key)).Count();
+                        int hiddenMafiaScore = 2 - numVotesGuessedMe; // baseline two points for not being guess mafia
 
-                        score += !wonGame ? 2 : 0; // two points for losing
-                        score += !guessedMe ? 3 : 0;
+                        score += !wonGame ? 3 : 0; // three points for losing
+                        score += hiddenMafiaScore > 0 ? hiddenMafiaScore : 0; // points based on guesses
                     }
                     else
                     {
