@@ -15,7 +15,7 @@ namespace TyniBot
     public class Mafia : ModuleBase<TyniCommandContext>
     {
         #region Commands
-        [Command("new"), Summary("Creates a new game of Mafia!")]
+        [Command("new"), Summary("**!mafia new <num of mafias> <@player1> <@player2>** Creates a new game of Mafia!")]
         public async Task NewGameCommand(int numMafias, [Remainder]string message = "")
         {
             var result = MafiaGame.CreateGame(Context.Message.MentionedUsers, numMafias);
@@ -39,7 +39,7 @@ namespace TyniBot
             await NotifyStartOfGame(game);
         }
 
-        [Command("get"), Summary("Gets a stored game of Mafia!")]
+        [Command("get"), Summary("**!mafia vote <game id>** returns the game if there is one.")]
         public async Task GetGameCommand(int id)
         {
             try
@@ -53,7 +53,7 @@ namespace TyniBot
             }
         }
 
-        [Command("vote"), Summary("Cast your vote for who is the Mafia!")]
+        [Command("vote"), Summary("**!mafia vote <game id> <@mafia1> <@mafia2>** casts your vote for who you think the mafia is.")]
         public async Task VoteCommand(int id, [Remainder]string message = "")
         {
             MafiaGame game = null;
@@ -73,7 +73,7 @@ namespace TyniBot
             collection.Update(game);
         }
 
-        [Command("score"), Summary("Reveal the Mafia and calculate the Score!")]
+        [Command("score"), Summary("**!mafia score <game id> <team1 score> <team2 score>** calculates each player's points and displays the Mafia(s) and the score. ")]
         public async Task Score(int id, int team1Score, int team2Score)
         {
             MafiaGame game = null;
@@ -88,6 +88,28 @@ namespace TyniBot
             }
 
             await Context.Channel.SendMessageAsync(GetScoreAnnouncement(game, team1Score, team2Score));
+        }
+
+        [Command("help"), Summary("**!mafia help** returns Get's this help text.")]
+        public async Task Help()
+        {
+            var commands = typeof(Mafia).GetMethods()
+                      .Where(m => m.GetCustomAttributes(typeof(CommandAttribute), false).Length > 0)
+                      .ToArray();
+
+            EmbedBuilder embedBuilder = new EmbedBuilder();
+
+            foreach (var command in commands)
+            {
+                var name = (CommandAttribute)command.GetCustomAttributes(typeof(CommandAttribute), false)[0];
+                var summary = (SummaryAttribute)command.GetCustomAttributes(typeof(SummaryAttribute), false)[0];
+                // Get the command Summary attribute information
+                string embedFieldText = summary.Text ?? "No description available\n";
+
+                embedBuilder.AddField(name.Text, embedFieldText);
+            }
+
+            await ReplyAsync("**Mafia Commands:** ", false, embedBuilder.Build());
         }
         #endregion
 
