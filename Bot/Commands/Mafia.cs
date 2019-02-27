@@ -18,7 +18,7 @@ namespace TyniBot
         [Command("new"), Summary("**!mafia new <num of mafias> <@player1> <@player2>** Creates a new game of Mafia!")]
         public async Task NewGameCommand(int numMafias, [Remainder]string message = "")
         {
-            var result = MafiaGame.CreateGame(Context.Message.MentionedUsers, numMafias);
+            var result = MafiaGame.CreateGame(Context.Message.MentionedUsers.Select(s => (IUser)s).ToList(), numMafias);
             if(result == null)
             {
                 await Context.Channel.SendMessageAsync(result.ErrorMsg);
@@ -67,7 +67,7 @@ namespace TyniBot
                 return;
             }
 
-            game.Vote(Context.User.Id, Context.Message.MentionedUsers);
+            game.Vote(Context.User.Id, Context.Message.MentionedUsers.Select(s => (IUser)s).ToList());
 
             var collection = Context.Database.GetCollection<MafiaGame>();
             collection.Update(game);

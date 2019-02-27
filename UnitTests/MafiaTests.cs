@@ -85,5 +85,39 @@ namespace UnitTests
             mentions.Clear();
             Assert.IsNotNull(MafiaGame.CreateGame(mentions, 1).ErrorMsg); // Can not have zero players
         }
+
+        [TestMethod]
+        public void TestScoreSecnario1()
+        {
+            var mentions = new List<IUser>();
+
+            var user1 = new Mock<IUser>();
+            user1.Setup(u => u.Username).Returns("k");
+            user1.Setup(u => u.Id).Returns(1);
+            mentions.Add(user1.Object);
+
+            var user2 = new Mock<IUser>();
+            user2.Setup(u => u.Username).Returns("t");
+            user1.Setup(u => u.Id).Returns(1);
+            mentions.Add(user2.Object);
+
+            var g = MafiaGame.CreateGame(mentions, 1).Game;
+
+            var mafia = g.Mafia[0];
+            g.Vote(mafia.Id, new List<IUser>() { mafia });
+
+            if(mafia.Id == user1.Object.Id)
+                g.Vote(user1.Object.Id, new List<IUser>() { mafia });
+            else
+                g.Vote(user2.Object.Id, new List<IUser>() { mafia });
+
+            Dictionary<ulong, int> score = null;
+            if (g.Team1.Where(u => u.Id == mafia.Id).Count() > 0)
+                score = g.ScoreGame(0, 1);
+            else
+                score = g.ScoreGame(1, 0);
+
+            Assert.AreEqual(score[mafia.Id], 2);
+        }
     }
 }

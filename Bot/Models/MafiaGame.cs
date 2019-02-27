@@ -31,7 +31,7 @@ namespace TyniBot.Models
             return users;
         }
 
-        public static CreateGameResult CreateGame(IReadOnlyCollection<IUser> mentions, int numMafias)
+        public static CreateGameResult CreateGame(List<IUser> mentions, int numMafias)
         {
 
             // Validate that we have more than zero mafia
@@ -63,7 +63,7 @@ namespace TyniBot.Models
             return new CreateGameResult() { Game = game };
         }
 
-        public void Vote(ulong userId, IReadOnlyCollection<IUser> mentionedUsers)
+        public void Vote(ulong userId, List<IUser> mentionedUsers)
         {
             if (Votes == null)
                 Votes = new Dictionary<ulong, ulong[]>();
@@ -95,7 +95,7 @@ namespace TyniBot.Models
                         bool guessedMe = Votes.Where(x => x.Value.Contains(user.Key)).Count() > 0;
 
                         score += !wonGame ? 2 : 0; // two points for losing
-                        score += guessedMe ? 3 : 0;
+                        score += !guessedMe ? 3 : 0;
                     }
                     else
                     {
