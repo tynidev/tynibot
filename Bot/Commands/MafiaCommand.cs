@@ -15,11 +15,11 @@ namespace TyniBot
     public class MafiaCommand : ModuleBase<TyniCommandContext>
     {
         #region Commands
-        [Command("new"), Summary("**!mafia new <num of mafias> <@player1> <@player2>** Creates a new game of Mafia!")]
+        [Command("new"), Summary("**!mafia new <num of mafias> <@player1> <@player2>** | Creates a new game!")]
         public async Task NewGameCommand(int numMafias, [Remainder]string message = "")
         {
             var result = MafiaGame.CreateGame(Context.Message.MentionedUsers.Select(s => (IUser)s).ToList(), numMafias);
-            if(result == null)
+            if(result.Game == null)
             {
                 await Context.Channel.SendMessageAsync(result.ErrorMsg);
                 return;
@@ -36,24 +36,14 @@ namespace TyniBot
             collection.Insert(game);
             collection.EnsureIndex(x => x.Id);
 
-            await NotifyStartOfGame(game);
+            // Notify each Mafia user
+            foreach(var user in game.Mafia)
+                await user.SendMessageAsync("You are in the Mafia!");
+
+            await OutputGameStart(game);
         }
 
-        [Command("get"), Summary("**!mafia get <game id>** returns the game if there is one.")]
-        public async Task GetGameCommand(int id)
-        {
-            try
-            {
-                var game = GetGame(id, Context.Guild.GetUser);
-                await Context.Channel.SendMessageAsync(GetGameAnnouncement(game));
-            }
-            catch (Exception e)
-            {
-                await Context.Channel.SendMessageAsync($"Could not find Mafia game with Id: {id}");
-            }
-        }
-
-        [Command("vote"), Summary("**!mafia vote <game id> <@mafia1> <@mafia2>** casts your vote for who you think the mafia is.")]
+        [Command("vote"), Summary("**!mafia vote <game id> <@mafia1> <@mafia2>** | Records who you voted as the Mafia.")]
         public async Task VoteCommand(int id, [Remainder]string message = "")
         {
             MafiaGame game = null;
@@ -61,7 +51,7 @@ namespace TyniBot
             {
                 game = GetGame(id, Context.Guild.GetUser);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 await Context.Channel.SendMessageAsync($"Could not find Mafia game with Id: {id}");
                 return;
@@ -73,7 +63,7 @@ namespace TyniBot
             collection.Update(game);
         }
 
-        [Command("score"), Summary("**!mafia score <game id> <team1 score> <team2 score>** calculates each player's points and displays the Mafia(s) and the score. ")]
+        [Command("score"), Summary("**!mafia score <game id> <team1 score> <team2 score>** | Displays who is in the Mafia and each player's points. ")]
         public async Task Score(int id, int team1Score, int team2Score)
         {
             MafiaGame game = null;
@@ -81,16 +71,32 @@ namespace TyniBot
             {
                 game = GetGame(id, Context.Guild.GetUser);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 await Context.Channel.SendMessageAsync($"Could not find Mafia game with Id: {id}");
                 return;
             }
 
-            await Context.Channel.SendMessageAsync(GetScoreAnnouncement(game, team1Score, team2Score));
+            var scores = game.Score(team1Score, team2Score);
+
+            await OutputGameEnd(game, scores);
         }
 
-        [Command("help"), Summary("**!mafia help** returns Get's this help text.")]
+        [Command("get"), Summary("**!mafia get <game id>** | Displays the game start summary message.")]
+        public async Task GetGameCommand(int id)
+        {
+            try
+            {
+                var game = GetGame(id, Context.Guild.GetUser);
+                await OutputGameStart(game);
+            }
+            catch (Exception)
+            {
+                await Context.Channel.SendMessageAsync($"Could not find Mafia game with Id: {id}");
+            }
+        }
+
+        [Command("help"), Summary("**!mafia help** | Displays this help text.")]
         public async Task Help()
         {
             var commands = typeof(MafiaCommand).GetMethods()
@@ -114,37 +120,26 @@ namespace TyniBot
         #endregion
 
         #region Helpers
-        private string GetScoreAnnouncement(MafiaGame game, int team1Score, int team2Score)
+        private async Task OutputGameEnd(MafiaGame game, Dictionary<ulong, int> scores)
         {
-            var ordered = game.ScoreGame(team1Score, team2Score).OrderByDescending(x => x.Value);
+            EmbedBuilder embedBuilder = new EmbedBuilder();
 
-            string output = $"**Mafia Game: {game.Id}**\r\n    Mafia: ";
-            foreach (var mafia in game.Mafia)
-                output += $"{mafia.Mention } ";
+            var ordered = scores.OrderByDescending(x => x.Value);
 
-            foreach (var score in ordered)
-                output += $"\r\n    {game.Users()[score.Key].Mention} = {score.Value}";
+            embedBuilder.AddField("Mafia: ", string.Join(' ', game.Mafia.Select(u => u.Mention)));
+            embedBuilder.AddField("Score: ", string.Join("\r\n", ordered.Select(o => $"{game.Users()[o.Key].Mention} = {o.Value}")));
 
-            return output;
+            await ReplyAsync($"**Mafia Game: {game.Id}**", false, embedBuilder.Build());
         }
 
-        private string GetGameAnnouncement(MafiaGame game)
+        private async Task OutputGameStart(MafiaGame game)
         {
-            // Send messages to Team 1
-            string output = $"**Mafia Game: {game.Id}**\r\n\r\n    Team1: ";
-            foreach (var user in game.Team1)
-            {
-                output += $"{user.Mention} ";
-            }
+            EmbedBuilder embedBuilder = new EmbedBuilder();
 
-            // Send messages to team 2
-            output += "\r\n    Team2: ";
-            foreach (var user in game.Team2)
-            {
-                output += $"{user.Mention} ";
-            }
+            embedBuilder.AddField("Team 1:", string.Join(' ', game.Team1.Select(u => u.Mention)));
+            embedBuilder.AddField("Team 2:", string.Join(' ', game.Team2.Select(u => u.Mention)));
 
-            return output;
+            await ReplyAsync($"**Mafia Game: {game.Id}**", false, embedBuilder.Build());
         }
 
         private MafiaGame GetGame(int id, Func<ulong, IUser> GetUser)
@@ -155,18 +150,6 @@ namespace TyniBot
             game.Team1 = game.Team1Ids.Select(x => GetUser(x)).ToList();
             game.Team2 = game.Team2Ids.Select(x => GetUser(x)).ToList();
             return game;
-        }
-
-        public async Task NotifyStartOfGame(MafiaGame game)
-        {
-            // Send messages to mafia
-            foreach (var user in game.Mafia)
-            {
-                await user.SendMessageAsync("You are in the Mafia!");
-            }
-
-            // Send message to channel specifying teams
-            await Context.Channel.SendMessageAsync(GetGameAnnouncement(game));
         }
         #endregion
     }

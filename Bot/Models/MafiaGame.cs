@@ -78,33 +78,30 @@ namespace TyniBot.Models
                 .ToArray();
         }
 
-        public Dictionary<ulong, int> ScoreGame(int team1Score, int team2Score)
+        public Dictionary<ulong, int> Score(int team1Score, int team2Score)
         {
             var scores = new Dictionary<ulong, int>();
             foreach (var user in Users())
             {
                 int score = 0;
-                if (Votes.ContainsKey(user.Key))
+                bool isMafia = Mafia.Where(x => x.Id == user.Key).Count() > 0;
+                bool isTeam1 = Team1.Where(x => x.Id == user.Key).Count() > 0;
+                bool isTeam2 = Team2.Where(x => x.Id == user.Key).Count() > 0;
+                bool wonGame = (isTeam1 && team1Score > team2Score) || (isTeam2 && team2Score > team1Score);
+
+                if (isMafia)
                 {
-                    bool isMafia = Mafia.Where(x => x.Id == user.Key).Count() > 0;
-                    bool isTeam1 = Team1.Where(x => x.Id == user.Key).Count() > 0;
-                    bool isTeam2 = Team2.Where(x => x.Id == user.Key).Count() > 0;
-                    bool wonGame = (isTeam1 && team1Score > team2Score) || (isTeam2 && team2Score > team1Score);
+                    int guessedMe = Votes.Where(x => x.Key != user.Key && x.Value.Contains(user.Key)).Count();
 
-                    if (isMafia)
-                    {
-                        int guessedMe = Votes.Where(x => x.Key != user.Key && x.Value.Contains(user.Key)).Count();
+                    score += !wonGame ? 3 : 0;           // three points for losing
+                    score += Math.Max(0, 2 - guessedMe); // two points - the number of people that guessed me
+                }
+                else if(Votes.ContainsKey(user.Key))
+                {
+                    int correctVotes = Mafia.Where(x => Votes[user.Key].Contains(x.Id)).Count();
 
-                        score += !wonGame ? 3 : 0;           // three points for losing
-                        score += Math.Max(0, 2 - guessedMe); // two points - the number of people that guessed me
-                    }
-                    else
-                    {
-                        int correctVotes = Mafia.Where(x => Votes[user.Key].Contains(x.Id)).Count();
-
-                        score += wonGame ? 1 : 0;  // one point for winning
-                        score += correctVotes * 2; // two points for each correct vote
-                    }
+                    score += wonGame ? 1 : 0;  // one point for winning
+                    score += correctVotes * 2; // two points for each correct vote
                 }
 
                 scores.Add(user.Key, score);
