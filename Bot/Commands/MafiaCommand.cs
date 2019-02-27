@@ -12,7 +12,7 @@ using TyniBot.Models;
 namespace TyniBot
 {
     [Group("mafia")]
-    public class Mafia : ModuleBase<TyniCommandContext>
+    public class MafiaCommand : ModuleBase<TyniCommandContext>
     {
         #region Commands
         [Command("new"), Summary("**!mafia new <num of mafias> <@player1> <@player2>** Creates a new game of Mafia!")]
@@ -93,7 +93,7 @@ namespace TyniBot
         [Command("help"), Summary("**!mafia help** returns Get's this help text.")]
         public async Task Help()
         {
-            var commands = typeof(Mafia).GetMethods()
+            var commands = typeof(MafiaCommand).GetMethods()
                       .Where(m => m.GetCustomAttributes(typeof(CommandAttribute), false).Length > 0)
                       .ToArray();
 

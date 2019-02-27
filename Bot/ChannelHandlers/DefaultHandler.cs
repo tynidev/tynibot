@@ -24,7 +24,7 @@ namespace TyniBot
             });
 
             Commands.AddModuleAsync(typeof(Ping), services).Wait();
-            Commands.AddModuleAsync(typeof(Mafia), services).Wait();
+            Commands.AddModuleAsync(typeof(MafiaCommand), services).Wait();
         }
 
         public virtual async Task<IResult> MessageReceived(TyniCommandContext context)
