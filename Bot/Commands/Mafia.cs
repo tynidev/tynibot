@@ -39,7 +39,7 @@ namespace TyniBot
             await NotifyStartOfGame(game);
         }
 
-        [Command("get"), Summary("**!mafia vote <game id>** returns the game if there is one.")]
+        [Command("get"), Summary("**!mafia get <game id>** returns the game if there is one.")]
         public async Task GetGameCommand(int id)
         {
             try
