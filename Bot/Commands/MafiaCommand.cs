@@ -29,8 +29,19 @@ namespace TyniBot
             var collection = Context.Database.GetCollection<MafiaGame>();
 
             // Prepare for DB
-            game.Id = collection.Count() + 1;
-            game.MessageId = Context.Message.Id;
+            game.Id = Context.Channel.Id;
+
+            // Delete current game if exists
+            MafiaGame existingGame = null;
+            try
+            {
+                existingGame = GetGame(Context.Channel.Id, Context.Guild.GetUser, collection);
+            }
+            catch { }
+
+            int removed = 0;
+            if (existingGame != null)
+                removed = collection.Delete(g => g.Id == existingGame.Id);
 
             // Insert into DB
             collection.Insert(game);
@@ -43,17 +54,17 @@ namespace TyniBot
             await OutputGameStart(game);
         }
 
-        [Command("vote"), Summary("**!mafia vote <game id> <@mafia1> <@mafia2>** | Records who you voted as the Mafia.")]
-        public async Task VoteGameCommand(int id, [Remainder]string message = "")
+        [Command("vote"), Summary("**!mafia vote <@mafia1> <@mafia2>** | Records who you voted as the Mafia.")]
+        public async Task VoteGameCommand([Remainder]string message = "")
         {
             MafiaGame game = null;
             try
             {
-                game = GetGame(id, Context.Guild.GetUser);
+                game = GetGame(Context.Channel.Id, Context.Guild.GetUser);
             }
             catch (Exception)
             {
-                await Context.Channel.SendMessageAsync($"Could not find Mafia game with Id: {id}");
+                await Context.Channel.SendMessageAsync($"Could not find a Mafia game in this channel.");
                 return;
             }
 
@@ -65,17 +76,17 @@ namespace TyniBot
             await OutputVotes(game);
         }
 
-        [Command("score"), Summary("**!mafia score <game id> <team1 score> <team2 score>** | Displays who is in the Mafia and each player's points. ")]
-        public async Task ScoreGameCommand(int id, int team1Score, int team2Score)
+        [Command("score"), Summary("**!mafia score <team1 score> <team2 score>** | Displays who is in the Mafia and each player's points. ")]
+        public async Task ScoreGameCommand(int team1Score, int team2Score)
         {
             MafiaGame game = null;
             try
             {
-                game = GetGame(id, Context.Guild.GetUser);
+                game = GetGame(Context.Channel.Id, Context.Guild.GetUser);
             }
             catch (Exception)
             {
-                await Context.Channel.SendMessageAsync($"Could not find Mafia game with Id: {id}");
+                await Context.Channel.SendMessageAsync($"Could not find a Mafia game in this channel.");
                 return;
             }
 
@@ -84,17 +95,17 @@ namespace TyniBot
             await OutputGameEnd(game, scores);
         }
 
-        [Command("get"), Summary("**!mafia get <game id>** | Displays the game start summary message.")]
-        public async Task GetGameCommand(int id)
+        [Command("get"), Summary("**!mafia get** | Displays the game start summary message.")]
+        public async Task GetGameCommand()
         {
             try
             {
-                var game = GetGame(id, Context.Guild.GetUser);
+                var game = GetGame(Context.Channel.Id, Context.Guild.GetUser);
                 await OutputGameStart(game);
             }
             catch (Exception)
             {
-                await Context.Channel.SendMessageAsync($"Could not find Mafia game with Id: {id}");
+                await Context.Channel.SendMessageAsync($"Could not find a Mafia game in this channel.");
             }
         }
 
@@ -131,7 +142,7 @@ namespace TyniBot
             embedBuilder.AddField("Mafia: ", string.Join(' ', game.Mafia.Select(u => u.Mention)));
             embedBuilder.AddField("Score: ", string.Join("\r\n", ordered.Select(o => $"{game.Users()[o.Key].Mention} = {o.Value}")));
 
-            await ReplyAsync($"**Mafia Game: {game.Id}**", false, embedBuilder.Build());
+            await ReplyAsync($"**Mafia Game: **", false, embedBuilder.Build());
         }
 
         private async Task OutputGameStart(MafiaGame game)
@@ -141,7 +152,7 @@ namespace TyniBot
             embedBuilder.AddField("Team 1:", string.Join(' ', game.Team1.Select(u => u.Mention)));
             embedBuilder.AddField("Team 2:", string.Join(' ', game.Team2.Select(u => u.Mention)));
 
-            await ReplyAsync($"**Mafia Game: {game.Id}**", false, embedBuilder.Build());
+            await ReplyAsync($"**Mafia Game: **", false, embedBuilder.Build());
         }
 
         private async Task OutputVotes(MafiaGame game)
@@ -162,13 +173,17 @@ namespace TyniBot
 
             embedBuilder.AddField("Mafia Votes: ", string.Join("\r\n", votes.Select(o => $"{game.Users()[o.Key].Mention} = {o.Value}")));
 
-            await ReplyAsync($"**Mafia Game: {game.Id}**", false, embedBuilder.Build());
+            await ReplyAsync($"**Mafia Game: **", false, embedBuilder.Build());
         }
 
-        private MafiaGame GetGame(int id, Func<ulong, IUser> GetUser)
+        private MafiaGame GetGame(ulong id, Func<ulong, IUser> GetUser, LiteCollection<MafiaGame> collection = null)
         {
-            var collection = Context.Database.GetCollection<MafiaGame>();
-            var game = collection.FindById(id);
+            if(collection == null)
+                collection = Context.Database.GetCollection<MafiaGame>();
+
+            var game = collection.FindOne(g => g.Id == id);
+            if (game == null)
+                throw new KeyNotFoundException();
             game.Mafia = game.MafiaIds.Select(x => GetUser(x)).ToList();
             game.Team1 = game.Team1Ids.Select(x => GetUser(x)).ToList();
             game.Team2 = game.Team2Ids.Select(x => GetUser(x)).ToList();

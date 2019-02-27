@@ -13,8 +13,7 @@ namespace TyniBot.Models
             public string ErrorMsg = null;
         }
 
-        public int Id { get; set; }
-        public ulong MessageId { get; set; }
+        public ulong Id { get; set; }
         public ulong[] Team1Ids { get; set; }
         public ulong[] Team2Ids { get; set; }
         public ulong[] MafiaIds { get; set; }
@@ -96,9 +95,9 @@ namespace TyniBot.Models
                     score += !wonGame ? 3 : 0;           // three points for losing
                     score += Math.Max(0, 2 - guessedMe); // two points - the number of people that guessed me
                 }
-                else if(Votes.ContainsKey(user.Key))
+                else
                 {
-                    int correctVotes = Mafia.Where(x => Votes[user.Key].Contains(x.Id)).Count();
+                    int correctVotes = Votes.ContainsKey(user.Key) ? Mafia.Where(x => Votes[user.Key].Contains(x.Id)).Count() : 0;
 
                     score += wonGame ? 1 : 0;  // one point for winning
                     score += correctVotes * 2; // two points for each correct vote
