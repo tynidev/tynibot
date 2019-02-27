@@ -98,18 +98,16 @@ namespace UnitTests
 
             var user2 = new Mock<IUser>();
             user2.Setup(u => u.Username).Returns("t");
-            user1.Setup(u => u.Id).Returns(1);
+            user2.Setup(u => u.Id).Returns(2);
             mentions.Add(user2.Object);
 
             var g = MafiaGame.CreateGame(mentions, 1).Game;
 
             var mafia = g.Mafia[0];
             g.Vote(mafia.Id, new List<IUser>() { mafia });
-
-            if(mafia.Id == user1.Object.Id)
-                g.Vote(user1.Object.Id, new List<IUser>() { mafia });
-            else
-                g.Vote(user2.Object.Id, new List<IUser>() { mafia });
+            
+            g.Vote(user1.Object.Id, new List<IUser>() { mafia });
+            g.Vote(user2.Object.Id, new List<IUser>() { mafia });
 
             Dictionary<ulong, int> score = null;
             if (g.Team1.Where(u => u.Id == mafia.Id).Count() > 0)
