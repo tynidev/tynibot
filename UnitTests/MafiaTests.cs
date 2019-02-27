@@ -294,5 +294,48 @@ namespace UnitTests
             // Villager
             Assert.AreEqual(score[villager.Id], 1 + 0);
         }
+
+        [TestMethod]
+        public void TestScore4PlayersMafiaWonAllGuessedMafia()
+        {
+            var mentions = new List<IUser>();
+
+            var user1 = GenerateUser("k", 1);
+            mentions.Add(user1.Object);
+
+            var user2 = GenerateUser("t", 2);
+            mentions.Add(user2.Object);
+
+            var user3 = GenerateUser("j", 3);
+            mentions.Add(user3.Object);
+
+            var user4 = GenerateUser("a", 4);
+            mentions.Add(user4.Object);
+
+            var g = MafiaGame.CreateGame(mentions, 1).Game;
+
+            var mafia = g.Mafia[0];
+            bool isMafiaTeam1 = g.Team1.Where(u => u.Id == mafia.Id).Count() > 0;
+
+            var villagers = g.Users().Where(u => u.Key != mafia.Id);
+            foreach (var v in villagers)
+                g.Vote(v.Key, new List<ulong>() { mafia.Id });
+
+            g.Vote(mafia.Id, new List<ulong>() { mafia.Id });
+
+            // Score such that Mafia won
+            var score = isMafiaTeam1 ? g.Score(1, 0) : g.Score(0, 1);
+
+            // Mafia
+            Assert.AreEqual(score[mafia.Id], 0); // make sure Mafia score doesn't go below zero
+        }
+
+        private Mock<IUser> GenerateUser(string username, ulong id)
+        {
+            var user = new Mock<IUser>();
+            user.Setup(u => u.Username).Returns(username);
+            user.Setup(u => u.Id).Returns(id);
+            return user;
+        }
     }
 }

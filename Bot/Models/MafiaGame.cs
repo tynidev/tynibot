@@ -92,8 +92,8 @@ namespace TyniBot.Models
                 {
                     int guessedMe = Votes.Where(x => x.Key != user.Key && x.Value.Contains(user.Key)).Count();
 
-                    score += !wonGame ? 3 : 0;           // three points for losing
-                    score += Math.Max(0, 2 - guessedMe); // two points - the number of people that guessed me
+                    score += !wonGame ? 3 : 0; // three points for losing
+                    score += 2 - guessedMe;    // two points - the number of people that guessed me
                 }
                 else
                 {
@@ -103,7 +103,7 @@ namespace TyniBot.Models
                     score += correctVotes * 2; // two points for each correct vote
                 }
 
-                scores.Add(user.Key, score);
+                scores.Add(user.Key, Math.Max(0, score)); // Players score can't go below zero
             }
 
             return scores;
