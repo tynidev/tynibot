@@ -60,7 +60,7 @@ namespace TyniBot
             MafiaGame game = null;
             try
             {
-                game = GetGame(Context.Channel.Id, Context.Guild.GetUser);
+                game = GetGame(Context.Channel.Id, Context.Guild.GetUser, Context.Database.GetCollection<MafiaGame>());
             }
             catch (Exception)
             {
@@ -82,7 +82,7 @@ namespace TyniBot
             MafiaGame game = null;
             try
             {
-                game = GetGame(Context.Channel.Id, Context.Guild.GetUser);
+                game = GetGame(Context.Channel.Id, Context.Guild.GetUser, Context.Database.GetCollection<MafiaGame>());
             }
             catch (Exception)
             {
@@ -100,7 +100,7 @@ namespace TyniBot
         {
             try
             {
-                var game = GetGame(Context.Channel.Id, Context.Guild.GetUser);
+                var game = GetGame(Context.Channel.Id, Context.Guild.GetUser, Context.Database.GetCollection<MafiaGame>());
                 await OutputGameStart(game);
             }
             catch (Exception)
@@ -140,7 +140,7 @@ namespace TyniBot
             var ordered = scores.OrderByDescending(x => x.Value);
 
             embedBuilder.AddField("Mafia: ", string.Join(' ', game.Mafia.Select(u => u.Mention)));
-            embedBuilder.AddField("Score: ", string.Join("\r\n", ordered.Select(o => $"{game.Users()[o.Key].Mention} = {o.Value}")));
+            embedBuilder.AddField("Score: ", string.Join("\r\n", ordered.Select(o => $"{game.Players[o.Key].Mention} = {o.Value}")));
 
             await ReplyAsync($"**Mafia Game: **", false, embedBuilder.Build());
         }
@@ -171,22 +171,18 @@ namespace TyniBot
                 }
             }
 
-            embedBuilder.AddField("Mafia Votes: ", string.Join("\r\n", votes.Select(o => $"{game.Users()[o.Key].Mention} = {o.Value}")));
+            embedBuilder.AddField("Mafia Votes: ", string.Join("\r\n", votes.Select(o => $"{game.Players[o.Key].Mention} = {o.Value}")));
 
             await ReplyAsync($"**Mafia Game: **", false, embedBuilder.Build());
         }
 
-        private MafiaGame GetGame(ulong id, Func<ulong, IUser> GetUser, LiteCollection<MafiaGame> collection = null)
+        public static MafiaGame GetGame(ulong id, Func<ulong, IUser> GetUser, LiteCollection<MafiaGame> collection)
         {
-            if(collection == null)
-                collection = Context.Database.GetCollection<MafiaGame>();
-
             var game = collection.FindOne(g => g.Id == id);
             if (game == null)
                 throw new KeyNotFoundException();
-            game.Mafia = game.MafiaIds.Select(x => GetUser(x)).ToList();
-            game.Team1 = game.Team1Ids.Select(x => GetUser(x)).ToList();
-            game.Team2 = game.Team2Ids.Select(x => GetUser(x)).ToList();
+
+            game.PopulateUser(GetUser);
             return game;
         }
         #endregion

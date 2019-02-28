@@ -1,4 +1,5 @@
 using Discord;
+using LiteDB;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System.Collections.Generic;
@@ -12,6 +13,46 @@ namespace UnitTests
     public class MafiaTests
     {
         [TestMethod]
+        public void TestDbStoreRetrieveGame()
+        {
+            using (var Database = new LiteDatabase(@"test.db"))
+            {
+                var mentions = new List<IUser>();
+
+                var user1 = new Mock<IUser>();
+                user1.Setup(u => u.Username).Returns("bob");
+                user1.Setup(u => u.Id).Returns(1);
+                mentions.Add(user1.Object);
+
+                var user2 = new Mock<IUser>();
+                user2.Setup(u => u.Username).Returns("joe");
+                user2.Setup(u => u.Id).Returns(2);
+                mentions.Add(user2.Object);
+
+                var input = MafiaGame.CreateGame(mentions, 1).Game;
+                input.Id = 1;
+
+                var gamesCollection = Database.GetCollection<MafiaGame>();
+                gamesCollection.Delete(u => true);
+                gamesCollection.Insert(input);
+                gamesCollection.EnsureIndex(x => x.Id);
+
+                var output = MafiaCommand.GetGame(input.Id, (ulong id) =>
+                {
+                    if (id == user1.Object.Id)
+                        return user1.Object;
+                    else
+                        return user2.Object;
+                }, gamesCollection);
+
+                Assert.AreEqual(input.Players.Count, output.Players.Count);
+                Assert.AreEqual(output.Mafia.Where(u => input.Mafia.Where(o => o.Id != u.Id).Count() > 0).Count(), 0);
+                Assert.AreEqual(output.Team1.Where(u => input.Team1.Where(o => o.Id != u.Id).Count() > 0).Count(), 0);
+                Assert.AreEqual(output.Team2.Where(u => input.Team2.Where(o => o.Id != u.Id).Count() > 0).Count(), 0);
+            }
+        }
+
+        [TestMethod]
         public void TestCreateGameGeneratesValidGame()
         {
             for (int j = 0; j < 16; j++)
@@ -20,6 +61,7 @@ namespace UnitTests
                 for (int i = 0; i < (j % 7) + 2; i++)
                 {
                     var user = new Mock<IUser>();
+                    user.Setup(u => u.Id).Returns((ulong)i);
                     user.Setup(u => u.Username).Returns(i.ToString());
                     mentions.Add(user.Object);
                 }
@@ -29,7 +71,7 @@ namespace UnitTests
                     var numMafia = (i % (mentions.Count - 1)) + 1;
                     var game = (MafiaGame.CreateGame(mentions, numMafia)).Game;
 
-                    Assert.AreEqual(game.Mafia.Count(), numMafia); // validate actual number of mafia was as requested
+                    Assert.AreEqual(numMafia, game.Mafia.Count()); // validate actual number of mafia was as requested
                     Assert.AreEqual(game.Team1.Count() + game.Team2.Count(), mentions.Count); // validate members of both teams equals total count of mentions
 
                     var mafia = new Dictionary<string, string>();
@@ -38,19 +80,19 @@ namespace UnitTests
 
                     foreach (var u in game.Mafia)
                     {
-                        Assert.IsTrue(mentions.Contains(u)); // validate each mafia member was part of original mentions
+                        Assert.IsTrue(mentions.Contains(u.DiscordUser)); // validate each mafia member was part of original mentions
                         Assert.IsFalse(mafia.ContainsKey(u.Username)); // validate users weren't added to mafia twice
                         mafia.Add(u.Username, u.Username);
                     }
                     foreach (var u in game.Team1)
                     {
                         t1.Add(u.Username, u.Username);
-                        Assert.IsTrue(mentions.Contains(u)); // validate every team member was part of original mentions
+                        Assert.IsTrue(mentions.Contains(u.DiscordUser)); // validate every team member was part of original mentions
                     }
                     foreach (var u in game.Team2)
                     {
                         t2.Add(u.Username, u.Username);
-                        Assert.IsTrue(mentions.Contains(u)); // validate every team member was part of original mentions
+                        Assert.IsTrue(mentions.Contains(u.DiscordUser)); // validate every team member was part of original mentions
                         Assert.IsFalse(t1.ContainsKey(u.Username)); // validate every team2 member is not in team 1
                     }
                     foreach (var u in game.Team1)
@@ -68,6 +110,7 @@ namespace UnitTests
             for (int i = 0; i < 3; i++)
             {
                 var user = new Mock<IUser>();
+                user.Setup(u => u.Id).Returns((ulong)i);
                 user.Setup(u => u.Username).Returns(i.ToString());
                 mentions.Add(user.Object);
             }
@@ -317,7 +360,7 @@ namespace UnitTests
             var mafia = g.Mafia[0];
             bool isMafiaTeam1 = g.Team1.Where(u => u.Id == mafia.Id).Count() > 0;
 
-            var villagers = g.Users().Where(u => u.Key != mafia.Id);
+            var villagers = g.Players.Where(u => u.Key != mafia.Id);
             foreach (var v in villagers)
                 g.Vote(v.Key, new List<ulong>() { mafia.Id });
 

@@ -1,39 +1,42 @@
 ﻿using Discord;
+using LiteDB;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace TyniBot.Models
 {
+    public class CreateGameResult
+    {
+        public MafiaGame Game = null;
+        public string ErrorMsg = null;
+    }
+
     public class MafiaGame
     {
-        public class CreateGameResult
-        {
-            public MafiaGame Game = null;
-            public string ErrorMsg = null;
-        }
-
+        [BsonId]
         public ulong Id { get; set; }
-        public ulong[] Team1Ids { get; set; }
-        public ulong[] Team2Ids { get; set; }
-        public ulong[] MafiaIds { get; set; }
         public Dictionary<ulong, ulong[]> Votes { get; set; }
+        public List<MafiaPlayer> Team1 { get; private set; }
+        public List<MafiaPlayer> Team2 { get; private set; }
+        public List<MafiaPlayer> Mafia { get; private set; }
 
-        public List<IUser> Team1 = new List<IUser>();
-        public List<IUser> Team2 = new List<IUser>();
-        public List<IUser> Mafia = new List<IUser>();
-
-        private Dictionary<ulong, IUser> users = null;
-        public Dictionary<ulong, IUser> Users()
+        [BsonIgnore]
+        public Dictionary<ulong, MafiaPlayer> Players
         {
-            if (users == null)
-                users = Team1.Concat(Team2).Select(x => x).ToDictionary(x => x.Id);
-            return users;
+            get
+            {
+                if (players == null && (Team1 != null && Team2 != null))
+                    players = Team1.Concat(Team2).ToDictionary(x => x.Id);
+                return players;
+            }
         }
+        
+        private Dictionary<ulong, MafiaPlayer> players = null;
 
         public static CreateGameResult CreateGame(List<IUser> mentions, int numMafias)
         {
-
             // Validate that we have more than zero mafia
             if (numMafias <= 0)
                 return new CreateGameResult() { ErrorMsg = "Number must be positive dipstick!" };
@@ -49,16 +52,25 @@ namespace TyniBot.Models
             var shuffled = mentions.Shuffle().ToList(); // shuffle teams we call ToList to solidfy the list
             var team1Size = mentions.Count / 2; // round down if odd
 
+
             var game = new MafiaGame()
             {
-                Mafia = mentions.Shuffle().ToList().Take(numMafias).ToList(), // shuffle again and pick mafia
-                Team1 = shuffled.Take(team1Size).ToList(),
-                Team2 = shuffled.Skip(team1Size).ToList(),
+                Team1 = shuffled.Take(team1Size).Select(u => new MafiaPlayer() { Id = u.Id, IsMafia = false, OnTeam1 = true, OnTeam2 = false, DiscordUser = u}).ToList(),
+                Team2 = shuffled.Skip(team1Size).Select(u => new MafiaPlayer() { Id = u.Id, IsMafia = false, OnTeam1 = false, OnTeam2 = true, DiscordUser = u }).ToList(),
+                Mafia = new List<MafiaPlayer>(),
             };
 
-            game.MafiaIds = game.Mafia.Select(u => u.Id).ToArray();
-            game.Team1Ids = game.Team1.Select(u => u.Id).ToArray();
-            game.Team2Ids = game.Team2.Select(u => u.Id).ToArray();
+            Random rnd = new Random();
+            while(numMafias > 0)
+            {
+                var nonMafia = game.Players.Values.Where(u => !u.IsMafia).ToList();
+                var player = nonMafia[rnd.Next(nonMafia.Count)];
+
+                player.IsMafia = true;
+                game.Mafia.Add(player);
+
+                numMafias--;
+            }
 
             return new CreateGameResult() { Game = game };
         }
@@ -80,33 +92,42 @@ namespace TyniBot.Models
         public Dictionary<ulong, int> Score(int team1Score, int team2Score)
         {
             var scores = new Dictionary<ulong, int>();
-            foreach (var user in Users())
+            foreach (var kv in Players)
             {
-                int score = 0;
-                bool isMafia = Mafia.Where(x => x.Id == user.Key).Count() > 0;
-                bool isTeam1 = Team1.Where(x => x.Id == user.Key).Count() > 0;
-                bool isTeam2 = Team2.Where(x => x.Id == user.Key).Count() > 0;
-                bool wonGame = (isTeam1 && team1Score > team2Score) || (isTeam2 && team2Score > team1Score);
+                var player = Players[kv.Key];
 
-                if (isMafia)
+                int score = 0;
+                bool wonGame = (player.OnTeam1 && team1Score > team2Score) || (player.OnTeam2 && team2Score > team1Score);
+
+                if (player.IsMafia)
                 {
-                    int guessedMe = Votes.Where(x => x.Key != user.Key && x.Value.Contains(user.Key)).Count();
+                    int guessedMe = Votes.Where(x => x.Key != player.Id && x.Value.Contains(player.Id)).Count();
 
                     score += !wonGame ? 3 : 0; // three points for losing
                     score += 2 - guessedMe;    // two points - the number of people that guessed me
                 }
                 else
                 {
-                    int correctVotes = Votes.ContainsKey(user.Key) ? Mafia.Where(x => Votes[user.Key].Contains(x.Id)).Count() : 0;
+                    int correctVotes = Votes.ContainsKey(player.Id) ? Mafia.Where(x => Votes[player.Id].Contains(x.Id)).Count() : 0;
 
                     score += wonGame ? 1 : 0;  // one point for winning
                     score += correctVotes * 2; // two points for each correct vote
                 }
 
-                scores.Add(user.Key, Math.Max(0, score)); // Players score can't go below zero
+                scores.Add(player.Id, Math.Max(0, score)); // Players score can't go below zero
             }
 
             return scores;
+        }
+
+        public void PopulateUser(Func<ulong, IUser> getUser)
+        {
+            foreach (var u in Mafia)
+                u.DiscordUser = getUser(u.Id);
+            foreach (var u in Team1)
+                u.DiscordUser = getUser(u.Id);
+            foreach (var u in Team2)
+                u.DiscordUser = getUser(u.Id);
         }
     }
 }
