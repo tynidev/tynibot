@@ -7,6 +7,14 @@ namespace TyniBot.Models
 {
     public class MafiaPlayer : IUser
     {
+        #region Mafia Members
+        [BsonId]
+        public ulong Id { get; set; }
+        public bool IsMafia { get; set; }
+        public bool OnTeam1 { get; set; }
+        public bool OnTeam2 { get; set; }
+        #endregion
+
         #region IUser Members
         [BsonIgnore]
         public IUser DiscordUser { get; set; }
@@ -54,15 +62,6 @@ namespace TyniBot.Models
         {
             return DiscordUser.GetOrCreateDMChannelAsync(options);
         }
-        #endregion
-
-        #region Mafia Members
-
-        [BsonId]
-        public ulong Id { get; set; }
-        public bool IsMafia { get; set; }
-        public bool OnTeam1 { get; set; }
-        public bool OnTeam2 { get; set; }
         #endregion
 
         public override string ToString()

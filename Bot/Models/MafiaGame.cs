@@ -52,7 +52,6 @@ namespace TyniBot.Models
             var shuffled = mentions.Shuffle().ToList(); // shuffle teams we call ToList to solidfy the list
             var team1Size = mentions.Count / 2; // round down if odd
 
-
             var game = new MafiaGame()
             {
                 Team1 = shuffled.Take(team1Size).Select(u => new MafiaPlayer() { Id = u.Id, IsMafia = false, OnTeam1 = true, OnTeam2 = false, DiscordUser = u}).ToList(),
@@ -92,10 +91,8 @@ namespace TyniBot.Models
         public Dictionary<ulong, int> Score(int team1Score, int team2Score)
         {
             var scores = new Dictionary<ulong, int>();
-            foreach (var kv in Players)
+            foreach (var player in Players.Values)
             {
-                var player = Players[kv.Key];
-
                 int score = 0;
                 bool wonGame = (player.OnTeam1 && team1Score > team2Score) || (player.OnTeam2 && team2Score > team1Score);
 
@@ -122,11 +119,7 @@ namespace TyniBot.Models
 
         public void PopulateUser(Func<ulong, IUser> getUser)
         {
-            foreach (var u in Mafia)
-                u.DiscordUser = getUser(u.Id);
-            foreach (var u in Team1)
-                u.DiscordUser = getUser(u.Id);
-            foreach (var u in Team2)
+            foreach (var u in Players.Values)
                 u.DiscordUser = getUser(u.Id);
         }
     }
