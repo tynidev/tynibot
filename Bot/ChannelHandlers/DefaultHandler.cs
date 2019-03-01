@@ -24,6 +24,7 @@ namespace TyniBot
             });
 
             Commands.AddModuleAsync(typeof(Ping), services).Wait();
+            Commands.AddModuleAsync(typeof(Clear), services).Wait();
             Commands.AddModuleAsync(typeof(MafiaCommand), services).Wait();
         }
 
