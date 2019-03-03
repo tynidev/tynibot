@@ -39,6 +39,30 @@ namespace TyniBot
             await NotifyStartOfGame(game);
         }
 
+        [Command("setup"), Summary("**!mafia setup <alt game> <num of mafias> <@player1> <@player2>** Creates an alternative game of Mafia!")]
+        public async Task NewGameCommand(int numMafias, string gameMode, [Remainder]string message = "")
+        {
+            var result = MafiaGame.CreateGame(Context.Message.MentionedUsers.Select(s => (IUser)s).ToList(), numMafias);
+            if(result == null)
+            {
+                await Context.Channel.SendMessageAsync(result.ErrorMsg);
+                return;
+            }
+            var game = result.Game;
+
+            var collection = Context.Database.GetCollection<MafiaGame>();
+
+            // Prepare for DB
+            game.Id = collection.Count() + 1;
+            game.MessageId = Context.Message.Id;
+
+            // Insert into DB
+            collection.Insert(game);
+            collection.EnsureIndex(x => x.Id);
+
+            await NotifyStartOfGame(game);
+        }
+
         [Command("get"), Summary("**!mafia get <game id>** returns the game if there is one.")]
         public async Task GetGameCommand(int id)
         {
