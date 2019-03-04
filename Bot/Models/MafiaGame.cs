@@ -1,40 +1,43 @@
 ﻿using Discord;
+using LiteDB;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace TyniBot.Models
 {
+    public class CreateGameResult
+    {
+        public MafiaGame Game = null;
+        public string ErrorMsg = null;
+    }
+
     public class MafiaGame
     {
-        public class CreateGameResult
-        {
-            public MafiaGame Game = null;
-            public string ErrorMsg = null;
-        }
-
-        public int Id { get; set; }
-        public ulong MessageId { get; set; }
-        public ulong[] Team1Ids { get; set; }
-        public ulong[] Team2Ids { get; set; }
-        public ulong[] MafiaIds { get; set; }
+        [BsonId]
+        public ulong Id { get; set; }
         public Dictionary<ulong, ulong[]> Votes { get; set; }
+        public List<MafiaPlayer> Team1 { get; private set; }
+        public List<MafiaPlayer> Team2 { get; private set; }
+        public List<MafiaPlayer> Mafia { get; private set; }
+        public List<MafiaPlayer> Joker { get; private set; }
 
-        public List<IUser> Team1 = new List<IUser>();
-        public List<IUser> Team2 = new List<IUser>();
-        public List<IUser> Mafia = new List<IUser>();
-        public List<IUser> Joker = new List<IUser>();
-
-        private Dictionary<ulong, IUser> users = null;
-        public Dictionary<ulong, IUser> Users()
+        [BsonIgnore]
+        public Dictionary<ulong, MafiaPlayer> Players
         {
-            if (users == null)
-                users = Team1.Concat(Team2).Select(x => x).ToDictionary(x => x.Id);
-            return users;
+            get
+            {
+                if (players == null && (Team1 != null && Team2 != null))
+                    players = Team1.Concat(Team2).ToDictionary(x => x.Id);
+                return players;
+            }
         }
+        
+        private Dictionary<ulong, MafiaPlayer> players = null;
 
         public static CreateGameResult CreateGame(List<IUser> mentions, int numMafias, string mode = "")
         {
-
             // Validate that we have more than zero mafia
             if (numMafias <= 0)
                 return new CreateGameResult() { ErrorMsg = "Number must be positive dipstick!" };
@@ -49,20 +52,16 @@ namespace TyniBot.Models
 
             MafiaGame game;
 
-            switch(mode.ToLower())
+            switch (mode.ToLower())
             {
                 case "b":
                 case "battle":
                     game = createBattleMafiaGame(mentions, numMafias);
                     break;
+                // for now, joker is an extension of the battle format
                 case "j":
                 case "joker":
-                    game = createJokerMafiaGame(mentions, numMafias);
-                    break;
-                case "jokerbattle":
-                case "jb":
-                case "bj":
-                    game = createBattleJokerMafiaGame(mentions, numMafias);
+                    game = createBattleMafiaGame(mentions, numMafias, true);
                     break;
                 default:
                     game = createNormalMafiaGame(mentions, numMafias);
@@ -72,63 +71,84 @@ namespace TyniBot.Models
             return new CreateGameResult() { Game = game };
         }
 
-        public void Vote(ulong userId, List<IUser> mentionedUsers)
+        public void Vote(ulong userId, IEnumerable<ulong> mafias)
         {
             if (Votes == null)
                 Votes = new Dictionary<ulong, ulong[]>();
 
             var users = Team1.Concat(Team2).ToDictionary(x => x.Id);
             if (!users.ContainsKey(userId)) return; // filter out people voting who aren't in the game
-
-            Votes[userId] = mentionedUsers
-                .Where(x => users.ContainsKey(x.Id)) // filter out votes for users not in the game
-                .Select(x => x.Id)
+                
+            Votes[userId] = mafias
+                .Where(x => users.ContainsKey(x))   // filter out votes for users not in the game
+                .Take(Mafia.Count)                  // only accept the first votes of up to the number of mafia
                 .ToArray();
         }
 
-        public Dictionary<ulong, int> ScoreGame(int team1Score, int team2Score)
+        public Dictionary<ulong, int> Score(int team1Score, int team2Score, string overtime)
         {
+            bool hitOvertime = false;
+            overtime = overtime.ToLower();
+            if(overtime == "overtime" || overtime == "ot" || overtime == "true" || overtime == "yes")
+            {
+                hitOvertime = true;
+            }
+
             var scores = new Dictionary<ulong, int>();
-            foreach (var user in Users())
+            foreach (var player in Players.Values)
             {
                 int score = 0;
-                if (Votes.ContainsKey(user.Key))
+                bool wonGame = (player.OnTeam1 && team1Score > team2Score) || (player.OnTeam2 && team2Score > team1Score);
+
+                if (player.IsMafia)
                 {
-                    bool isMafia = Mafia.Where(x => x.Id == user.Key).Count() > 0;
-                    bool isTeam1 = Team1.Where(x => x.Id == user.Key).Count() > 0;
-                    bool isTeam2 = Team2.Where(x => x.Id == user.Key).Count() > 0;
-                    bool isJoker = Joker.Where(x => x.Id == user.Key).Count() > 0;
-                    bool wonGame = (isTeam1 && team1Score > team2Score) || (isTeam2 && team2Score > team1Score);
+                    int guessedMe = Votes.Where(x => x.Key != player.Id && x.Value.Contains(player.Id)).Count();
 
-                    if (isMafia)
-                    {
-                        bool guessedMe = Votes.Where(x => x.Value.Contains(user.Key)).Count() > 0;
+                    score += !wonGame ? ScoringConstants.LosingAsMafia : 0;
+                    score += ScoringConstants.MaxHiddenAsMafia - guessedMe;  // two points minus number of guesses as mafia
+                }
+                else if(player.IsJoker)
+                {
+                    int guessedMe = Votes.Where(x => x.Key != player.Id && x.Value.Contains(player.Id)).Count();
 
-                        score += !wonGame ? 2 : 0; // two points for losing
-                        score += !guessedMe ? 3 : 0;
-                    }
-                    else if(isJoker)
-                    {
-                        score += wonGame ? 1 : 0; // one point for winning
+                    score += hitOvertime ? ScoringConstants.ReachingOvertime : 0;
+                    score += guessedMe > ScoringConstants.MaxMafiaGuessAsJoker ? ScoringConstants.MaxMafiaGuessAsJoker : guessedMe;
+                }
+                else
+                {
+                    int correctVotes = Votes.ContainsKey(player.Id) ? Mafia.Where(x => Votes[player.Id].Contains(x.Id)).Count() : 0;
 
-                        // How many votes did they get right?
-                        int correctVotes = Mafia.Where(x => Votes[user.Key].Contains(x.Id)).Count();
-                        score = correctVotes;
-                    }
-                    else
-                    {
-                        score += wonGame ? 1 : 0; // one point for winning
-
-                        // How many votes did they get right?
-                        int correctVotes = Mafia.Where(x => Votes[user.Key].Contains(x.Id)).Count();
-                        score = correctVotes;
-                    }
+                    score += wonGame ? ScoringConstants.WinningGame : 0;
+                    score += correctVotes * ScoringConstants.GuessingMafia;
                 }
 
-                scores.Add(user.Key, score);
+                scores.Add(player.Id, Math.Max(0, score)); // Players score can't go below zero
             }
 
             return scores;
+        }
+
+        public void PopulateUser(Func<ulong, IUser> getUser)
+        {
+            foreach (var u in Players.Values)
+                u.DiscordUser = getUser(u.Id);
+        }
+
+        public List<MafiaPlayer> getVillagers(bool pickOnTeam1)
+        {
+            if (pickOnTeam1)
+            {
+                return Team1.Where(u => !u.IsMafia && !u.IsJoker).ToList();
+            }
+            else
+            {
+                return Team2.Where(u => !u.IsMafia && !u.IsJoker).ToList();
+            }
+        }
+
+        public List<MafiaPlayer> getVillagers()
+        {
+            return Players.Values.Where(u => !u.IsMafia && !u.IsJoker).ToList();
         }
 
         private static MafiaGame createNormalMafiaGame(List<IUser> mentions, int numMafias)
@@ -138,85 +158,68 @@ namespace TyniBot.Models
 
             var game = new MafiaGame()
             {
-                Mafia = mentions.Shuffle().ToList().Take(numMafias).ToList(), // shuffle again and pick mafia
-                Team1 = shuffled.Take(team1Size).ToList(),
-                Team2 = shuffled.Skip(team1Size).ToList(),
+                Team1 = shuffled.Take(team1Size).Select(u => new MafiaPlayer() { Id = u.Id, IsMafia = false, OnTeam1 = true, OnTeam2 = false, DiscordUser = u }).ToList(),
+                Team2 = shuffled.Skip(team1Size).Select(u => new MafiaPlayer() { Id = u.Id, IsMafia = false, OnTeam1 = false, OnTeam2 = true, DiscordUser = u }).ToList(),
+                Mafia = new List<MafiaPlayer>(),
             };
 
-            game.MafiaIds = game.Mafia.Select(u => u.Id).ToArray();
-            game.Team1Ids = game.Team1.Select(u => u.Id).ToArray();
-            game.Team2Ids = game.Team2.Select(u => u.Id).ToArray();
+            Random rnd = new Random();
+            while (numMafias > 0)
+            {
+                var villagers = game.getVillagers();
+                var player = villagers[rnd.Next(villagers.Count)];
+
+                player.IsMafia = true;
+                game.Mafia.Add(player);
+
+                numMafias--;
+            }
 
             return game;
         }
 
-        private static MafiaGame createBattleMafiaGame(List<IUser> mentions, int numMafias)
+        private void chooseJoker(Random rnd, bool pickTeam1Villagers)
         {
-            var shuffled = mentions.Shuffle().ToList(); // shuffle teams we call ToList to solidfy the list
-            var team1Size = mentions.Count / 2; // round down if odd
-            var team1 = shuffled.Take(team1Size).ToList();
-            var team1MafiaSize = numMafias / 2; // round down if odd as well
-            var team1Mafia = team1.Shuffle().ToList().Take(team1MafiaSize).ToList();
-            var team2 = shuffled.Skip(team1Size).ToList();
-            var team2Mafia = team2.Shuffle().ToList().Take(numMafias - team1MafiaSize).ToList();
-
-            var game = new MafiaGame()
-            {
-                Mafia = team1Mafia.Concat(team2Mafia).Shuffle().ToList(), // keep randomness for publishing publically
-                Team1 = team1,
-                Team2 = team2
-            };
-
-            game.MafiaIds = game.Mafia.Select(u => u.Id).ToArray();
-            game.Team1Ids = game.Team1.Select(u => u.Id).ToArray();
-            game.Team2Ids = game.Team2.Select(u => u.Id).ToArray();
-
-            return game;
+            List<MafiaPlayer> villagers = getVillagers(pickTeam1Villagers);
+            MafiaPlayer player = villagers[rnd.Next(villagers.Count)];
+            player.IsJoker = true;
+            Joker.Add(player);
         }
 
-        private static MafiaGame createBattleJokerMafiaGame(List<IUser> mentions, int numMafias)
+        private static MafiaGame createBattleMafiaGame(List<IUser> mentions, int numMafias, bool hasJoker = false)
         {
             var shuffled = mentions.Shuffle().ToList(); // shuffle teams we call ToList to solidfy the list
-            var team1Size = mentions.Count / 2; // round down if odd
-            var team1 = shuffled.Take(team1Size).ToList();
-            var team1MafiaSize = numMafias / 2; // round down if odd as well
-            var team1Mafia = team1.Shuffle().ToList().Take(team1MafiaSize).ToList();
-            var team2 = shuffled.Skip(team1Size).ToList(); // this means team2 will have more people (if odd)
-            var team2Mafia = team2.Shuffle().ToList().Take(numMafias - team1MafiaSize).ToList();
-            var team2Joker = team2.Where(x => !team2Mafia.Contains(x)).Shuffle().ToList().Take(1).ToList();
-
+            var team1Size = mentions.Count / 2; // round down if odd, meaning more people on team 2
+            
             var game = new MafiaGame()
             {
-                Mafia = team1Mafia.Concat(team2Mafia).Shuffle().ToList(), // keep randomness for publishing publically
-                Team1 = team1,
-                Team2 = team2,
-                Joker = team2Joker
+                Team1 = shuffled.Take(team1Size).Select(u => new MafiaPlayer() { Id = u.Id, IsMafia = false, OnTeam1 = true, OnTeam2 = false, DiscordUser = u }).ToList(),
+                Team2 = shuffled.Skip(team1Size).Select(u => new MafiaPlayer() { Id = u.Id, IsMafia = false, OnTeam1 = false, OnTeam2 = true, DiscordUser = u }).ToList(),
+                Mafia = new List<MafiaPlayer>(),
+                Joker = new List<MafiaPlayer>()
             };
 
-            game.MafiaIds = game.Mafia.Select(u => u.Id).ToArray();
-            game.Team1Ids = game.Team1.Select(u => u.Id).ToArray();
-            game.Team2Ids = game.Team2.Select(u => u.Id).ToArray();
+            bool pickOnTeam1 = false; // start picking mafia with team 2
+            List<MafiaPlayer> villagers;
+            MafiaPlayer player;
+            Random rnd = new Random();
 
-            return game;
-        }
-
-        private static MafiaGame createJokerMafiaGame(List<IUser> mentions, int numMafias)
-        {
-            var shuffled = mentions.Shuffle().ToList(); // shuffle teams we call ToList to solidfy the list
-            var team1Size = mentions.Count / 2; // round down if odd
-            var mafia = mentions.Shuffle().ToList().Take(numMafias).ToList();// shuffle again and pick mafia
-
-            var game = new MafiaGame()
+            while (numMafias > 0)
             {
-                Mafia = mafia, 
-                Team1 = shuffled.Take(team1Size).ToList(),
-                Team2 = shuffled.Skip(team1Size).ToList(),
-                Joker = shuffled.Where(x => !mafia.Contains(x)).Shuffle().ToList().Take(1).ToList()
-        };
+                villagers = game.getVillagers(pickOnTeam1);
+                pickOnTeam1 = !pickOnTeam1;
+                player = villagers[rnd.Next(villagers.Count)];
 
-            game.MafiaIds = game.Mafia.Select(u => u.Id).ToArray();
-            game.Team1Ids = game.Team1.Select(u => u.Id).ToArray();
-            game.Team2Ids = game.Team2.Select(u => u.Id).ToArray();
+                player.IsMafia = true;
+                game.Mafia.Add(player);
+
+                numMafias--;
+            }
+
+            if(hasJoker)
+            {
+                game.chooseJoker(rnd, pickOnTeam1);
+            }
 
             return game;
         }
