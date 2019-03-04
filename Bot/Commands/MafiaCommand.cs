@@ -101,7 +101,7 @@ namespace TyniBot
             // Notify each Joker
             foreach (var user in game.Joker)
                 await user.SendMessageAsync("You are the Joker!");
-
+                
             await OutputGameStart(game);
         }
 
