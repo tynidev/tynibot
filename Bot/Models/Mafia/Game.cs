@@ -16,11 +16,9 @@ namespace TyniBot.Mafia
     {
         [BsonId]
         public ulong Id { get; set; }
-        [BsonId]
         public Dictionary<ulong, Player> Players { get; private set; }
-
-        [BsonIgnore]
         public Dictionary<ulong, ulong[]> Votes { get; set; }
+
         [BsonIgnore]
         public List<Player> Team1 => Players.Where(p => p.Value.Team == Team.One).Select(p => p.Value).ToList();
         [BsonIgnore]
@@ -99,27 +97,26 @@ namespace TyniBot.Mafia
                 if (player.Type == PlayerType.Mafia)
                 {
                     int guessedMe = Votes.Where(x => x.Key != player.Id && x.Value.Contains(player.Id)).Count();
-                    int hiddenScore = ScoringConstants.MaxHiddenAsMafia - guessedMe;
 
                     score += !wonGame ? ScoringConstants.LosingAsMafia : 0;
-                    score += hiddenScore < 0 ? 0 : hiddenScore;  // two points minus number of guesses as mafia
+                    score += ScoringConstants.MafiaNobodyGuessedMe - guessedMe;  // two points minus number of guesses as mafia
                 }
                 else if(player.Type == PlayerType.Joker)
                 {
                     int guessedMe = Votes.Where(x => x.Key != player.Id && x.Value.Contains(player.Id)).Count();
 
-                    score += hitOvertime ? ScoringConstants.ReachingOvertime : 0;
-                    score += guessedMe > ScoringConstants.MaxMafiaGuessAsJoker ? ScoringConstants.MaxMafiaGuessAsJoker : guessedMe;
+                    score += hitOvertime ? ScoringConstants.ReachedOvertime : 0;
+                    score += Math.Min(ScoringConstants.JokerGuessedAsMafiaMax, guessedMe);
                 }
                 else
                 {
                     int correctVotes = Votes.ContainsKey(player.Id) ? Mafia.Where(x => Votes[player.Id].Contains(x.Id)).Count() : 0;
 
                     score += wonGame ? ScoringConstants.WinningGame : 0;
-                    score += correctVotes * ScoringConstants.GuessingMafia;
+                    score += correctVotes * ScoringConstants.GuessedMafia;
                 }
 
-                scores.Add(player.Id, score);
+                scores.Add(player.Id, Math.Max(0,score));
             }
 
             return scores;

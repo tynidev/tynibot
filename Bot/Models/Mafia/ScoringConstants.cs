@@ -6,11 +6,11 @@ namespace TyniBot.Mafia
 {
     static class ScoringConstants
     {
-        public static int GuessingMafia = 2; // two points for each correct vote as villager
-        public static int WinningGame = 1; // one point for winning as villager
-        public static int LosingAsMafia = 3; // three points for losing as mafia
-        public static int MaxHiddenAsMafia = 2; // max points staying hidden as mafia
-        public static int ReachingOvertime = 2; // three points for going to overtime as joker
-        public static int MaxMafiaGuessAsJoker = 3; // max points being guessed as mafia as joker
+        public const int GuessedMafia = 2; // two points for each correct vote as villager
+        public const int WinningGame = 1; // one point for winning as villager
+        public const int LosingAsMafia = 3; // three points for losing as mafia
+        public const int MafiaNobodyGuessedMe = 2; // max points staying hidden as mafia
+        public const int ReachedOvertime = 2; // three points for going to overtime as joker
+        public const int JokerGuessedAsMafiaMax = 3; // max points for Joker being guessed as mafia
     }
 }

@@ -149,7 +149,27 @@ namespace TyniBot
 
             var ordered = scores.OrderByDescending(x => x.Value);
 
+            embedBuilder.AddField("Team 1:", string.Join(' ', game.Team1.Select(u => u.Mention)));
+            embedBuilder.AddField("Team 2:", string.Join(' ', game.Team2.Select(u => u.Mention)));
+
             embedBuilder.AddField("Mafia: ", string.Join(' ', game.Mafia.Select(u => u.Mention)));
+            if(game.Joker != null)
+                embedBuilder.AddField("Joker: ", game.Joker.Mention);
+
+            var votes = new Dictionary<ulong, int>();
+            foreach (var playerVotes in game.Votes)
+            {
+                foreach (var vote in playerVotes.Value)
+                {
+                    if (votes.ContainsKey(vote))
+                        votes[vote] += 1;
+                    else
+                        votes[vote] = 1;
+                }
+            }
+
+            embedBuilder.AddField("Mafia Votes: ", string.Join("\r\n", votes.Select(o => $"{game.Players[o.Key].Mention} = {o.Value}")));
+
             embedBuilder.AddField("Score: ", string.Join("\r\n", ordered.Select(o => $"{game.Players[o.Key].Mention} = {o.Value}")));
 
             await ReplyAsync($"**Mafia Game: **", false, embedBuilder.Build());
