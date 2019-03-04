@@ -47,10 +47,61 @@ namespace TyniBot
             collection.Insert(game);
             collection.EnsureIndex(x => x.Id);
 
+            // Notify each Villager
+            foreach (var user in game.getVillagers())
+                await user.SendMessageAsync("You are a Villager!");
+
             // Notify each Mafia user
-            foreach(var user in game.Mafia)
+            foreach (var user in game.Mafia)
                 await user.SendMessageAsync("You are in the Mafia!");
 
+            await OutputGameStart(game);
+        }
+
+        [Command("setup"), Summary("**!mafia setup <alt game> <num of mafias> <@player1> <@player2>** Creates an alternative game of Mafia!")]
+        public async Task NewGameCommand(int numMafias, string gameMode, [Remainder]string message = "")
+        {
+            var result = MafiaGame.CreateGame(Context.Message.MentionedUsers.Select(s => (IUser)s).ToList(), numMafias, gameMode);
+            if (result == null)
+            {
+                await Context.Channel.SendMessageAsync(result.ErrorMsg);
+                return;
+            }
+            var game = result.Game;
+
+            var collection = Context.Database.GetCollection<MafiaGame>();
+
+            // Prepare for DB
+            game.Id = Context.Channel.Id;
+
+            // Delete current game if exists
+            MafiaGame existingGame = null;
+            try
+            {
+                existingGame = GetGame(Context.Channel.Id, Context.Guild.GetUser, collection);
+            }
+            catch { }
+
+            int removed = 0;
+            if (existingGame != null)
+                removed = collection.Delete(g => g.Id == existingGame.Id);
+
+            // Insert into DB
+            collection.Insert(game);
+            collection.EnsureIndex(x => x.Id);
+
+            // Notify each Villager
+            foreach (var user in game.getVillagers())
+                await user.SendMessageAsync("You are a Villager!");
+
+            // Notify each Mafia
+            foreach (var user in game.Mafia)
+                await user.SendMessageAsync("You are in the Mafia!");
+
+            // Notify each Joker
+            foreach (var user in game.Joker)
+                await user.SendMessageAsync("You are the Joker!");
+                
             await OutputGameStart(game);
         }
 
@@ -76,8 +127,8 @@ namespace TyniBot
             await OutputVotes(game);
         }
 
-        [Command("score"), Summary("**!mafia score <team1 score> <team2 score>** | Displays who is in the Mafia and each player's points. ")]
-        public async Task ScoreGameCommand(int team1Score, int team2Score)
+        [Command("score"), Summary("**!mafia score <team1 score> <team2 score> <OverTime?>** | Displays who is what and each player's points. ")]
+        public async Task ScoreGameCommand(int team1Score, int team2Score, [Remainder]string overtime = "")
         {
             MafiaGame game = null;
             try
@@ -90,7 +141,7 @@ namespace TyniBot
                 return;
             }
 
-            var scores = game.Score(team1Score, team2Score);
+            var scores = game.Score(team1Score, team2Score, overtime);
 
             await OutputGameEnd(game, scores);
         }

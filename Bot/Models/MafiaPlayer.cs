@@ -11,6 +11,7 @@ namespace TyniBot.Models
         [BsonId]
         public ulong Id { get; set; }
         public bool IsMafia { get; set; }
+        public bool IsJoker { get; set; }
         public bool OnTeam1 { get; set; }
         public bool OnTeam2 { get; set; }
         #endregion
