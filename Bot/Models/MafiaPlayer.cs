@@ -35,6 +35,7 @@ namespace TyniBot.Models
         [BsonIgnore]
         public bool IsWebhook => DiscordUser.IsWebhook;
 
+        [BsonIgnore]
         public string Username => DiscordUser.Username == null ? string.Empty : DiscordUser.Username;
 
         [BsonIgnore]
