@@ -48,7 +48,7 @@ namespace TyniBot.Models
 
             // validate that number of mafia is less than number of players
             if (numMafias >= mentions.Count)
-                return new CreateGameResult() { ErrorMsg = "Number of mafia can not exceed players moron!" };
+                return new CreateGameResult() { ErrorMsg = "Number of mafia can not be equal or exceed players moron!" };
 
             MafiaGame game;
 
@@ -85,7 +85,7 @@ namespace TyniBot.Models
                 .ToArray();
         }
 
-        public Dictionary<ulong, int> Score(int team1Score, int team2Score, string overtime)
+        public Dictionary<ulong, int> Score(int team1Score, int team2Score, string overtime = "")
         {
             bool hitOvertime = false;
             overtime = overtime.ToLower();
@@ -103,9 +103,10 @@ namespace TyniBot.Models
                 if (player.IsMafia)
                 {
                     int guessedMe = Votes.Where(x => x.Key != player.Id && x.Value.Contains(player.Id)).Count();
+                    int hiddenScore = ScoringConstants.MaxHiddenAsMafia - guessedMe;
 
                     score += !wonGame ? ScoringConstants.LosingAsMafia : 0;
-                    score += ScoringConstants.MaxHiddenAsMafia - guessedMe;  // two points minus number of guesses as mafia
+                    score += hiddenScore < 0 ? 0 : hiddenScore;  // two points minus number of guesses as mafia
                 }
                 else if(player.IsJoker)
                 {
@@ -122,7 +123,7 @@ namespace TyniBot.Models
                     score += correctVotes * ScoringConstants.GuessingMafia;
                 }
 
-                scores.Add(player.Id, Math.Max(0, score)); // Players score can't go below zero
+                scores.Add(player.Id, score);
             }
 
             return scores;
@@ -199,10 +200,16 @@ namespace TyniBot.Models
                 Joker = new List<MafiaPlayer>()
             };
 
+            Random rnd = new Random();
             bool pickOnTeam1 = false; // start picking mafia with team 2
+
+            if(numMafias % 2 == 1 && mentions.Count % 2 == 0) // odd # of Mafia + even teams == randomize Mafia inbalance
+            {
+                pickOnTeam1 = rnd.Next(2) % 2 == 0 ? true : false;
+            }
+
             List<MafiaPlayer> villagers;
             MafiaPlayer player;
-            Random rnd = new Random();
 
             while (numMafias > 0)
             {

@@ -373,6 +373,64 @@ namespace UnitTests
             Assert.AreEqual(score[mafia.Id], 0); // make sure Mafia score doesn't go below zero
         }
 
+        [TestMethod]
+        public void TestScore7PlayersWithJokerEveryoneVote1Mafia1JokerOT()
+        {
+            var mentions = new List<IUser>();
+
+            var user1 = GenerateUser("k", 1);
+            mentions.Add(user1.Object);
+
+            var user2 = GenerateUser("t", 2);
+            mentions.Add(user2.Object);
+
+            var user3 = GenerateUser("j", 3);
+            mentions.Add(user3.Object);
+
+            var user4 = GenerateUser("a", 4);
+            mentions.Add(user4.Object);
+
+            var user5 = GenerateUser("r", 5);
+            mentions.Add(user5.Object);
+
+            var user6 = GenerateUser("m", 6);
+            mentions.Add(user6.Object);
+
+            var user7 = GenerateUser("n", 7);
+            mentions.Add(user7.Object);
+
+            var g = MafiaGame.CreateGame(mentions, 2, "j").Game;
+
+            var mafias = g.Mafia;
+            var t1Mafia = g.Team1.Where(x => g.Mafia.Contains(x)).First();
+            var joker = g.Joker[0];
+
+            // One Mafia on each team and a Joker on the uneven team
+            Assert.AreEqual(g.Team1.Where(x => g.Mafia.Contains(x)).Count(), 1);
+            Assert.AreEqual(g.Team2.Where(x => g.Mafia.Contains(x)).Count(), 1);
+            Assert.AreEqual(g.Team2.Where(x => g.Mafia.Contains(x)).Count(), 1);
+
+            var villagers = g.getVillagers().ToList();
+
+            foreach (var v in villagers)
+                g.Vote(v.Id, new List<ulong>() { t1Mafia.Id, joker.Id });
+
+            foreach (var m in mafias)
+                g.Vote(m.Id, new List<ulong>() { t1Mafia.Id, joker.Id });
+
+            g.Vote(joker.Id, new List<ulong>() { t1Mafia.Id, joker.Id });
+
+            // Score such that Team 1 won WITH overtime
+            var score = g.Score(1, 0, "ot");
+
+            // Mafia
+            Assert.AreEqual(score[t1Mafia.Id], 0); // Team 1 Mafia got guessed and won
+            Assert.AreEqual(score[mafias.Where(x => t1Mafia != (x)).First().Id], 5); // Team 2 Mafia lost && no guess
+            Assert.AreEqual(score[villagers.Where(x => g.Team1.Contains(x)).First().Id], 3); // Team 1 V won + 1 mafia
+            Assert.AreEqual(score[villagers.Where(x => g.Team2.Contains(x)).First().Id], 2); // Team 2 V won + 1 mafia
+            Assert.AreEqual(score[joker.Id], 5); // OT + all guesses
+        }
+
         private Mock<IUser> GenerateUser(string username, ulong id)
         {
             var user = new Mock<IUser>();
