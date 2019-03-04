@@ -47,7 +47,7 @@ namespace TyniBot.Models
                 return new CreateGameResult() { ErrorMsg = "You need more than 1 person to play! Mention some friends! You have friends don't you?" };
 
             // validate that number of mafia is less than number of players
-            if (numMafias + 1 >= mentions.Count)
+            if (numMafias >= mentions.Count)
                 return new CreateGameResult() { ErrorMsg = "Number of mafia can not be equal or exceed players moron!" };
 
             MafiaGame game;
@@ -85,7 +85,7 @@ namespace TyniBot.Models
                 .ToArray();
         }
 
-        public Dictionary<ulong, int> Score(int team1Score, int team2Score, string overtime)
+        public Dictionary<ulong, int> Score(int team1Score, int team2Score, string overtime = "")
         {
             bool hitOvertime = false;
             overtime = overtime.ToLower();
