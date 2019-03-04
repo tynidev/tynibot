@@ -55,7 +55,9 @@ namespace UnitTests
         [TestMethod]
         public void TestCreateGameGeneratesValidGame()
         {
-            for (int j = 0; j < 16; j++)
+            Random r = new Random();
+                 
+            for (int j = 0; j < 100; j++)
             {
                 var mentions = new List<IUser>();
                 for (int i = 0; i < (j % 7) + 2; i++)
@@ -66,13 +68,50 @@ namespace UnitTests
                     mentions.Add(user.Object);
                 }
 
-                for (int i = 0; i < 100; i++)
+                for (int i = 0; i < 300; i++)
                 {
                     var numMafia = (i % (mentions.Count - 1)) + 1;
-                    var game = (TyniBot.Mafia.Game.CreateGame(mentions, numMafia));
+                    int random = r.Next(3);
+                    string mode = "";
+                    if (random == 0)
+                        mode = "default";
+                    if (random == 1)
+                        mode = "battle";
+                    if (random == 2)
+                        mode = "joker";
+
+                    var game = (TyniBot.Mafia.Game.CreateGame(mentions, numMafia, mode));
 
                     Assert.AreEqual(numMafia, game.Mafia.Count()); // validate actual number of mafia was as requested
                     Assert.AreEqual(game.Team1.Count() + game.Team2.Count(), mentions.Count); // validate members of both teams equals total count of mentions
+
+                    if (mode == "joker")
+                    {
+                        Assert.IsNotNull(game.Joker);
+                        Assert.IsTrue(mentions.Contains(game.Joker.DiscordUser));
+                    }
+
+                    if(mode == "joker" || mode == "battle")
+                    {
+                        int team1Mafia = game.Mafia.Where(u => u.Team == TyniBot.Mafia.Team.One).Count();
+                        int team2Mafia = game.Mafia.Where(u => u.Team == TyniBot.Mafia.Team.Two).Count();
+
+                        if(numMafia > 1) // assert mafia aren't all on one team
+                        {
+                            Assert.AreNotEqual(0, team1Mafia);
+                            Assert.AreNotEqual(0, team2Mafia);
+
+                            if (numMafia % 2 == 0) // even
+                            {
+                                Assert.AreEqual(team1Mafia, team2Mafia); // assert evenly split
+                            }
+                            else // odd
+                            {
+                                int sub = team1Mafia > team2Mafia ? team1Mafia - team2Mafia : team2Mafia - team1Mafia;
+                                Assert.AreEqual(1, sub);
+                            }
+                        }
+                    }
 
                     var mafia = new Dictionary<string, string>();
                     var t1 = new Dictionary<string, string>();
@@ -99,6 +138,7 @@ namespace UnitTests
                     {
                         Assert.IsFalse(t2.ContainsKey(u.Username)); // validate every team1 member is not in team 2
                     }
+
                 }
             }
         }

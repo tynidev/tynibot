@@ -147,7 +147,7 @@ namespace TyniBot.Mafia
         {
             var players = divideTeams(users);
 
-            pickMafia(players, numMafias, divideEvenly: false);
+            pickMafia(players, numMafias, divideEvenly: true);
 
             if (hasJoker)
                 pickJoker(players);
@@ -185,20 +185,33 @@ namespace TyniBot.Mafia
             }
             else
             {
-                bool team1Larger = false;
-                Random rnd = new Random();
-                if (numMafias % 2 == 1 && players.Count % 2 == 0) // odd # of Mafia + even teams == randomize Mafia inbalance
+                int team1Size = players.Where(p => p.Team == Team.One).Count();
+                int team2Size = players.Where(p => p.Team == Team.Two).Count();
+
+                int smallMafiaTeam = numMafias / 2;
+                int largeMafiaTeam = numMafias - smallMafiaTeam;
+
+                bool team1LargerMafia = false;
+                if (team1Size == team2Size)
                 {
-                    team1Larger = rnd.Next(2) % 2 == 0 ? true : false;
+                    if (numMafias % 2 == 1) // odd # of Mafia + even teams == randomize Mafia inbalance
+                    {
+                        Random rnd = new Random();
+                        team1LargerMafia = rnd.Next(2) % 2 == 0 ? true : false;
+                    }
+                }
+                else if(team1Size > team2Size)
+                {
+                    team1LargerMafia = true;
                 }
 
-                int team1Count = !team1Larger ? numMafias / 2 : numMafias - (numMafias / 2);
-                int team2Count = numMafias - team1Count;
-                
-                foreach (var mafia in players.Where(p => p.Team == Team.One).Take(team1Count))
+                int team1MafiaSize = team1LargerMafia ? largeMafiaTeam : smallMafiaTeam;
+                int team2MafiaSize = team1LargerMafia ? smallMafiaTeam : largeMafiaTeam;
+
+                foreach (var mafia in players.Where(p => p.Team == Team.One).Take(team1MafiaSize))
                     mafia.Type = PlayerType.Mafia;
 
-                foreach (var mafia in players.Where(p => p.Team == Team.Two).Take(team2Count))
+                foreach (var mafia in players.Where(p => p.Team == Team.Two).Take(team2MafiaSize))
                     mafia.Type = PlayerType.Mafia;
             }
         }
