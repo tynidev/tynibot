@@ -12,8 +12,8 @@ namespace TyniBot
     public class MafiaCommand : ModuleBase<TyniCommandContext>
     {
         #region Commands
-        [Command("new"), Summary("**!mafia new <num of mafias> <alt game?|battle|joker|default> <@player1> <@player2>** Creates an alternative game of Mafia!")]
-        public async Task NewGameCommand(int numMafias, string gameMode = "default", [Remainder]string message = "")
+        [Command("new"), Summary("**!mafia new <?gameMode=default(battle|joker|default)> <?numOfMafias=1> <@player1> <@player2>** Creates a game of Mafia!")]
+        public async Task NewGameCommand(string gameMode = "default", int numMafias = 1, [Remainder]string message = "")
         {
             await CreateGame(numMafias, gameMode);
         }
@@ -40,8 +40,8 @@ namespace TyniBot
             await OutputVotes(game);
         }
 
-        [Command("score"), Summary("**!mafia score <team1 score> <team2 score> <OverTime?>** | Displays who is what and each player's points. ")]
-        public async Task ScoreGameCommand(int team1Score, int team2Score, [Remainder]string overtime = "")
+        [Command("score"), Summary("**!mafia score <team1 score> <team2 score> <?OverTime(yes|no)>** | Displays who is what and each player's points. ")]
+        public async Task ScoreGameCommand(int team1Score, int team2Score, [Remainder]string overtime = "no")
         {
             Mafia.Game game = null;
             try

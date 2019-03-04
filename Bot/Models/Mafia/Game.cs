@@ -79,7 +79,7 @@ namespace TyniBot.Mafia
                 .ToArray();
         }
 
-        public Dictionary<ulong, int> Score(int team1Score, int team2Score, string overtime = "")
+        public Dictionary<ulong, int> Score(int team1Score, int team2Score, string overtime = "no")
         {
             bool hitOvertime = false;
             overtime = overtime.ToLower();

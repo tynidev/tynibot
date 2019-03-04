@@ -29,11 +29,11 @@ It's recommended to use the help command first for more information once you get
 use b for battle mafia (even number of mafia on each team up until the request number of mafia) or j for joker mafia (battle mafia but
 accounting for an odd number of players so the joker's in the game as well)
 
-`!mafia new <num of mafias> <@player1> <@player2>`
-
-`!mafia setup <alt game> <num of mafias> <@player1> <@player2>`
+`!mafia new <?gameMode=default(battle|joker|default)> <?numOfMafias=1> <@player1> <@player2>`
 
 `!mafia vote <@mafia1> <@mafia2>`
+
+`!mafia score <team1 score> <team2 score> <?OverTime(yes|no)>`
 
 `!mafia help`
 
