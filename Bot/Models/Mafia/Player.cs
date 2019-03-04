@@ -3,17 +3,29 @@ using LiteDB;
 using System;
 using System.Threading.Tasks;
 
-namespace TyniBot.Models
+namespace TyniBot.Mafia
 {
-    public class MafiaPlayer : IUser
+    public enum PlayerType
+    {
+        Villager,
+        Mafia,
+        Joker
+    }
+
+    public enum Team
+    {
+        One,
+        Two
+    }
+
+    public class Player : IUser
     {
         #region Mafia Members
         [BsonId]
         public ulong Id { get; set; }
-        public bool IsMafia { get; set; }
-        public bool IsJoker { get; set; }
-        public bool OnTeam1 { get; set; }
-        public bool OnTeam2 { get; set; }
+        public PlayerType Type { get; set; }
+        public Team Team { get; set; }
+        public string Username => DiscordUser?.Username == null ? string.Empty : DiscordUser.Username;
         #endregion
 
         #region IUser Members
@@ -34,9 +46,6 @@ namespace TyniBot.Models
 
         [BsonIgnore]
         public bool IsWebhook => DiscordUser.IsWebhook;
-
-        [BsonIgnore]
-        public string Username => DiscordUser.Username == null ? string.Empty : DiscordUser.Username;
 
         [BsonIgnore]
         public DateTimeOffset CreatedAt => DiscordUser.CreatedAt;

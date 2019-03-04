@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace TyniBot
+namespace TyniBot.Mafia
 {
     static class ScoringConstants
     {
