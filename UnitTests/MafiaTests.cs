@@ -62,22 +62,17 @@ namespace UnitTests
                 var mentions = new List<IUser>();
                 for (int i = 0; i < (j % 7) + 2; i++)
                 {
-                    var user = new Mock<IUser>();
-                    user.Setup(u => u.Id).Returns((ulong)i);
-                    user.Setup(u => u.Username).Returns(i.ToString());
-                    mentions.Add(user.Object);
+                    mentions.Add(GenerateUser(i.ToString(), (ulong)i).Object);
                 }
 
                 for (int i = 0; i < 300; i++)
                 {
                     var numMafia = (i % (mentions.Count - 1)) + 1;
                     int random = r.Next(3);
-                    string mode = "";
-                    if (random == 0)
-                        mode = "default";
+                    string mode = "default";
                     if (random == 1)
                         mode = "battle";
-                    if (random == 2)
+                    if (random == 2 && mentions.Count > numMafia)
                         mode = "joker";
 
                     var game = (TyniBot.Mafia.Game.CreateGame(mentions, numMafia, mode));
@@ -87,8 +82,14 @@ namespace UnitTests
 
                     if (mode == "joker")
                     {
-                        Assert.IsNotNull(game.Joker);
-                        Assert.IsTrue(mentions.Contains(game.Joker.DiscordUser));
+                        Assert.IsNotNull(game.Joker); // game must contain a joker
+                        Assert.IsTrue(mentions.Contains(game.Joker.DiscordUser)); // joker must be in original mentions
+                        Assert.IsFalse(game.Mafia.Contains(game.Joker)); // joker can't be mafia
+                        Assert.AreEqual(game.Villagers.Count, mentions.Count - numMafia - 1); // assert number of villagers equals mentions - numMafia - joker
+                    }
+                    else
+                    {
+                        Assert.AreEqual(game.Villagers.Count, mentions.Count - numMafia); // assert number of villagers equals mentions - numMafia
                     }
 
                     if(mode == "joker" || mode == "battle")
@@ -96,19 +97,19 @@ namespace UnitTests
                         int team1Mafia = game.Mafia.Where(u => u.Team == TyniBot.Mafia.Team.One).Count();
                         int team2Mafia = game.Mafia.Where(u => u.Team == TyniBot.Mafia.Team.Two).Count();
 
-                        if(numMafia > 1) // assert mafia aren't all on one team
+                        if(numMafia > 1) 
                         {
-                            Assert.AreNotEqual(0, team1Mafia);
+                            Assert.AreNotEqual(0, team1Mafia); // assert both teams have a mafia member
                             Assert.AreNotEqual(0, team2Mafia);
 
-                            if (numMafia % 2 == 0) // even
+                            if (numMafia % 2 == 0) // if even
                             {
                                 Assert.AreEqual(team1Mafia, team2Mafia); // assert evenly split
                             }
-                            else // odd
+                            else // if odd
                             {
                                 int sub = team1Mafia > team2Mafia ? team1Mafia - team2Mafia : team2Mafia - team1Mafia;
-                                Assert.AreEqual(1, sub);
+                                Assert.AreEqual(1, sub); // assert difference is one
                             }
                         }
                     }
@@ -120,19 +121,21 @@ namespace UnitTests
                     foreach (var u in game.Mafia)
                     {
                         Assert.IsTrue(mentions.Contains(u.DiscordUser)); // validate each mafia member was part of original mentions
-                        Assert.IsFalse(mafia.ContainsKey(u.Username)); // validate users weren't added to mafia twice
+                        Assert.AreEqual(game.Mafia.Where(p => p.Id == u.Id).Count(), 1); // validate users weren't added to mafia twice
                         mafia.Add(u.Username, u.Username);
                     }
                     foreach (var u in game.Team1)
                     {
                         t1.Add(u.Username, u.Username);
                         Assert.IsTrue(mentions.Contains(u.DiscordUser)); // validate every team member was part of original mentions
+                        Assert.AreEqual(game.Team1.Where(p => p.Id == u.Id).Count(), 1); // assert member is added to the team only once
                     }
                     foreach (var u in game.Team2)
                     {
                         t2.Add(u.Username, u.Username);
                         Assert.IsTrue(mentions.Contains(u.DiscordUser)); // validate every team member was part of original mentions
                         Assert.IsFalse(t1.ContainsKey(u.Username)); // validate every team2 member is not in team 1
+                        Assert.AreEqual(game.Team2.Where(p => p.Id == u.Id).Count(), 1); // assert member is added to the team only once
                     }
                     foreach (var u in game.Team1)
                     {
@@ -448,6 +451,10 @@ namespace UnitTests
             Assert.AreEqual(g.Team1.Where(x => g.Mafia.Contains(x)).Count(), 1);
             Assert.AreEqual(g.Team2.Where(x => g.Mafia.Contains(x)).Count(), 1);
             Assert.IsNotNull(g.Joker);
+            if (g.Team1.Count > g.Team2.Count)
+                Assert.IsTrue(g.Team1.Contains(g.Joker));
+            else
+                Assert.IsTrue(g.Team2.Contains(g.Joker));
 
             var villagers = g.Villagers;
             foreach (var v in villagers)

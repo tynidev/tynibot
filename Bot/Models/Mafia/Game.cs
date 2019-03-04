@@ -55,6 +55,8 @@ namespace TyniBot.Mafia
                 // for now, joker is an extension of the battle format
                 case "j":
                 case "joker":
+                    if (numMafias + 1 > mentions.Count) // validate we have enough players
+                        throw new Exception("When playing Joker you must have at least Joker + Mafia.Count players total.");
                     game = createBattleMafiaGame(mentions, numMafias, hasJoker: true);
                     break;
                 default:
@@ -215,7 +217,10 @@ namespace TyniBot.Mafia
 
         private static void pickJoker(List<Player> players)
         {
-            var joker = players.Where(p => p.Type == PlayerType.Villager).First();
+            var team1 = players.Where(p => p.Team == Team.One && p.Type == PlayerType.Villager).ToList();
+            var team2 = players.Where(p => p.Team == Team.Two && p.Type == PlayerType.Villager).ToList();
+
+            Player joker = team1.Count > team2.Count ? team1.Where(p => p.Type == PlayerType.Villager).First() : team2.Where(p => p.Type == PlayerType.Villager).First();
             joker.Type = PlayerType.Joker;
         }
     }
