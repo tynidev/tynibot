@@ -2,10 +2,10 @@ using Discord;
 using LiteDB;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using TyniBot;
-using TyniBot.Models;
 
 namespace UnitTests
 {
@@ -29,10 +29,10 @@ namespace UnitTests
                 user2.Setup(u => u.Id).Returns(2);
                 mentions.Add(user2.Object);
 
-                var input = MafiaGame.CreateGame(mentions, 1).Game;
+                var input = TyniBot.Mafia.Game.CreateGame(mentions, 1);
                 input.Id = 1;
 
-                var gamesCollection = Database.GetCollection<MafiaGame>();
+                var gamesCollection = Database.GetCollection<TyniBot.Mafia.Game>();
                 gamesCollection.Delete(u => true);
                 gamesCollection.Insert(input);
                 gamesCollection.EnsureIndex(x => x.Id);
@@ -55,7 +55,9 @@ namespace UnitTests
         [TestMethod]
         public void TestCreateGameGeneratesValidGame()
         {
-            for (int j = 0; j < 16; j++)
+            Random r = new Random();
+                 
+            for (int j = 0; j < 100; j++)
             {
                 var mentions = new List<IUser>();
                 for (int i = 0; i < (j % 7) + 2; i++)
@@ -66,13 +68,50 @@ namespace UnitTests
                     mentions.Add(user.Object);
                 }
 
-                for (int i = 0; i < 100; i++)
+                for (int i = 0; i < 300; i++)
                 {
                     var numMafia = (i % (mentions.Count - 1)) + 1;
-                    var game = (MafiaGame.CreateGame(mentions, numMafia)).Game;
+                    int random = r.Next(3);
+                    string mode = "";
+                    if (random == 0)
+                        mode = "default";
+                    if (random == 1)
+                        mode = "battle";
+                    if (random == 2)
+                        mode = "joker";
+
+                    var game = (TyniBot.Mafia.Game.CreateGame(mentions, numMafia, mode));
 
                     Assert.AreEqual(numMafia, game.Mafia.Count()); // validate actual number of mafia was as requested
                     Assert.AreEqual(game.Team1.Count() + game.Team2.Count(), mentions.Count); // validate members of both teams equals total count of mentions
+
+                    if (mode == "joker")
+                    {
+                        Assert.IsNotNull(game.Joker);
+                        Assert.IsTrue(mentions.Contains(game.Joker.DiscordUser));
+                    }
+
+                    if(mode == "joker" || mode == "battle")
+                    {
+                        int team1Mafia = game.Mafia.Where(u => u.Team == TyniBot.Mafia.Team.One).Count();
+                        int team2Mafia = game.Mafia.Where(u => u.Team == TyniBot.Mafia.Team.Two).Count();
+
+                        if(numMafia > 1) // assert mafia aren't all on one team
+                        {
+                            Assert.AreNotEqual(0, team1Mafia);
+                            Assert.AreNotEqual(0, team2Mafia);
+
+                            if (numMafia % 2 == 0) // even
+                            {
+                                Assert.AreEqual(team1Mafia, team2Mafia); // assert evenly split
+                            }
+                            else // odd
+                            {
+                                int sub = team1Mafia > team2Mafia ? team1Mafia - team2Mafia : team2Mafia - team1Mafia;
+                                Assert.AreEqual(1, sub);
+                            }
+                        }
+                    }
 
                     var mafia = new Dictionary<string, string>();
                     var t1 = new Dictionary<string, string>();
@@ -99,6 +138,7 @@ namespace UnitTests
                     {
                         Assert.IsFalse(t2.ContainsKey(u.Username)); // validate every team1 member is not in team 2
                     }
+
                 }
             }
         }
@@ -115,18 +155,18 @@ namespace UnitTests
                 mentions.Add(user.Object);
             }
 
-            Assert.IsNotNull(MafiaGame.CreateGame(null, 1).ErrorMsg); // must have players
-            Assert.IsNotNull(MafiaGame.CreateGame(mentions, 0).ErrorMsg); // Can not have zero mafia
-            Assert.IsNotNull(MafiaGame.CreateGame(mentions, -1).ErrorMsg); // Can not have negative mafia
-            Assert.IsNotNull(MafiaGame.CreateGame(mentions, mentions.Count).ErrorMsg); // Can not have same mafia as players
-            Assert.IsNotNull(MafiaGame.CreateGame(mentions, mentions.Count + 1).ErrorMsg); // can not have more mafia than players
+            Assert.ThrowsException<Exception>(new Action(() => { TyniBot.Mafia.Game.CreateGame(null, 1); })); // must have players
+            Assert.ThrowsException<Exception>(new Action(() => { TyniBot.Mafia.Game.CreateGame(mentions, 0); })); // Can not have zero mafia
+            Assert.ThrowsException<Exception>(new Action(() => { TyniBot.Mafia.Game.CreateGame(mentions, -1); })); // Can not have negative mafia
+            Assert.ThrowsException<Exception>(new Action(() => { TyniBot.Mafia.Game.CreateGame(mentions, mentions.Count); })); // Can not have same mafia as players
+            Assert.ThrowsException<Exception>(new Action(() => { TyniBot.Mafia.Game.CreateGame(mentions, mentions.Count + 1); })); // can not have more mafia than players
 
             // Valid states
-            Assert.IsNull(MafiaGame.CreateGame(mentions, 1).ErrorMsg);
-            Assert.IsNull(MafiaGame.CreateGame(mentions, 2).ErrorMsg);
+            Assert.IsNotNull(TyniBot.Mafia.Game.CreateGame(mentions, 1));
+            Assert.IsNotNull(TyniBot.Mafia.Game.CreateGame(mentions, 2));
 
             mentions.Clear();
-            Assert.IsNotNull(MafiaGame.CreateGame(mentions, 1).ErrorMsg); // Can not have zero players
+            Assert.ThrowsException<Exception>(new Action(() => { TyniBot.Mafia.Game.CreateGame(mentions, 1); })); // Can not have zero players
         }
 
         [TestMethod]
@@ -144,7 +184,7 @@ namespace UnitTests
             user2.Setup(u => u.Id).Returns(2);
             mentions.Add(user2.Object);
 
-            var g = MafiaGame.CreateGame(mentions, 1).Game;
+            var g = TyniBot.Mafia.Game.CreateGame(mentions, 1);
 
             var mafia = g.Mafia[0];
             var villager = mafia.Id == user1.Object.Id ? user2.Object : user1.Object;
@@ -180,7 +220,7 @@ namespace UnitTests
             user2.Setup(u => u.Id).Returns(2);
             mentions.Add(user2.Object);
 
-            var g = MafiaGame.CreateGame(mentions, 1).Game;
+            var g = TyniBot.Mafia.Game.CreateGame(mentions, 1);
 
             var mafia = g.Mafia[0];
             var villager = mafia.Id == user1.Object.Id ? user2.Object : user1.Object;
@@ -215,7 +255,7 @@ namespace UnitTests
             user2.Setup(u => u.Id).Returns(2);
             mentions.Add(user2.Object);
 
-            var g = MafiaGame.CreateGame(mentions, 1).Game;
+            var g = TyniBot.Mafia.Game.CreateGame(mentions, 1);
 
             var mafia = g.Mafia[0];
             var villager = mafia.Id == user1.Object.Id ? user2.Object : user1.Object;
@@ -250,7 +290,7 @@ namespace UnitTests
             user2.Setup(u => u.Id).Returns(2);
             mentions.Add(user2.Object);
 
-            var g = MafiaGame.CreateGame(mentions, 1).Game;
+            var g = TyniBot.Mafia.Game.CreateGame(mentions, 1);
 
             var mafia = g.Mafia[0];
             var villager = mafia.Id == user1.Object.Id ? user2.Object : user1.Object;
@@ -285,7 +325,7 @@ namespace UnitTests
             user2.Setup(u => u.Id).Returns(2);
             mentions.Add(user2.Object);
 
-            var g = MafiaGame.CreateGame(mentions, 1).Game;
+            var g = TyniBot.Mafia.Game.CreateGame(mentions, 1);
 
             var mafia = g.Mafia[0];
             var villager = mafia.Id == user1.Object.Id ? user2.Object : user1.Object;
@@ -319,7 +359,7 @@ namespace UnitTests
             user2.Setup(u => u.Id).Returns(2);
             mentions.Add(user2.Object);
 
-            var g = MafiaGame.CreateGame(mentions, 1).Game;
+            var g = TyniBot.Mafia.Game.CreateGame(mentions, 1);
 
             var mafia = g.Mafia[0];
             var villager = mafia.Id == user1.Object.Id ? user2.Object : user1.Object;
@@ -355,14 +395,13 @@ namespace UnitTests
             var user4 = GenerateUser("a", 4);
             mentions.Add(user4.Object);
 
-            var g = MafiaGame.CreateGame(mentions, 1).Game;
+            var g = TyniBot.Mafia.Game.CreateGame(mentions, 1);
 
             var mafia = g.Mafia[0];
             bool isMafiaTeam1 = g.Team1.Where(u => u.Id == mafia.Id).Count() > 0;
 
-            var villagers = g.Players.Where(u => u.Key != mafia.Id);
-            foreach (var v in villagers)
-                g.Vote(v.Key, new List<ulong>() { mafia.Id });
+            foreach (var v in g.Villagers)
+                g.Vote(v.Id, new List<ulong>() { mafia.Id });
 
             g.Vote(mafia.Id, new List<ulong>() { mafia.Id });
 
@@ -399,19 +438,18 @@ namespace UnitTests
             var user7 = GenerateUser("n", 7);
             mentions.Add(user7.Object);
 
-            var g = MafiaGame.CreateGame(mentions, 2, "j").Game;
+            var g = TyniBot.Mafia.Game.CreateGame(mentions, 2, mode:"j");
 
             var mafias = g.Mafia;
             var t1Mafia = g.Team1.Where(x => g.Mafia.Contains(x)).First();
-            var joker = g.Joker[0];
+            var joker = g.Joker;
 
-            // One Mafia on each team and a Joker on the uneven team
+            // One Mafia on each team and a Joker is not null
             Assert.AreEqual(g.Team1.Where(x => g.Mafia.Contains(x)).Count(), 1);
             Assert.AreEqual(g.Team2.Where(x => g.Mafia.Contains(x)).Count(), 1);
-            Assert.AreEqual(g.Team2.Where(x => g.Mafia.Contains(x)).Count(), 1);
+            Assert.IsNotNull(g.Joker);
 
-            var villagers = g.getVillagers().ToList();
-
+            var villagers = g.Villagers;
             foreach (var v in villagers)
                 g.Vote(v.Id, new List<ulong>() { t1Mafia.Id, joker.Id });
 
