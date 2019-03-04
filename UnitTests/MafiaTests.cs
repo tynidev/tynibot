@@ -444,10 +444,10 @@ namespace UnitTests
             var t1Mafia = g.Team1.Where(x => g.Mafia.Contains(x)).First();
             var joker = g.Joker;
 
-            // One Mafia on each team and a Joker on the uneven team
+            // One Mafia on each team and a Joker is not null
             Assert.AreEqual(g.Team1.Where(x => g.Mafia.Contains(x)).Count(), 1);
             Assert.AreEqual(g.Team2.Where(x => g.Mafia.Contains(x)).Count(), 1);
-            Assert.AreEqual(g.Team2.Where(x => g.Mafia.Contains(x)).Count(), 1);
+            Assert.IsNotNull(g.Joker);
 
             var villagers = g.Villagers;
             foreach (var v in villagers)
