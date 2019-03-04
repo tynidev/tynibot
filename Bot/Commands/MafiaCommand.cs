@@ -59,7 +59,7 @@ namespace TyniBot
         }
 
         [Command("setup"), Summary("**!mafia setup <alt game> <num of mafias> <@player1> <@player2>** Creates an alternative game of Mafia!")]
-        public async Task NewGameCommand(int numMafias, string gameMode, [Remainder]string message = "")
+        public async Task NewGameCommand(string gameMode, int numMafias, [Remainder]string message = "")
         {
             var result = MafiaGame.CreateGame(Context.Message.MentionedUsers.Select(s => (IUser)s).ToList(), numMafias, gameMode);
             if (result == null)

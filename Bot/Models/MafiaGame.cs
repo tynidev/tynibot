@@ -47,8 +47,8 @@ namespace TyniBot.Models
                 return new CreateGameResult() { ErrorMsg = "You need more than 1 person to play! Mention some friends! You have friends don't you?" };
 
             // validate that number of mafia is less than number of players
-            if (numMafias >= mentions.Count)
-                return new CreateGameResult() { ErrorMsg = "Number of mafia can not exceed players moron!" };
+            if (numMafias + 1 >= mentions.Count)
+                return new CreateGameResult() { ErrorMsg = "Number of mafia can not be equal or exceed players moron!" };
 
             MafiaGame game;
 

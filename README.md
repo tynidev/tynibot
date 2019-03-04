@@ -25,13 +25,15 @@ one of the teams: the Joker. The Joker's main goal would be to try to tie the ga
 2 points for overtime, 3 points max for being guessed as mafia (one point per guess).
 
 ## To Use
-It's recommended to use the help command first for more information once you get your mafia bot running.
+It's recommended to use the help command first for more information once you get your mafia bot running. For <alt game>, make sure you
+use b for battle mafia (even number of mafia on each team up until the request number of mafia) or j for joker mafia (battle mafia but
+accounting for an odd number of players so the joker's in the game as well)
 
 `!mafia new <num of mafias> <@player1> <@player2>`
 
-`!mafia vote <@mafia1> <@mafia2>`
+`!mafia setup <alt game> <num of mafias> <@player1> <@player2>`
 
-`!mafia get`
+`!mafia vote <@mafia1> <@mafia2>`
 
 `!mafia help`
 
