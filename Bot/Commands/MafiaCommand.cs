@@ -15,7 +15,7 @@ namespace TyniBot
         [Command("new"), Summary("**!mafia new <num of mafias> <alt game?|battle|joker|default> <@player1> <@player2>** Creates an alternative game of Mafia!")]
         public async Task NewGameCommand(int numMafias, string gameMode = "default", [Remainder]string message = "")
         {
-            await CreateGame(numMafias);
+            await CreateGame(numMafias, gameMode);
         }
 
         [Command("vote"), Summary("**!mafia vote <@mafia1> <@mafia2>** | Records who you voted as the Mafia.")]
