@@ -66,23 +66,7 @@ namespace TyniBot.Models
                 default:
                     game = createNormalMafiaGame(mentions, numMafias);
                     break;
-                
-                Team1 = shuffled.Take(team1Size).Select(u => new MafiaPlayer() { Id = u.Id, IsMafia = false, OnTeam1 = true, OnTeam2 = false, DiscordUser = u}).ToList(),
-                Team2 = shuffled.Skip(team1Size).Select(u => new MafiaPlayer() { Id = u.Id, IsMafia = false, OnTeam1 = false, OnTeam2 = true, DiscordUser = u }).ToList(),
-                Mafia = new List<MafiaPlayer>(),
             };
-
-            Random rnd = new Random();
-            while(numMafias > 0)
-            {
-                var nonMafia = game.Players.Values.Where(u => !u.IsMafia).ToList();
-                var player = nonMafia[rnd.Next(nonMafia.Count)];
-
-                player.IsMafia = true;
-                game.Mafia.Add(player);
-
-                numMafias--;
-            }
 
             return new CreateGameResult() { Game = game };
         }
