@@ -13,9 +13,21 @@ namespace TyniBot
     {
         #region Commands
         [Command("new"), Summary("**!mafia new <?gameMode=default(battle|joker|default)> <?numOfMafias=1> <@player1> <@player2>** Creates a game of Mafia!")]
-        public async Task NewGameCommand(string gameMode = "default", int numMafias = 1, [Remainder]string message = "")
+        public async Task NewGameCommand(int numMafias, [Remainder]string message = "")
+        {
+            await CreateGame(numMafias, "default");
+        }
+        
+        [Command("new")]
+        public async Task NewGameCommand2(string gameMode, int numMafias, [Remainder]string message = "")
         {
             await CreateGame(numMafias, gameMode);
+        }
+
+        [Command("new")]
+        public async Task NewGameCommand3([Remainder]string message = "")
+        {
+            await CreateGame(1, "default");
         }
 
         [Command("vote"), Summary("**!mafia vote <@mafia1> <@mafia2>** | Records who you voted as the Mafia.")]
@@ -40,7 +52,7 @@ namespace TyniBot
             await OutputVotes(game);
         }
 
-        [Command("score"), Summary("**!mafia score <team1 score> <team2 score> <?OverTime(yes|no)>** | Displays who is what and each player's points. ")]
+        [Command("score"), Summary("**!mafia score <team1 score> <team2 score> <?OverTime=no(yes|no)>** | Displays who is what and each player's points. ")]
         public async Task ScoreGameCommand(int team1Score, int team2Score, [Remainder]string overtime = "no")
         {
             Mafia.Game game = null;
@@ -77,7 +89,7 @@ namespace TyniBot
         public async Task HelpCommand()
         {
             var commands = typeof(MafiaCommand).GetMethods()
-                      .Where(m => m.GetCustomAttributes(typeof(CommandAttribute), false).Length > 0)
+                      .Where(m => m.GetCustomAttributes(typeof(SummaryAttribute), false).Length > 0)
                       .ToArray();
 
             EmbedBuilder embedBuilder = new EmbedBuilder();
