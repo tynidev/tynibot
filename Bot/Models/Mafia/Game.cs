@@ -6,10 +6,11 @@ using System.Linq;
 
 namespace TyniBot.Mafia
 {
-    public class CreateGameResult
+    public enum GameMode
     {
-        public Game Game = null;
-        public string ErrorMsg = null;
+        Normal,
+        Joker,
+        Battle
     }
 
     public class Game
@@ -18,6 +19,7 @@ namespace TyniBot.Mafia
         public ulong Id { get; set; }
         public Dictionary<ulong, Player> Players { get; private set; }
         public Dictionary<ulong, ulong[]> Votes { get; set; }
+        public GameMode Mode { get; private set; }
 
         [BsonIgnore]
         public List<Player> Team1 => Players.Where(p => p.Value.Team == Team.One).Select(p => p.Value).ToList();
@@ -30,8 +32,14 @@ namespace TyniBot.Mafia
         [BsonIgnore]
         public Player Joker => Players.Where(p => p.Value.Type == PlayerType.Joker).Select(p => p.Value).FirstOrDefault();
 
-        public static Game CreateGame(List<IUser> mentions, int numMafias, string mode = "")
+        public static Game CreateGame(List<IUser> mentions, int numMafias, GameMode mode = GameMode.Normal)
         {
+            if (mentions == null)
+                throw new ArgumentNullException(nameof(mentions));
+
+            if (mentions.Where(u => u.IsBot || u.IsWebhook).Count() > 0)
+                throw new Exception("Players mentioned must not be Bots or Webhooks you hacker!");
+
             // Validate that we have more than zero mafia
             if (numMafias <= 0)
                 throw new Exception("Number must be positive dipstick!");
@@ -40,31 +48,24 @@ namespace TyniBot.Mafia
             if (mentions == null || mentions.Count <= 1)
                 throw new Exception("You need more than 1 person to play! Mention some friends! You have friends don't you?");
 
-            // validate that number of mafia is less than number of players
+            // Validate that the number of joker + mafia is not greater than number of players
+            if(mode == GameMode.Joker && numMafias + 1 > mentions.Count)
+                throw new Exception("Number of mafia plus joker can't exceed number of players einstein!");
+
+            // Validate that number of mafia is less than number of players
             if (numMafias >= mentions.Count)
                 throw new Exception("Number of mafia can not be equal or exceed players moron!");
 
-            Game game = null;
-
-            switch (mode.ToLower())
+            switch (mode)
             {
-                case "b":
-                case "battle":
-                    game = createBattleMafiaGame(mentions, numMafias, hasJoker: false);
-                    break;
-                // for now, joker is an extension of the battle format
-                case "j":
-                case "joker":
-                    if (numMafias + 1 > mentions.Count) // validate we have enough players
-                        throw new Exception("When playing Joker you must have at least Joker + Mafia.Count players total.");
-                    game = createBattleMafiaGame(mentions, numMafias, hasJoker: true);
-                    break;
+                case GameMode.Normal:
                 default:
-                    game = createNormalMafiaGame(mentions, numMafias);
-                    break;
+                    return createNormalMafiaGame(mentions, numMafias);
+                case GameMode.Battle:
+                    return createBattleMafiaGame(mentions, numMafias, hasJoker: false);
+                case GameMode.Joker:            
+                    return createBattleMafiaGame(mentions, numMafias, hasJoker: true);
             };
-
-            return game;
         }
 
         public void Vote(ulong userId, IEnumerable<ulong> mafias)
@@ -136,9 +137,19 @@ namespace TyniBot.Mafia
 
             pickMafia(players, numMafias, divideEvenly: false);
 
+            Dictionary<ulong, Player> gamePlayers = null;
+            try
+            {
+                gamePlayers = players.ToDictionary(u => u.Id);
+            }
+            catch (ArgumentException e)
+            {
+                throw new Exception("Each player must be unique dufus!", e);
+            }
             return new Game()
             {
-                Players = players.ToDictionary(u => u.Id)
+                Mode = GameMode.Normal,
+                Players = gamePlayers
             };
         }
 
@@ -151,9 +162,20 @@ namespace TyniBot.Mafia
             if (hasJoker)
                 pickJoker(players);
 
+            Dictionary<ulong, Player> gamePlayers = null;
+            try
+            {
+                gamePlayers = players.ToDictionary(u => u.Id);
+            }
+            catch(ArgumentException e)
+            {
+                throw new Exception("Each player must be unique dufus!", e);
+            }
+
             return new Game()
             {
-                Players = players.ToDictionary(u => u.Id)
+                Mode = hasJoker ? GameMode.Joker : GameMode.Battle,
+                Players =  gamePlayers
             };
         }
 

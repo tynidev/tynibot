@@ -13,21 +13,21 @@ namespace TyniBot
     {
         #region Commands
         [Command("new"), Summary("**!mafia new <?gameMode=default(battle|joker|default)> <?numOfMafias=1> <@player1> <@player2>** Creates a game of Mafia!")]
-        public async Task NewGameCommand(int numMafias, [Remainder]string message = "")
-        {
-            await CreateGame(numMafias, "default");
-        }
-        
-        [Command("new")]
-        public async Task NewGameCommand2(string gameMode, int numMafias, [Remainder]string message = "")
+        public async Task NewGameCommand(int numMafias, string gameMode, [Remainder]string message = "") // matches | new 2 @Mentions | new 2 j @Mentions
         {
             await CreateGame(numMafias, gameMode);
         }
 
         [Command("new")]
-        public async Task NewGameCommand3([Remainder]string message = "")
+        public async Task NewGameCommand(string gameMode, int numMafias, [Remainder]string message = "") // matches | new j 2 @Mentions
         {
-            await CreateGame(1, "default");
+            await CreateGame(numMafias, gameMode);
+        }
+
+        [Command("new")]
+        public async Task NewGameCommand(string gameMode, [Remainder]string message = "") // matches | new @Mentions | new j @Mentions
+        {
+            await CreateGame(1, gameMode);
         }
 
         [Command("vote"), Summary("**!mafia vote <@mafia1> <@mafia2>** | Records who you voted as the Mafia.")]
@@ -111,10 +111,23 @@ namespace TyniBot
         #region Helpers
         private async Task CreateGame(int numMafias, string gameMode = "default")
         {
+            Mafia.GameMode mode = Mafia.GameMode.Normal;
+            switch(gameMode.ToLower())
+            {
+                case "b":
+                case "battle":
+                    mode = Mafia.GameMode.Battle;
+                    break;
+                case "j":
+                case "joker":
+                    mode = Mafia.GameMode.Joker;
+                    break;
+            }
+
             Mafia.Game game;
             try
             {
-                game = Mafia.Game.CreateGame(Context.Message.MentionedUsers.Select(s => (IUser)s).ToList(), numMafias, gameMode);
+                game = Mafia.Game.CreateGame(Context.Message.MentionedUsers.Select(s => (IUser)s).ToList(), numMafias, mode);
 
                 // Set game id to ChannelId
                 game.Id = Context.Channel.Id;
@@ -194,7 +207,7 @@ namespace TyniBot
             embedBuilder.AddField("Team 1:", string.Join(' ', game.Team1.Select(u => u.Mention)));
             embedBuilder.AddField("Team 2:", string.Join(' ', game.Team2.Select(u => u.Mention)));
 
-            await ReplyAsync($"**Mafia Game: **", false, embedBuilder.Build());
+            await ReplyAsync($"**New Mafia Game - Mode({game.Mode}), NumMafia({game.Mafia.Count})**", false, embedBuilder.Build());
         }
 
         private async Task OutputVotes(Mafia.Game game)

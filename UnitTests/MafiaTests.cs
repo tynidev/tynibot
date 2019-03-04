@@ -29,7 +29,7 @@ namespace UnitTests
                 user2.Setup(u => u.Id).Returns(2);
                 mentions.Add(user2.Object);
 
-                var input = TyniBot.Mafia.Game.CreateGame(mentions, 1);
+                var input = TyniBot.Mafia.Game.CreateGame(mentions, 1, TyniBot.Mafia.GameMode.Joker);
                 input.Id = 1;
 
                 var gamesCollection = Database.GetCollection<TyniBot.Mafia.Game>();
@@ -45,10 +45,12 @@ namespace UnitTests
                         return user2.Object;
                 }, gamesCollection);
 
+                Assert.AreEqual(output.Mode, input.Mode);
                 Assert.AreEqual(input.Players.Count, output.Players.Count);
                 Assert.AreEqual(output.Mafia.Where(u => input.Mafia.Where(o => o.Id != u.Id).Count() > 0).Count(), 0);
                 Assert.AreEqual(output.Team1.Where(u => input.Team1.Where(o => o.Id != u.Id).Count() > 0).Count(), 0);
                 Assert.AreEqual(output.Team2.Where(u => input.Team2.Where(o => o.Id != u.Id).Count() > 0).Count(), 0);
+                Assert.AreEqual(output.Joker.Id, input.Joker.Id);
             }
         }
 
@@ -69,18 +71,18 @@ namespace UnitTests
                 {
                     var numMafia = (i % (mentions.Count - 1)) + 1;
                     int random = r.Next(3);
-                    string mode = "default";
+                    TyniBot.Mafia.GameMode mode = TyniBot.Mafia.GameMode.Normal;
                     if (random == 1)
-                        mode = "battle";
+                        mode = TyniBot.Mafia.GameMode.Battle;
                     if (random == 2 && mentions.Count > numMafia)
-                        mode = "joker";
+                        mode = TyniBot.Mafia.GameMode.Joker;
 
                     var game = (TyniBot.Mafia.Game.CreateGame(mentions, numMafia, mode));
 
                     Assert.AreEqual(numMafia, game.Mafia.Count()); // validate actual number of mafia was as requested
                     Assert.AreEqual(game.Team1.Count() + game.Team2.Count(), mentions.Count); // validate members of both teams equals total count of mentions
 
-                    if (mode == "joker")
+                    if (mode == TyniBot.Mafia.GameMode.Joker)
                     {
                         Assert.IsNotNull(game.Joker); // game must contain a joker
                         Assert.IsTrue(mentions.Contains(game.Joker.DiscordUser)); // joker must be in original mentions
@@ -92,7 +94,7 @@ namespace UnitTests
                         Assert.AreEqual(game.Villagers.Count, mentions.Count - numMafia); // assert number of villagers equals mentions - numMafia
                     }
 
-                    if(mode == "joker" || mode == "battle")
+                    if(mode == TyniBot.Mafia.GameMode.Joker || mode == TyniBot.Mafia.GameMode.Battle)
                     {
                         int team1Mafia = game.Mafia.Where(u => u.Team == TyniBot.Mafia.Team.One).Count();
                         int team2Mafia = game.Mafia.Where(u => u.Team == TyniBot.Mafia.Team.Two).Count();
@@ -152,17 +154,14 @@ namespace UnitTests
             var mentions = new List<IUser>();
             for (int i = 0; i < 3; i++)
             {
-                var user = new Mock<IUser>();
-                user.Setup(u => u.Id).Returns((ulong)i);
-                user.Setup(u => u.Username).Returns(i.ToString());
-                mentions.Add(user.Object);
+                mentions.Add(GenerateUser(i.ToString(), (ulong)i).Object);
             }
 
-            Assert.ThrowsException<Exception>(new Action(() => { TyniBot.Mafia.Game.CreateGame(null, 1); })); // must have players
-            Assert.ThrowsException<Exception>(new Action(() => { TyniBot.Mafia.Game.CreateGame(mentions, 0); })); // Can not have zero mafia
-            Assert.ThrowsException<Exception>(new Action(() => { TyniBot.Mafia.Game.CreateGame(mentions, -1); })); // Can not have negative mafia
-            Assert.ThrowsException<Exception>(new Action(() => { TyniBot.Mafia.Game.CreateGame(mentions, mentions.Count); })); // Can not have same mafia as players
-            Assert.ThrowsException<Exception>(new Action(() => { TyniBot.Mafia.Game.CreateGame(mentions, mentions.Count + 1); })); // can not have more mafia than players
+            Assert.ThrowsException<ArgumentNullException>(new Action(() => TyniBot.Mafia.Game.CreateGame(null, 1))); // must have players
+            Assert.ThrowsException<Exception>(new Action(() => TyniBot.Mafia.Game.CreateGame(mentions, 0))); // Can not have zero mafia
+            Assert.ThrowsException<Exception>(new Action(() => TyniBot.Mafia.Game.CreateGame(mentions, -1))); // Can not have negative mafia
+            Assert.ThrowsException<Exception>(new Action(() => TyniBot.Mafia.Game.CreateGame(mentions, mentions.Count))); // Can not have same mafia as players
+            Assert.ThrowsException<Exception>(new Action(() => TyniBot.Mafia.Game.CreateGame(mentions, mentions.Count + 1))); // can not have more mafia than players
 
             // Valid states
             Assert.IsNotNull(TyniBot.Mafia.Game.CreateGame(mentions, 1));
@@ -170,6 +169,30 @@ namespace UnitTests
 
             mentions.Clear();
             Assert.ThrowsException<Exception>(new Action(() => { TyniBot.Mafia.Game.CreateGame(mentions, 1); })); // Can not have zero players
+
+            mentions.Add(GenerateUser("1", 1, isBot: true).Object);
+            mentions.Add(GenerateUser("2", 2).Object);
+            Assert.ThrowsException<Exception>(new Action(() => TyniBot.Mafia.Game.CreateGame(mentions, 1)));
+
+            mentions.Clear();
+            mentions.Add(GenerateUser("1", 1, isWebHook: true).Object);
+            mentions.Add(GenerateUser("2", 2).Object);
+            Assert.ThrowsException<Exception>(new Action(() => TyniBot.Mafia.Game.CreateGame(mentions, 1)));
+
+            mentions.Clear();
+            mentions.Add(GenerateUser("1", 1).Object);
+            mentions.Add(GenerateUser("1", 1).Object);
+            Assert.ThrowsException<Exception>(new Action(() => TyniBot.Mafia.Game.CreateGame(mentions, 1)));
+
+            mentions.Clear();
+            mentions.Add(GenerateUser("1", 1).Object);
+            mentions.Add(GenerateUser("2", 2).Object);
+            Assert.ThrowsException<Exception>(new Action(() => TyniBot.Mafia.Game.CreateGame(mentions, 2, TyniBot.Mafia.GameMode.Joker)));
+
+            mentions.Clear();
+            mentions.Add(GenerateUser("1", 1).Object);
+            mentions.Add(GenerateUser("2", 2).Object);
+            Assert.ThrowsException<Exception>(new Action(() => TyniBot.Mafia.Game.CreateGame(mentions, 2, TyniBot.Mafia.GameMode.Battle)));
         }
 
         [TestMethod]
@@ -441,7 +464,7 @@ namespace UnitTests
             var user7 = GenerateUser("n", 7);
             mentions.Add(user7.Object);
 
-            var g = TyniBot.Mafia.Game.CreateGame(mentions, 2, mode:"j");
+            var g = TyniBot.Mafia.Game.CreateGame(mentions, 2, mode:TyniBot.Mafia.GameMode.Joker);
 
             var mafias = g.Mafia;
             var t1Mafia = g.Team1.Where(x => g.Mafia.Contains(x)).First();
@@ -476,9 +499,11 @@ namespace UnitTests
             Assert.AreEqual(score[joker.Id], 5); // OT + all guesses
         }
 
-        private Mock<IUser> GenerateUser(string username, ulong id)
+        private Mock<IUser> GenerateUser(string username, ulong id, bool isBot = false, bool isWebHook = false)
         {
             var user = new Mock<IUser>();
+            user.Setup(u => u.IsBot).Returns(isBot);
+            user.Setup(u => u.IsWebhook).Returns(isWebHook);
             user.Setup(u => u.Username).Returns(username);
             user.Setup(u => u.Id).Returns(id);
             return user;
