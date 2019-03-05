@@ -8,11 +8,10 @@ using TyniBot;
 
 namespace Discord.Mafia
 {
-    [Group("mafia")]
     public class MafiaCommand : ModuleBase<TyniBot.CommandContext>
     {
         #region Commands
-        [Command("new"), Summary("**!mafia new <?gameMode=default(battle|joker|default)> <?numOfMafias=1> <@player1> <@player2>** Creates a game of Mafia!")]
+        [Command("mafia"), Summary("**!mafia <?gameMode=default(battle|joker|default)> <?numOfMafias=1> <@player1> <@player2>** Creates a game of Mafia!")]
         public async Task NewGameCommand(int numMafias, string gameMode, [Remainder]string message = "") // matches | new 2 @Mentions | new 2 j @Mentions
         {
             await CreateGame(numMafias, gameMode);
@@ -20,74 +19,25 @@ namespace Discord.Mafia
             var col = Context.Database.GetCollection<IReactionHandler>();
         }
 
-        [Command("new")]
+        [Command("mafia")]
         public async Task NewGameCommand(string gameMode, int numMafias, [Remainder]string message = "") // matches | new j 2 @Mentions
         {
             await CreateGame(numMafias, gameMode);
         }
 
-        [Command("new")]
+        [Command("mafia")]
         public async Task NewGameCommand(string gameMode, [Remainder]string message = "") // matches | new @Mentions | new j @Mentions
         {
+            if (gameMode.ToLower() == "help")
+            {
+                await HelpCommand();
+                return;
+            }
+            
             await CreateGame(1, gameMode);
         }
 
-        [Command("vote"), Summary("**!mafia vote <@mafia1> <@mafia2>** | Records who you voted as the Mafia.")]
-        public async Task VoteGameCommand([Remainder]string message = "")
-        {
-            Game game = null;
-            try
-            {
-                game = GetGame(Context.Channel.Id, Context.Guild.GetUser, Context.Database.GetCollection<Game>());
-            }
-            catch (Exception)
-            {
-                await Context.Channel.SendMessageAsync($"Could not find a Mafia game in this channel.");
-                return;
-            }
-
-            game.Vote(Context.User.Id, Context.Message.MentionedUsers.Where(u => !(u.IsBot || u.IsWebhook)).Select(s => s.Id).ToList());
-
-            var collection = Context.Database.GetCollection<Game>();
-            collection.Update(game);
-
-            await OutputVotes(game);
-        }
-
-        [Command("score"), Summary("**!mafia score <team1 score> <team2 score> <?OverTime=no(yes|no)>** | Displays who is what and each player's points. ")]
-        public async Task ScoreGameCommand(int team1Score, int team2Score, [Remainder]string overtime = "no")
-        {
-            Game game = null;
-            try
-            {
-                game = GetGame(Context.Channel.Id, Context.Guild.GetUser, Context.Database.GetCollection<Game>());
-            }
-            catch (Exception)
-            {
-                await Context.Channel.SendMessageAsync($"Could not find a Mafia game in this channel.");
-                return;
-            }
-
-            var scores = game.Score(team1Score, team2Score, overtime);
-
-            await OutputGameEnd(game, scores);
-        }
-
-        [Command("get"), Summary("**!mafia get** | Displays the game start summary message.")]
-        public async Task GetGameCommand()
-        {
-            try
-            {
-                var game = GetGame(Context.Channel.Id, Context.Guild.GetUser, Context.Database.GetCollection<Game>());
-                await OutputGameStart(game);
-            }
-            catch (Exception)
-            {
-                await Context.Channel.SendMessageAsync($"Could not find a Mafia game in this channel.");
-            }
-        }
-
-        [Command("help"), Summary("**!mafia help** | Displays this help text.")]
+        [Command("mafia"), Summary("**!mafia help** | Displays this help text.")]
         public async Task HelpCommand()
         {
             var commands = typeof(MafiaCommand).GetMethods()
