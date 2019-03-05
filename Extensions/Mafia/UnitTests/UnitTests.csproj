@@ -4,6 +4,10 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
 
     <IsPackable>false</IsPackable>
+
+    <AssemblyName>Mafia.UnitTests</AssemblyName>
+
+    <RootNamespace>Mafia.UnitTests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,7 +18,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Bot\TyniBot.csproj" />
+    <ProjectReference Include="..\..\..\Common\Common.csproj" />
+    <ProjectReference Include="..\Source\Mafia.csproj" />
   </ItemGroup>
 
 </Project>

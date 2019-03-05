@@ -3,19 +3,21 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
-using Discord;
 using LiteDB;
+using TyniBot;
 
-namespace TyniBot
+namespace Discord.Mafia
 {
     [Group("mafia")]
-    public class MafiaCommand : ModuleBase<TyniCommandContext>
+    public class MafiaCommand : ModuleBase<TyniBot.CommandContext>
     {
         #region Commands
         [Command("new"), Summary("**!mafia new <?gameMode=default(battle|joker|default)> <?numOfMafias=1> <@player1> <@player2>** Creates a game of Mafia!")]
         public async Task NewGameCommand(int numMafias, string gameMode, [Remainder]string message = "") // matches | new 2 @Mentions | new 2 j @Mentions
         {
             await CreateGame(numMafias, gameMode);
+
+            var col = Context.Database.GetCollection<IReactionHandler>();
         }
 
         [Command("new")]
@@ -33,10 +35,10 @@ namespace TyniBot
         [Command("vote"), Summary("**!mafia vote <@mafia1> <@mafia2>** | Records who you voted as the Mafia.")]
         public async Task VoteGameCommand([Remainder]string message = "")
         {
-            Mafia.Game game = null;
+            Game game = null;
             try
             {
-                game = GetGame(Context.Channel.Id, Context.Guild.GetUser, Context.Database.GetCollection<Mafia.Game>());
+                game = GetGame(Context.Channel.Id, Context.Guild.GetUser, Context.Database.GetCollection<Game>());
             }
             catch (Exception)
             {
@@ -46,7 +48,7 @@ namespace TyniBot
 
             game.Vote(Context.User.Id, Context.Message.MentionedUsers.Where(u => !(u.IsBot || u.IsWebhook)).Select(s => s.Id).ToList());
 
-            var collection = Context.Database.GetCollection<Mafia.Game>();
+            var collection = Context.Database.GetCollection<Game>();
             collection.Update(game);
 
             await OutputVotes(game);
@@ -55,10 +57,10 @@ namespace TyniBot
         [Command("score"), Summary("**!mafia score <team1 score> <team2 score> <?OverTime=no(yes|no)>** | Displays who is what and each player's points. ")]
         public async Task ScoreGameCommand(int team1Score, int team2Score, [Remainder]string overtime = "no")
         {
-            Mafia.Game game = null;
+            Game game = null;
             try
             {
-                game = GetGame(Context.Channel.Id, Context.Guild.GetUser, Context.Database.GetCollection<Mafia.Game>());
+                game = GetGame(Context.Channel.Id, Context.Guild.GetUser, Context.Database.GetCollection<Game>());
             }
             catch (Exception)
             {
@@ -76,7 +78,7 @@ namespace TyniBot
         {
             try
             {
-                var game = GetGame(Context.Channel.Id, Context.Guild.GetUser, Context.Database.GetCollection<Mafia.Game>());
+                var game = GetGame(Context.Channel.Id, Context.Guild.GetUser, Context.Database.GetCollection<Game>());
                 await OutputGameStart(game);
             }
             catch (Exception)
@@ -111,20 +113,20 @@ namespace TyniBot
         #region Helpers
         private async Task CreateGame(int numMafias, string gameMode = "default")
         {
-            Mafia.GameMode mode = Mafia.GameMode.Normal;
+            Mafia.GameMode mode = GameMode.Normal;
             switch(gameMode.ToLower())
             {
                 case "b":
                 case "battle":
-                    mode = Mafia.GameMode.Battle;
+                    mode = GameMode.Battle;
                     break;
                 case "j":
                 case "joker":
-                    mode = Mafia.GameMode.Joker;
+                    mode = GameMode.Joker;
                     break;
             }
 
-            Mafia.Game game;
+            Game game;
             try
             {
                 game = Mafia.Game.CreateGame(Context.Message.MentionedUsers.Select(s => (IUser)s).ToList(), numMafias, mode);
@@ -138,7 +140,7 @@ namespace TyniBot
                 return;
             }
 
-            var collection = Context.Database.GetCollection<Mafia.Game>();
+            var collection = Context.Database.GetCollection<Game>();
 
             // Delete current game if exists
             try
@@ -168,7 +170,7 @@ namespace TyniBot
             await OutputGameStart(game);
         }
 
-        private async Task OutputGameEnd(Mafia.Game game, Dictionary<ulong, int> scores)
+        private async Task OutputGameEnd(Game game, Dictionary<ulong, int> scores)
         {
             EmbedBuilder embedBuilder = new EmbedBuilder();
 
@@ -188,7 +190,7 @@ namespace TyniBot
             await ReplyAsync($"**Mafia Game: **", false, embedBuilder.Build());
         }
 
-        private async Task OutputGameStart(Mafia.Game game)
+        private async Task OutputGameStart(Game game)
         {
             EmbedBuilder embedBuilder = new EmbedBuilder();
 
@@ -196,9 +198,14 @@ namespace TyniBot
             embedBuilder.AddField("Team 2:", string.Join(' ', game.Team2.Select(u => u.Mention)));
 
             await ReplyAsync($"**New Mafia Game - Mode({game.Mode}), NumMafia({game.Mafia.Count})**", false, embedBuilder.Build());
+
+            // Todo: Output Voting reaction message
+            //col.Insert(new MafiaReactionHandler() { MsgId = Context.Message.Id }); // register message for our reaction handler
+
+            // Todo: Output Scoring reaction message
         }
 
-        private async Task OutputVotes(Mafia.Game game)
+        private async Task OutputVotes(Game game)
         {
             EmbedBuilder embedBuilder = new EmbedBuilder();
 
@@ -207,7 +214,7 @@ namespace TyniBot
             await ReplyAsync($"**Mafia Game: **", false, embedBuilder.Build());
         }
 
-        private void AddVoteFieldToBuilder(Mafia.Game game, EmbedBuilder embedBuilder)
+        private void AddVoteFieldToBuilder(Game game, EmbedBuilder embedBuilder)
         {
             if (game.Votes.Count > 0)
             {
@@ -231,7 +238,7 @@ namespace TyniBot
             }
         }
 
-        public static Mafia.Game GetGame(ulong id, Func<ulong, IUser> GetUser, LiteCollection<Mafia.Game> collection)
+        public static Game GetGame(ulong id, Func<ulong, IUser> GetUser, LiteCollection<Game> collection)
         {
             var game = collection.FindOne(g => g.Id == id);
             if (game == null)

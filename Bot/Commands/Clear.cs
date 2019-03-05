@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace TyniBot
 {
-    public class Clear : ModuleBase<TyniCommandContext>
+    public class Clear : ModuleBase<CommandContext>
     {
         [Command("clear"), Summary("!clear | Clears the entire channel if you hvae owner permissions.")]
         public async Task clear()

@@ -3,7 +3,7 @@ using LiteDB;
 using System;
 using System.Threading.Tasks;
 
-namespace TyniBot.Mafia
+namespace Discord.Mafia
 {
     public enum PlayerType
     {

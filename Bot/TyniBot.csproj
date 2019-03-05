@@ -17,4 +17,10 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Common\Common.csproj" />
+    <ProjectReference Include="..\Extensions\Mafia\Source\Mafia.csproj" />
+    <ProjectReference Include="..\Extensions\Recruiting\Recruiting.csproj" />
+  </ItemGroup>
+
 </Project>

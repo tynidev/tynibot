@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace TyniBot
+namespace Discord.Mafia
 {
     public static class EnumerableExtensions
     {

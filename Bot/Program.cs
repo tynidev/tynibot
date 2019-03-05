@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
 using LiteDB;
+using Discord.Recruiting;
+using Discord.Mafia;
 
 namespace TyniBot
 {
@@ -18,6 +20,7 @@ namespace TyniBot
         private ServiceProvider Services;
         private BotSettings Settings = null;
         private LiteDatabase Database;
+        private BotContext Context = null;
 
         private DefaultHandler DefaultHandler = null;
         private Dictionary<string, IChannelHandler> ChannelHandlers = new Dictionary<string, IChannelHandler>();
@@ -49,11 +52,23 @@ namespace TyniBot
 
             using (Database = new LiteDatabase(@"tynibotdata.db")) // DB for long term state
             {
+                Context = new BotContext(Client, Database, Settings); 
+
                 DefaultHandler = new DefaultHandler(Client, Services);
+
+                // TODO: Dynamically load these from DLLs
+                DefaultHandler.Commands.AddModuleAsync(typeof(Ping), Services).Wait();
+                DefaultHandler.Commands.AddModuleAsync(typeof(Clear), Services).Wait();
+                DefaultHandler.Commands.AddModuleAsync(typeof(MafiaCommand), Services).Wait();
+
+                // TODO: Dynamically load these from DLLs
                 ChannelHandlers.Add("recruiting", new Recruiting(Client, Services));
 
                 Client.Log += Log;
                 Client.MessageReceived += MessageReceived;
+                Client.ReactionAdded += ReactionAddedAsync;
+                Client.ReactionRemoved += ReactionRemovedAsync;
+                Client.ReactionsCleared += ReactionsClearedAsync;
 
                 await Client.LoginAsync(TokenType.Bot, Settings.BotToken);
                 await Client.StartAsync();
@@ -71,19 +86,45 @@ namespace TyniBot
 
             if (message.Author.IsBot) return; // We don't allow bots to talk to each other lest they take over the world!
 
-            var context = new TyniCommandContext(Client, Database, Settings, message);
+            IChannelHandler handler = ChannelHandlers.ContainsKey(msg.Channel.Name) ? ChannelHandlers[msg.Channel.Name] : DefaultHandler;
+
+            var context = new CommandContext(Context, message);
             if (context == null || string.IsNullOrWhiteSpace(context.Message.Content)) return; // Context must be valid and message must not be empty
 
-            // Do we have a custom channel listener?
-            if (ChannelHandlers.ContainsKey(msg.Channel.Name))
-            {
-                await ChannelHandlers[msg.Channel.Name].MessageReceived(context);
-            }
-            // else Use the DefaultHandler
-            else
-            {
-                await DefaultHandler.MessageReceived(context);
-            }
+            await handler.MessageReceived(context);
+        }
+
+        private async Task ReactionsClearedAsync(Cacheable<IUserMessage, ulong> cachedMsg, ISocketMessageChannel channel)
+        {
+            var msg = await cachedMsg.DownloadAsync() as SocketUserMessage;
+            if (msg == null) return;
+
+            IChannelHandler handler = ChannelHandlers.ContainsKey(msg.Channel.Name) ? ChannelHandlers[msg.Channel.Name] : DefaultHandler;
+            var context = new ReactionContext(Context, msg);
+
+            await handler.ReactionsCleared(context);
+        }
+
+        private async Task ReactionRemovedAsync(Cacheable<IUserMessage, ulong> cachedMsg, ISocketMessageChannel channel, SocketReaction removedReaction)
+        {
+            var msg = await cachedMsg.DownloadAsync() as SocketUserMessage;
+            if (msg == null) return;
+
+            IChannelHandler handler = ChannelHandlers.ContainsKey(msg.Channel.Name) ? ChannelHandlers[msg.Channel.Name] : DefaultHandler;
+            var context = new ReactionContext(Context, msg);
+
+            await handler.ReactionRemoved(context, removedReaction);
+        }
+
+        private async Task ReactionAddedAsync(Cacheable<IUserMessage, ulong> cachedMsg, ISocketMessageChannel channel, SocketReaction addedReaction)
+        {
+            var msg = await cachedMsg.DownloadAsync() as SocketUserMessage;
+            if (msg == null) return;
+
+            IChannelHandler handler = ChannelHandlers.ContainsKey(msg.Channel.Name) ? ChannelHandlers[msg.Channel.Name] : DefaultHandler;
+            var context = new ReactionContext(Context, msg);
+
+            await handler.ReactionAdded(context, addedReaction);
         }
 
         private Task Log(LogMessage msg)
