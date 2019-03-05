@@ -18,7 +18,7 @@ namespace TyniBot.Mafia
         [BsonId]
         public ulong Id { get; set; }
         public Dictionary<ulong, Player> Players { get; private set; }
-        public Dictionary<ulong, ulong[]> Votes { get; set; }
+        public Dictionary<ulong, ulong[]> Votes { get; set; } = new Dictionary<ulong, ulong[]>();
         public GameMode Mode { get; private set; }
 
         [BsonIgnore]
@@ -68,8 +68,11 @@ namespace TyniBot.Mafia
             };
         }
 
-        public void Vote(ulong userId, IEnumerable<ulong> mafias)
+        public void Vote(ulong userId, List<ulong> mafias)
         {
+            if (mafias.Count <= 0)
+                return;
+
             if (Votes == null)
                 Votes = new Dictionary<ulong, ulong[]>();
 

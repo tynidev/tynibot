@@ -44,7 +44,7 @@ namespace TyniBot
                 return;
             }
 
-            game.Vote(Context.User.Id, Context.Message.MentionedUsers.Select(s => s.Id));
+            game.Vote(Context.User.Id, Context.Message.MentionedUsers.Where(u => !(u.IsBot || u.IsWebhook)).Select(s => s.Id).ToList());
 
             var collection = Context.Database.GetCollection<Mafia.Game>();
             collection.Update(game);
@@ -181,19 +181,7 @@ namespace TyniBot
             if(game.Joker != null)
                 embedBuilder.AddField("Joker: ", game.Joker.Mention);
 
-            var votes = new Dictionary<ulong, int>();
-            foreach (var playerVotes in game.Votes)
-            {
-                foreach (var vote in playerVotes.Value)
-                {
-                    if (votes.ContainsKey(vote))
-                        votes[vote] += 1;
-                    else
-                        votes[vote] = 1;
-                }
-            }
-
-            embedBuilder.AddField("Mafia Votes: ", string.Join("\r\n", votes.Select(o => $"{game.Players[o.Key].Mention} = {o.Value}")));
+            AddVoteFieldToBuilder(game, embedBuilder);
 
             embedBuilder.AddField("Score: ", string.Join("\r\n", ordered.Select(o => $"{game.Players[o.Key].Mention} = {o.Value}")));
 
@@ -214,21 +202,33 @@ namespace TyniBot
         {
             EmbedBuilder embedBuilder = new EmbedBuilder();
 
-            var votes = new Dictionary<ulong, int>();
-            foreach(var playerVotes in game.Votes)
-            {
-                foreach(var vote in playerVotes.Value)
-                {
-                    if (votes.ContainsKey(vote))
-                        votes[vote] += 1;
-                    else
-                        votes[vote] = 1;
-                }
-            }
-
-            embedBuilder.AddField("Mafia Votes: ", string.Join("\r\n", votes.Select(o => $"{game.Players[o.Key].Mention} = {o.Value}")));
+            AddVoteFieldToBuilder(game, embedBuilder);
 
             await ReplyAsync($"**Mafia Game: **", false, embedBuilder.Build());
+        }
+
+        private void AddVoteFieldToBuilder(Mafia.Game game, EmbedBuilder embedBuilder)
+        {
+            if (game.Votes.Count > 0)
+            {
+                var votes = new Dictionary<ulong, int>();
+                foreach (var playerVotes in game.Votes)
+                {
+                    foreach (var vote in playerVotes.Value)
+                    {
+                        if (votes.ContainsKey(vote))
+                            votes[vote] += 1;
+                        else
+                            votes[vote] = 1;
+                    }
+                }
+
+                embedBuilder.AddField("Mafia Votes: ", string.Join("\r\n", votes.Select(o => $"{game.Players[o.Key].Mention} = {o.Value}")));
+            }
+            else
+            {
+                embedBuilder.AddField("Mafia Votes: ", "None");
+            }
         }
 
         public static Mafia.Game GetGame(ulong id, Func<ulong, IUser> GetUser, LiteCollection<Mafia.Game> collection)
