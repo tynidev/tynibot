@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27703.2026
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TyniBot", "TyniBot\Bot\TyniBot.csproj", "{1C849176-634A-43E8-B3A2-49DB2DD4C159}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TyniBot", "Bot\TyniBot.csproj", "{1C849176-634A-43E8-B3A2-49DB2DD4C159}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mafia", "TyniBot\Extensions\Mafia\Source\Mafia.csproj", "{2435B754-E4CC-4221-85B9-120FA0CAD18D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mafia", "Extensions\Mafia\Source\Mafia.csproj", "{2435B754-E4CC-4221-85B9-120FA0CAD18D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Mafia", "Mafia", "{5615B2E6-B382-4B40-BB56-2E569948C2B6}"
 EndProject
@@ -13,15 +13,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Bot", "Bot", "{6E1EB7E9-039
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{E53AE9E6-B490-45FB-AEC6-BECA5DB81206}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common", "TyniBot\Common\Common.csproj", "{B02C7C2B-A791-4427-9518-F795AB6E2CD7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common", "Common\Common.csproj", "{B02C7C2B-A791-4427-9518-F795AB6E2CD7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Extensions", "Extensions", "{A351B246-5276-4426-9749-2AA108E2D804}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Recruiting", "Recruiting", "{15A424B4-F0D0-4D76-AE32-6116F86F2519}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Recruiting", "TyniBot\Extensions\Recruiting\Recruiting.csproj", "{55C54551-BD08-47B8-BB15-20D72D003A3F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Recruiting", "Extensions\Recruiting\Recruiting.csproj", "{55C54551-BD08-47B8-BB15-20D72D003A3F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests", "TyniBot\Extensions\Mafia\UnitTests\UnitTests.csproj", "{6A6F7913-277D-425B-9335-A60C6B0BF082}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests", "Extensions\Mafia\UnitTests\UnitTests.csproj", "{6A6F7913-277D-425B-9335-A60C6B0BF082}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
