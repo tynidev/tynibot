@@ -26,6 +26,7 @@ namespace Discord.Mafia
         public PlayerType Type { get; set; }
         public Team Team { get; set; }
         public string Username => DiscordUser?.Username == null ? string.Empty : DiscordUser.Username;
+        public string Emjoi { get; set; }
         #endregion
 
         #region IUser Members

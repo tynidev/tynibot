@@ -96,7 +96,7 @@ namespace TyniBot
 
         private async Task ReactionsClearedAsync(Cacheable<IUserMessage, ulong> cachedMsg, ISocketMessageChannel channel)
         {
-            var msg = await cachedMsg.DownloadAsync() as SocketUserMessage;
+            var msg = await cachedMsg.DownloadAsync();
             if (msg == null) return;
 
             IChannelHandler handler = ChannelHandlers.ContainsKey(msg.Channel.Name) ? ChannelHandlers[msg.Channel.Name] : DefaultHandler;
@@ -107,7 +107,7 @@ namespace TyniBot
 
         private async Task ReactionRemovedAsync(Cacheable<IUserMessage, ulong> cachedMsg, ISocketMessageChannel channel, SocketReaction removedReaction)
         {
-            var msg = await cachedMsg.DownloadAsync() as SocketUserMessage;
+            var msg = await cachedMsg.DownloadAsync();
             if (msg == null) return;
 
             IChannelHandler handler = ChannelHandlers.ContainsKey(msg.Channel.Name) ? ChannelHandlers[msg.Channel.Name] : DefaultHandler;
@@ -118,7 +118,7 @@ namespace TyniBot
 
         private async Task ReactionAddedAsync(Cacheable<IUserMessage, ulong> cachedMsg, ISocketMessageChannel channel, SocketReaction addedReaction)
         {
-            var msg = await cachedMsg.DownloadAsync() as SocketUserMessage;
+            var msg = await cachedMsg.DownloadAsync();
             if (msg == null) return;
 
             IChannelHandler handler = ChannelHandlers.ContainsKey(msg.Channel.Name) ? ChannelHandlers[msg.Channel.Name] : DefaultHandler;

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using LiteDB;
 using TyniBot;
+using Discord.WebSocket;
 
 namespace Discord.Mafia
 {
@@ -15,8 +16,6 @@ namespace Discord.Mafia
         public async Task NewGameCommand(int numMafias, string gameMode, [Remainder]string message = "") // matches | new 2 @Mentions | new 2 j @Mentions
         {
             await CreateGame(numMafias, gameMode);
-
-            var col = Context.Database.GetCollection<IReactionHandler>();
         }
 
         [Command("mafia")]
@@ -90,20 +89,16 @@ namespace Discord.Mafia
                 return;
             }
 
-            var collection = Context.Database.GetCollection<Game>();
+            var games = Context.Database.GetCollection<Game>();
 
             // Delete current game if exists
             try
             {
-                var existingGame = GetGame(Context.Channel.Id, Context.Guild.GetUser, collection);
+                var existingGame = GetGame(Context.Channel.Id, Context.Guild.GetUser, games);
                 if (existingGame != null)
-                    collection.Delete(g => g.Id == existingGame.Id);
+                    games.Delete(g => g.Id == existingGame.Id);
             }
             catch { }
-
-            // Insert into DB
-            collection.Insert(game);
-            collection.EnsureIndex(x => x.Id);
 
             // Notify each Villager
             foreach (var user in game.Villagers)
@@ -117,30 +112,76 @@ namespace Discord.Mafia
             if (game.Joker != null)
                 await game.Joker.SendMessageAsync("You are the Joker!");
 
-            await OutputGameStart(game);
+            await OutputGameSummary(game);
+
+            var reactionHandlers = Context.Database.GetCollection<IReactionHandler>();
+
+            IUserMessage votingMessage = await OutputVotingMessage(game);
+            IUserMessage scoringMessage = await OutputScoringMessage(game);
+
+            List<IEmote> reactions = new List<IEmote>();
+            foreach (var p in game.Players)
+            {
+                reactions.Add(new Emoji(p.Value.Emjoi));
+            }
+            await votingMessage.AddReactionsAsync(reactions.ToArray());
+
+            reactions = new List<IEmote>() { new Emoji("\ud83d\udd36"), new Emoji("\ud83d\udd37"), new Emoji("➕") };
+            await scoringMessage.AddReactionsAsync(reactions.ToArray());
+
+            // Insert into DB
+            games.Insert(game);
+            games.EnsureIndex(x => x.Id);
+
+            reactionHandlers.Insert(new VotingHandler() { MsgId = votingMessage.Id, GameId = game.Id });
+            reactionHandlers.Insert(new ScoringHandler() { MsgId = scoringMessage.Id, GameId = game.Id });
+
+            reactionHandlers.EnsureIndex(x => x.MsgId);
         }
 
-        private async Task OutputGameEnd(Game game, Dictionary<ulong, int> scores)
+        private async Task<IUserMessage> OutputVotingMessage(Game game)
+        {
+            EmbedBuilder embedBuilder = new EmbedBuilder();
+
+            int i = 0;
+            string players = "";
+            string[] emojis = new string[] { "1\u20e3", "2\u20e3", "3\u20e3", "4\u20e3", "5\u20e3", "6\u20e3", "7\u20e3", "8\u20e3" };
+            foreach (var p in game.Players.Values)
+            {
+                p.Emjoi = emojis[i++];
+                players += $"{p.Emjoi} - {p.Mention}\r\n";
+            }
+
+            embedBuilder.AddField("Players", players);
+
+            return await ReplyAsync($"**Vote for Mafia!**", false, embedBuilder.Build());
+        }
+
+        private async Task<IUserMessage> OutputScoringMessage(Game game)
+        {
+            EmbedBuilder embedBuilder = new EmbedBuilder();
+
+            embedBuilder.AddField("How to vote", ":large_orange_diamond: Orange Team Won! :large_blue_diamond: Blue Team Won! ::heavy_plus_sign: Game went to OT!");
+
+            return await ReplyAsync($"**Input the final score!**", false, embedBuilder.Build());
+        }
+
+        public static async Task OutputGameEnd(Game game, Dictionary<ulong, int> scores, ISocketMessageChannel channel)
         {
             EmbedBuilder embedBuilder = new EmbedBuilder();
 
             var ordered = scores.OrderByDescending(x => x.Value);
 
-            embedBuilder.AddField("Team 1:", string.Join(' ', game.Team1.Select(u => u.Mention)));
-            embedBuilder.AddField("Team 2:", string.Join(' ', game.Team2.Select(u => u.Mention)));
-
             embedBuilder.AddField("Mafia: ", string.Join(' ', game.Mafia.Select(u => u.Mention)));
             if(game.Joker != null)
                 embedBuilder.AddField("Joker: ", game.Joker.Mention);
 
-            AddVoteFieldToBuilder(game, embedBuilder);
-
             embedBuilder.AddField("Score: ", string.Join("\r\n", ordered.Select(o => $"{game.Players[o.Key].Mention} = {o.Value}")));
 
-            await ReplyAsync($"**Mafia Game: **", false, embedBuilder.Build());
+            await channel.SendMessageAsync($"**Mafia Game: **", false, embedBuilder.Build());
         }
 
-        private async Task OutputGameStart(Game game)
+        private async Task OutputGameSummary(Game game)
         {
             EmbedBuilder embedBuilder = new EmbedBuilder();
 
@@ -148,44 +189,6 @@ namespace Discord.Mafia
             embedBuilder.AddField("Team 2:", string.Join(' ', game.Team2.Select(u => u.Mention)));
 
             await ReplyAsync($"**New Mafia Game - Mode({game.Mode}), NumMafia({game.Mafia.Count})**", false, embedBuilder.Build());
-
-            // Todo: Output Voting reaction message
-            //col.Insert(new MafiaReactionHandler() { MsgId = Context.Message.Id }); // register message for our reaction handler
-
-            // Todo: Output Scoring reaction message
-        }
-
-        private async Task OutputVotes(Game game)
-        {
-            EmbedBuilder embedBuilder = new EmbedBuilder();
-
-            AddVoteFieldToBuilder(game, embedBuilder);
-
-            await ReplyAsync($"**Mafia Game: **", false, embedBuilder.Build());
-        }
-
-        private void AddVoteFieldToBuilder(Game game, EmbedBuilder embedBuilder)
-        {
-            if (game.Votes.Count > 0)
-            {
-                var votes = new Dictionary<ulong, int>();
-                foreach (var playerVotes in game.Votes)
-                {
-                    foreach (var vote in playerVotes.Value)
-                    {
-                        if (votes.ContainsKey(vote))
-                            votes[vote] += 1;
-                        else
-                            votes[vote] = 1;
-                    }
-                }
-
-                embedBuilder.AddField("Mafia Votes: ", string.Join("\r\n", votes.Select(o => $"{game.Players[o.Key].Mention} = {o.Value}")));
-            }
-            else
-            {
-                embedBuilder.AddField("Mafia Votes: ", "None");
-            }
         }
 
         public static Game GetGame(ulong id, Func<ulong, IUser> GetUser, LiteCollection<Game> collection)

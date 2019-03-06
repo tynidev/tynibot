@@ -20,11 +20,12 @@ namespace Mafia.UnitTests
             {
                 var col = Database.GetCollection<IReactionHandler>();
                 col.Delete(u => true);
-                col.Insert(new MafiaReactionHandler() { MsgId = 1 });
+                col.Insert(new ScoringHandler() { MsgId = 1, GameId = 4 });
                 col.EnsureIndex(x => x.MsgId);
-                var handler = col.Find(rh => rh.MsgId == 1).FirstOrDefault() as MafiaReactionHandler;
+                var handler = col.Find(rh => rh.MsgId == 1).FirstOrDefault() as ScoringHandler;
                 Assert.IsNotNull(handler);
-                Assert.AreEqual(handler.MsgId, 1);
+                Assert.AreEqual(handler.MsgId, (ulong)1);
+                Assert.AreEqual(handler.GameId, (ulong)4);
             }
         }
 

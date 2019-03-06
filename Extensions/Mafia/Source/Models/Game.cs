@@ -67,22 +67,51 @@ namespace Discord.Mafia
                     return createBattleMafiaGame(mentions, numMafias, hasJoker: true);
             };
         }
-
-        public void Vote(ulong userId, List<ulong> mafias)
+        
+        public void Vote(ulong userId, List<ulong> votes)
         {
-            if (mafias.Count <= 0)
-                return;
+            foreach(var v in votes)
+            {
+                AddVote(userId, v);
+            }
+        }
+
+        public void AddVote(ulong userId, ulong mafiaId)
+        {
+            if (!Players.ContainsKey(userId)) return; // filter out people voting who aren't in the game
+
+            if (!Players.ContainsKey(mafiaId)) return; // filter out votes for users not in the game
 
             if (Votes == null)
                 Votes = new Dictionary<ulong, ulong[]>();
 
-            var users = Team1.Concat(Team2).ToDictionary(x => x.Id);
-            if (!users.ContainsKey(userId)) return; // filter out people voting who aren't in the game
-                
-            Votes[userId] = mafias
-                .Where(x => users.ContainsKey(x))   // filter out votes for users not in the game
-                .Take(Mafia.Count)                  // only accept the first votes of up to the number of mafia
-                .ToArray();
+            if (!Votes.ContainsKey(userId))
+            {
+                Votes[userId] = new ulong[] { mafiaId };
+                return;
+            }
+
+            if (Votes[userId].Length > Mafia.Count) return; // only accept the first votes of up to the number of mafia
+
+            if (Votes[userId].Contains(mafiaId)) return; // we already counted this vote
+
+            Votes[userId] = Votes[userId].Append(mafiaId).ToArray();
+        }
+
+        public void RemoveVote(ulong userId, ulong mafiaId)
+        {
+            if (!Players.ContainsKey(userId)) return; // filter out people voting who aren't in the game
+
+            if (!Players.ContainsKey(mafiaId)) return; // filter out votes for users not in the game
+
+            if (Votes == null)
+                Votes = new Dictionary<ulong, ulong[]>();
+
+            if (!Votes.ContainsKey(userId)) return; // user hasn't voted return
+
+            if (!Votes[userId].Contains(mafiaId)) return; // we don't have this vote anyways
+
+            Votes[userId] = Votes[userId].Where(u => u != mafiaId).ToArray();
         }
 
         public Dictionary<ulong, int> Score(int team1Score, int team2Score, string overtime = "no")

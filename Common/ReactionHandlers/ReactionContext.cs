@@ -10,16 +10,16 @@ namespace TyniBot
     public class ReactionContext : BotContext
     {
         public SocketGuild Guild { get; }
-        public ISocketMessageChannel Channel { get; }
-        public SocketUser User { get; }
-        public SocketUserMessage Message { get; }
+        public IMessageChannel Channel { get; }
+        public IUser User { get; }
+        public IUserMessage Message { get; }
         public bool IsPrivate => Channel is IPrivateChannel;
-        public ReactionContext(BotContext botContext, SocketUserMessage msg, SocketUser user = null)
+        public ReactionContext(BotContext botContext, IUserMessage msg)
             : base(botContext.Client, botContext.Database, botContext.Settings)
         {
             Guild = (msg.Channel as SocketGuildChannel)?.Guild;
             Channel = msg.Channel;
-            User = user ?? msg.Author;
+            User = msg.Author;
             Message = msg;
         }
     }
