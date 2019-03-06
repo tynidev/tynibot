@@ -65,8 +65,8 @@ namespace Mafia.UnitTests
                 Assert.AreEqual(output.Mode, input.Mode);
                 Assert.AreEqual(input.Players.Count, output.Players.Count);
                 Assert.AreEqual(output.Mafia.Where(u => input.Mafia.Where(o => o.Id != u.Id).Count() > 0).Count(), 0);
-                Assert.AreEqual(output.Team1.Where(u => input.Team1.Where(o => o.Id != u.Id).Count() > 0).Count(), 0);
-                Assert.AreEqual(output.Team2.Where(u => input.Team2.Where(o => o.Id != u.Id).Count() > 0).Count(), 0);
+                Assert.AreEqual(output.TeamOrange.Where(u => input.TeamOrange.Where(o => o.Id != u.Id).Count() > 0).Count(), 0);
+                Assert.AreEqual(output.TeamBlue.Where(u => input.TeamBlue.Where(o => o.Id != u.Id).Count() > 0).Count(), 0);
                 Assert.AreEqual(output.Joker.Id, input.Joker.Id);
             }
         }
@@ -97,7 +97,7 @@ namespace Mafia.UnitTests
                     var game = (Discord.Mafia.Game.CreateGame(mentions, numMafia, mode));
 
                     Assert.AreEqual(numMafia, game.Mafia.Count()); // validate actual number of mafia was as requested
-                    Assert.AreEqual(game.Team1.Count() + game.Team2.Count(), mentions.Count); // validate members of both teams equals total count of mentions
+                    Assert.AreEqual(game.TeamOrange.Count() + game.TeamBlue.Count(), mentions.Count); // validate members of both teams equals total count of mentions
 
                     if (mode == GameMode.Joker)
                     {
@@ -113,8 +113,8 @@ namespace Mafia.UnitTests
 
                     if(mode == GameMode.Joker || mode == GameMode.Battle)
                     {
-                        int team1Mafia = game.Mafia.Where(u => u.Team == Discord.Mafia.Team.One).Count();
-                        int team2Mafia = game.Mafia.Where(u => u.Team == Discord.Mafia.Team.Two).Count();
+                        int team1Mafia = game.Mafia.Where(u => u.Team == Discord.Mafia.Team.Orange).Count();
+                        int team2Mafia = game.Mafia.Where(u => u.Team == Discord.Mafia.Team.Blue).Count();
 
                         if(numMafia > 1) 
                         {
@@ -143,20 +143,20 @@ namespace Mafia.UnitTests
                         Assert.AreEqual(game.Mafia.Where(p => p.Id == u.Id).Count(), 1); // validate users weren't added to mafia twice
                         mafia.Add(u.Username, u.Username);
                     }
-                    foreach (var u in game.Team1)
+                    foreach (var u in game.TeamOrange)
                     {
                         t1.Add(u.Username, u.Username);
                         Assert.IsTrue(mentions.Contains(u.DiscordUser)); // validate every team member was part of original mentions
-                        Assert.AreEqual(game.Team1.Where(p => p.Id == u.Id).Count(), 1); // assert member is added to the team only once
+                        Assert.AreEqual(game.TeamOrange.Where(p => p.Id == u.Id).Count(), 1); // assert member is added to the team only once
                     }
-                    foreach (var u in game.Team2)
+                    foreach (var u in game.TeamBlue)
                     {
                         t2.Add(u.Username, u.Username);
                         Assert.IsTrue(mentions.Contains(u.DiscordUser)); // validate every team member was part of original mentions
                         Assert.IsFalse(t1.ContainsKey(u.Username)); // validate every team2 member is not in team 1
-                        Assert.AreEqual(game.Team2.Where(p => p.Id == u.Id).Count(), 1); // assert member is added to the team only once
+                        Assert.AreEqual(game.TeamBlue.Where(p => p.Id == u.Id).Count(), 1); // assert member is added to the team only once
                     }
-                    foreach (var u in game.Team1)
+                    foreach (var u in game.TeamOrange)
                     {
                         Assert.IsFalse(t2.ContainsKey(u.Username)); // validate every team1 member is not in team 2
                     }
@@ -231,12 +231,12 @@ namespace Mafia.UnitTests
 
             var mafia = g.Mafia[0];
             var villager = mafia.Id == user1.Object.Id ? user2.Object : user1.Object;
-            bool isMafiaTeam1 = g.Team1.Where(u => u.Id == mafia.Id).Count() > 0;
+            bool isMafiaTeam1 = g.TeamOrange.Where(u => u.Id == mafia.Id).Count() > 0;
 
             // Both vote for Mafia
-            g.Vote(mafia.Id, new List<ulong>() { mafia.Id });
+            g.AddVotes(mafia.Id, new List<ulong>() { mafia.Id });
             // sneak test in which votes for more people than mafia to verify it discards the votes over the number of mafia
-            g.Vote(villager.Id, new List<ulong>() { mafia.Id, villager.Id }); 
+            g.AddVotes(villager.Id, new List<ulong>() { mafia.Id, villager.Id }); 
 
             // Score such that Mafia lost
             var score = isMafiaTeam1 ? g.Score(0, 1) : g.Score(1, 0);
@@ -267,11 +267,11 @@ namespace Mafia.UnitTests
 
             var mafia = g.Mafia[0];
             var villager = mafia.Id == user1.Object.Id ? user2.Object : user1.Object;
-            bool isMafiaTeam1 = g.Team1.Where(u => u.Id == mafia.Id).Count() > 0;
+            bool isMafiaTeam1 = g.TeamOrange.Where(u => u.Id == mafia.Id).Count() > 0;
 
             // Both vote for Mafia
-            g.Vote(mafia.Id, new List<ulong>() { mafia.Id });
-            g.Vote(villager.Id, new List<ulong>() { villager.Id });
+            g.AddVotes(mafia.Id, new List<ulong>() { mafia.Id });
+            g.AddVotes(villager.Id, new List<ulong>() { villager.Id });
 
             // Score such that Mafia lost
             var score = isMafiaTeam1 ? g.Score(0, 1) : g.Score(1, 0);
@@ -302,11 +302,11 @@ namespace Mafia.UnitTests
 
             var mafia = g.Mafia[0];
             var villager = mafia.Id == user1.Object.Id ? user2.Object : user1.Object;
-            bool isMafiaTeam1 = g.Team1.Where(u => u.Id == mafia.Id).Count() > 0;
+            bool isMafiaTeam1 = g.TeamOrange.Where(u => u.Id == mafia.Id).Count() > 0;
 
             // Both vote for Mafia
-            g.Vote(mafia.Id, new List<ulong>() { mafia.Id });
-            g.Vote(villager.Id, new List<ulong>() { mafia.Id });
+            g.AddVotes(mafia.Id, new List<ulong>() { mafia.Id });
+            g.AddVotes(villager.Id, new List<ulong>() { mafia.Id });
 
             // Score such that Mafia lost
             var score = isMafiaTeam1 ? g.Score(1, 0) : g.Score(0, 1);
@@ -337,11 +337,11 @@ namespace Mafia.UnitTests
 
             var mafia = g.Mafia[0];
             var villager = mafia.Id == user1.Object.Id ? user2.Object : user1.Object;
-            bool isMafiaTeam1 = g.Team1.Where(u => u.Id == mafia.Id).Count() > 0;
+            bool isMafiaTeam1 = g.TeamOrange.Where(u => u.Id == mafia.Id).Count() > 0;
 
             // Both vote for Mafia
-            g.Vote(mafia.Id, new List<ulong>() { mafia.Id });
-            g.Vote(villager.Id, new List<ulong>() { villager.Id });
+            g.AddVotes(mafia.Id, new List<ulong>() { mafia.Id });
+            g.AddVotes(villager.Id, new List<ulong>() { villager.Id });
 
             // Score such that Mafia lost
             var score = isMafiaTeam1 ? g.Score(1, 0) : g.Score(0, 1);
@@ -372,10 +372,10 @@ namespace Mafia.UnitTests
 
             var mafia = g.Mafia[0];
             var villager = mafia.Id == user1.Object.Id ? user2.Object : user1.Object;
-            bool isMafiaTeam1 = g.Team1.Where(u => u.Id == mafia.Id).Count() > 0;
+            bool isMafiaTeam1 = g.TeamOrange.Where(u => u.Id == mafia.Id).Count() > 0;
 
             // Both vote for Mafia
-            g.Vote(villager.Id, new List<ulong>() { villager.Id });
+            g.AddVotes(villager.Id, new List<ulong>() { villager.Id });
 
             // Score such that Mafia lost
             var score = isMafiaTeam1 ? g.Score(1, 0) : g.Score(0, 1);
@@ -406,10 +406,10 @@ namespace Mafia.UnitTests
 
             var mafia = g.Mafia[0];
             var villager = mafia.Id == user1.Object.Id ? user2.Object : user1.Object;
-            bool isMafiaTeam1 = g.Team1.Where(u => u.Id == mafia.Id).Count() > 0;
+            bool isMafiaTeam1 = g.TeamOrange.Where(u => u.Id == mafia.Id).Count() > 0;
 
             // Both vote for Mafia
-            g.Vote(mafia.Id, new List<ulong>() { villager.Id });
+            g.AddVotes(mafia.Id, new List<ulong>() { villager.Id });
 
             // Score such that Mafia lost
             var score = isMafiaTeam1 ? g.Score(0, 1) : g.Score(1, 0);
@@ -441,12 +441,12 @@ namespace Mafia.UnitTests
             var g = Discord.Mafia.Game.CreateGame(mentions, 1);
 
             var mafia = g.Mafia[0];
-            bool isMafiaTeam1 = g.Team1.Where(u => u.Id == mafia.Id).Count() > 0;
+            bool isMafiaTeam1 = g.TeamOrange.Where(u => u.Id == mafia.Id).Count() > 0;
 
             foreach (var v in g.Villagers)
-                g.Vote(v.Id, new List<ulong>() { mafia.Id });
+                g.AddVotes(v.Id, new List<ulong>() { mafia.Id });
 
-            g.Vote(mafia.Id, new List<ulong>() { mafia.Id });
+            g.AddVotes(mafia.Id, new List<ulong>() { mafia.Id });
 
             // Score such that Mafia won
             var score = isMafiaTeam1 ? g.Score(1, 0) : g.Score(0, 1);
@@ -484,26 +484,26 @@ namespace Mafia.UnitTests
             var g = Discord.Mafia.Game.CreateGame(mentions, 2, mode:GameMode.Joker);
 
             var mafias = g.Mafia;
-            var t1Mafia = g.Team1.Where(x => g.Mafia.Contains(x)).First();
+            var t1Mafia = g.TeamOrange.Where(x => g.Mafia.Contains(x)).First();
             var joker = g.Joker;
 
             // One Mafia on each team and a Joker is not null
-            Assert.AreEqual(g.Team1.Where(x => g.Mafia.Contains(x)).Count(), 1);
-            Assert.AreEqual(g.Team2.Where(x => g.Mafia.Contains(x)).Count(), 1);
+            Assert.AreEqual(g.TeamOrange.Where(x => g.Mafia.Contains(x)).Count(), 1);
+            Assert.AreEqual(g.TeamBlue.Where(x => g.Mafia.Contains(x)).Count(), 1);
             Assert.IsNotNull(g.Joker);
-            if (g.Team1.Count > g.Team2.Count)
-                Assert.IsTrue(g.Team1.Contains(g.Joker));
+            if (g.TeamOrange.Count > g.TeamBlue.Count)
+                Assert.IsTrue(g.TeamOrange.Contains(g.Joker));
             else
-                Assert.IsTrue(g.Team2.Contains(g.Joker));
+                Assert.IsTrue(g.TeamBlue.Contains(g.Joker));
 
             var villagers = g.Villagers;
             foreach (var v in villagers)
-                g.Vote(v.Id, new List<ulong>() { t1Mafia.Id, joker.Id });
+                g.AddVotes(v.Id, new List<ulong>() { t1Mafia.Id, joker.Id });
 
             foreach (var m in mafias)
-                g.Vote(m.Id, new List<ulong>() { t1Mafia.Id, joker.Id });
+                g.AddVotes(m.Id, new List<ulong>() { t1Mafia.Id, joker.Id });
 
-            g.Vote(joker.Id, new List<ulong>() { t1Mafia.Id, joker.Id });
+            g.AddVotes(joker.Id, new List<ulong>() { t1Mafia.Id, joker.Id });
 
             // Score such that Team 1 won WITH overtime
             var score = g.Score(1, 0, "ot");
@@ -511,8 +511,8 @@ namespace Mafia.UnitTests
             // Mafia
             Assert.AreEqual(score[t1Mafia.Id], 0); // Team 1 Mafia got guessed and won
             Assert.AreEqual(score[mafias.Where(x => t1Mafia != (x)).First().Id], 5); // Team 2 Mafia lost && no guess
-            Assert.AreEqual(score[villagers.Where(x => g.Team1.Contains(x)).First().Id], 3); // Team 1 V won + 1 mafia
-            Assert.AreEqual(score[villagers.Where(x => g.Team2.Contains(x)).First().Id], 2); // Team 2 V won + 1 mafia
+            Assert.AreEqual(score[villagers.Where(x => g.TeamOrange.Contains(x)).First().Id], 3); // Team 1 V won + 1 mafia
+            Assert.AreEqual(score[villagers.Where(x => g.TeamBlue.Contains(x)).First().Id], 2); // Team 2 V won + 1 mafia
             Assert.AreEqual(score[joker.Id], 5); // OT + all guesses
         }
 

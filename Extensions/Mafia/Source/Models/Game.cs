@@ -15,16 +15,24 @@ namespace Discord.Mafia
 
     public class Game
     {
+        public const string OrangeEmoji = "\ud83d\udd36";
+        public const string BlueEmoji = "\ud83d\udd37";
+        public const string OvertimeEmoji = "\u23f0";
+        public const string EndedEmoji = "\ud83c\udfc1";
+
         [BsonId]
         public ulong Id { get; set; }
-        public Dictionary<ulong, Player> Players { get; private set; }
+        public Dictionary<ulong, Player> Players { get; private set; } = new Dictionary<ulong, Player>();
         public Dictionary<ulong, ulong[]> Votes { get; set; } = new Dictionary<ulong, ulong[]>();
-        public GameMode Mode { get; private set; }
+        public GameMode Mode { get; private set; } = GameMode.Normal;
+        public Team? WinningTeam { get; set; } = null;
+        public bool OvertimeReached { get; set; } = false;
+        public ulong HostId { get; set; }
 
         [BsonIgnore]
-        public List<Player> Team1 => Players.Where(p => p.Value.Team == Team.One).Select(p => p.Value).ToList();
+        public List<Player> TeamOrange => Players.Where(p => p.Value.Team == Team.Orange).Select(p => p.Value).ToList();
         [BsonIgnore]
-        public List<Player> Team2 => Players.Where(p => p.Value.Team == Team.Two).Select(p => p.Value).ToList();
+        public List<Player> TeamBlue => Players.Where(p => p.Value.Team == Team.Blue).Select(p => p.Value).ToList();
         [BsonIgnore]
         public List<Player> Villagers => Players.Where(p => p.Value.Type == PlayerType.Villager).Select(p => p.Value).ToList();
         [BsonIgnore]
@@ -68,7 +76,7 @@ namespace Discord.Mafia
             };
         }
         
-        public void Vote(ulong userId, List<ulong> votes)
+        public void AddVotes(ulong userId, List<ulong> votes)
         {
             foreach(var v in votes)
             {
@@ -81,9 +89,6 @@ namespace Discord.Mafia
             if (!Players.ContainsKey(userId)) return; // filter out people voting who aren't in the game
 
             if (!Players.ContainsKey(mafiaId)) return; // filter out votes for users not in the game
-
-            if (Votes == null)
-                Votes = new Dictionary<ulong, ulong[]>();
 
             if (!Votes.ContainsKey(userId))
             {
@@ -104,9 +109,6 @@ namespace Discord.Mafia
 
             if (!Players.ContainsKey(mafiaId)) return; // filter out votes for users not in the game
 
-            if (Votes == null)
-                Votes = new Dictionary<ulong, ulong[]>();
-
             if (!Votes.ContainsKey(userId)) return; // user hasn't voted return
 
             if (!Votes[userId].Contains(mafiaId)) return; // we don't have this vote anyways
@@ -114,20 +116,20 @@ namespace Discord.Mafia
             Votes[userId] = Votes[userId].Where(u => u != mafiaId).ToArray();
         }
 
-        public Dictionary<ulong, int> Score(int team1Score, int team2Score, string overtime = "no")
+        public bool Score()
         {
-            bool hitOvertime = false;
-            overtime = overtime.ToLower();
-            if(overtime == "overtime" || overtime == "ot" || overtime == "true" || overtime == "yes")
-            {
-                hitOvertime = true;
-            }
+            var mafia = Mafia;
 
-            var scores = new Dictionary<ulong, int>();
+            if (!WinningTeam.HasValue) return false; // we only score games that have a winner
+
+            // score only valid if all players have voted for the correct number of mafia
+            foreach (var p in Players)
+                if (!Votes.ContainsKey(p.Value.Id) || Votes[p.Value.Id].Length != mafia.Count) return false;
+
             foreach (var player in Players.Values)
             {
                 int score = 0;
-                bool wonGame = (player.Team == Team.One && team1Score > team2Score) || (player.Team == Team.Two && team2Score > team1Score);
+                bool wonGame = player.Team == WinningTeam.Value;
 
                 if (player.Type == PlayerType.Mafia)
                 {
@@ -140,21 +142,21 @@ namespace Discord.Mafia
                 {
                     int guessedMe = Votes.Where(x => x.Key != player.Id && x.Value.Contains(player.Id)).Count();
 
-                    score += hitOvertime ? ScoringConstants.ReachedOvertime : 0;
+                    score += OvertimeReached ? ScoringConstants.ReachedOvertime : 0;
                     score += Math.Min(ScoringConstants.JokerGuessedAsMafiaMax, guessedMe);
                 }
                 else
                 {
-                    int correctVotes = Votes.ContainsKey(player.Id) ? Mafia.Where(x => Votes[player.Id].Contains(x.Id)).Count() : 0;
+                    int correctVotes = Votes.ContainsKey(player.Id) ? mafia.Where(x => Votes[player.Id].Contains(x.Id)).Count() : 0;
 
                     score += wonGame ? ScoringConstants.WinningGame : 0;
                     score += correctVotes * ScoringConstants.GuessedMafia;
                 }
 
-                scores.Add(player.Id, Math.Max(0,score));
+                player.Score = Math.Max(0,score);
             }
 
-            return scores;
+            return true;
         }
 
         public void PopulateUser(Func<ulong, IUser> getUser)
@@ -220,10 +222,10 @@ namespace Discord.Mafia
             int team1Size = rnd.Next(2) % 2 == 0 ? users.Count / 2 : users.Count - (users.Count / 2);
 
             foreach (var p in players.Take(team1Size))
-                p.Team = Team.One;
+                p.Team = Team.Orange;
 
             foreach (var p in players.Skip(team1Size))
-                p.Team = Team.Two;
+                p.Team = Team.Blue;
 
             return players;
         }
@@ -238,8 +240,8 @@ namespace Discord.Mafia
             }
             else
             {
-                int team1Size = players.Where(p => p.Team == Team.One).Count();
-                int team2Size = players.Where(p => p.Team == Team.Two).Count();
+                int team1Size = players.Where(p => p.Team == Team.Orange).Count();
+                int team2Size = players.Where(p => p.Team == Team.Blue).Count();
 
                 int smallMafiaTeam = numMafias / 2;
                 int largeMafiaTeam = numMafias - smallMafiaTeam;
@@ -261,18 +263,18 @@ namespace Discord.Mafia
                 int team1MafiaSize = team1LargerMafia ? largeMafiaTeam : smallMafiaTeam;
                 int team2MafiaSize = team1LargerMafia ? smallMafiaTeam : largeMafiaTeam;
 
-                foreach (var mafia in players.Where(p => p.Team == Team.One).Take(team1MafiaSize))
+                foreach (var mafia in players.Where(p => p.Team == Team.Orange).Take(team1MafiaSize))
                     mafia.Type = PlayerType.Mafia;
 
-                foreach (var mafia in players.Where(p => p.Team == Team.Two).Take(team2MafiaSize))
+                foreach (var mafia in players.Where(p => p.Team == Team.Blue).Take(team2MafiaSize))
                     mafia.Type = PlayerType.Mafia;
             }
         }
 
         private static void pickJoker(List<Player> players)
         {
-            var team1 = players.Where(p => p.Team == Team.One && p.Type == PlayerType.Villager).ToList();
-            var team2 = players.Where(p => p.Team == Team.Two && p.Type == PlayerType.Villager).ToList();
+            var team1 = players.Where(p => p.Team == Team.Orange && p.Type == PlayerType.Villager).ToList();
+            var team2 = players.Where(p => p.Team == Team.Blue && p.Type == PlayerType.Villager).ToList();
 
             Player joker = team1.Count > team2.Count ? team1.Where(p => p.Type == PlayerType.Villager).First() : team2.Where(p => p.Type == PlayerType.Villager).First();
             joker.Type = PlayerType.Joker;

@@ -14,8 +14,8 @@ namespace Discord.Mafia
 
     public enum Team
     {
-        One,
-        Two
+        Orange,
+        Blue
     }
 
     public class Player : IUser
@@ -26,7 +26,8 @@ namespace Discord.Mafia
         public PlayerType Type { get; set; }
         public Team Team { get; set; }
         public string Username => DiscordUser?.Username == null ? string.Empty : DiscordUser.Username;
-        public string Emjoi { get; set; }
+        public string Emoji { get; set; }
+        public int Score { get; set; } = 0;
         #endregion
 
         #region IUser Members
