@@ -43,7 +43,7 @@ namespace Discord.Mafia
 
             embedBuilder.AddField("Game Result:", $"{Output.OrangeEmoji} Orange Won! {Output.BlueEmoji} Blue Won! {Output.OvertimeEmoji} Went to OT! {Output.EndedEmoji} End Game!");
 
-            var msg = await channel.SendMessageAsync($"**New Mafia Game - Mode({game.Mode}), NumMafia({game.Mafia.Count})**", false, embedBuilder.Build());
+            var msg = await channel.SendMessageAsync($"**New Mafia Game! {game.Mode} with {game.Mafia.Count}**", false, embedBuilder.Build());
 
             var reactions = new List<IEmote>() { new Emoji(Output.OrangeEmoji), new Emoji(Output.BlueEmoji), new Emoji(Output.OvertimeEmoji), new Emoji(Output.EndedEmoji) };
             await msg.AddReactionsAsync(reactions.ToArray());
