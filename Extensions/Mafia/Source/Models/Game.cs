@@ -96,7 +96,7 @@ namespace Discord.Mafia
                 return;
             }
 
-            if (Votes[userId].Length > Mafia.Count) return; // only accept the first votes of up to the number of mafia
+            if (Votes[userId].Length >= Mafia.Count) return; // only accept the first votes of up to the number of mafia
 
             if (Votes[userId].Contains(mafiaId)) return; // we already counted this vote
 
