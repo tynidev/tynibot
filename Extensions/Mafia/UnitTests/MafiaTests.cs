@@ -21,9 +21,9 @@ namespace Mafia.UnitTests
             {
                 var col = Database.GetCollection<IReactionHandler>();
                 col.Delete(u => true);
-                col.Insert(new ScoringHandler() { MsgId = 1, GameId = 4 });
+                col.Insert(new GameHandler() { MsgId = 1, GameId = 4 });
                 col.EnsureIndex(x => x.MsgId);
-                var handler = col.Find(rh => rh.MsgId == 1).FirstOrDefault() as ScoringHandler;
+                var handler = col.Find(rh => rh.MsgId == 1).FirstOrDefault() as GameHandler;
                 Assert.IsNotNull(handler);
                 Assert.AreEqual(handler.MsgId, (ulong)1);
                 Assert.AreEqual(handler.GameId, (ulong)4);

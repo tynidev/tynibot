@@ -7,7 +7,7 @@ using TyniBot;
 
 namespace Discord.Mafia
 {
-    public class ScoringHandler : IReactionHandler
+    public class GameHandler : IReactionHandler
     {
         [BsonId]
         public ulong MsgId { get; set; }

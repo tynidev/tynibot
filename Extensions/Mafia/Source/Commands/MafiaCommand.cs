@@ -93,7 +93,7 @@ namespace Discord.Mafia
 
             // Register scoring message for reaction handler callback
             var reactionHandlers = Context.Database.GetCollection<IReactionHandler>();
-            reactionHandlers.Insert(new ScoringHandler() { MsgId = scoringMessage.Id, GameId = game.Id });
+            reactionHandlers.Insert(new GameHandler() { MsgId = scoringMessage.Id, GameId = game.Id });
             reactionHandlers.EnsureIndex(x => x.MsgId);
         }
         #endregion
