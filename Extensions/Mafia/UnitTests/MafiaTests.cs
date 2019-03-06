@@ -6,6 +6,7 @@ using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using TyniBot;
 
 namespace Mafia.UnitTests
@@ -30,7 +31,7 @@ namespace Mafia.UnitTests
         }
 
         [TestMethod]
-        public void TestDbStoreRetrieveGame()
+        public async Task TestDbStoreRetrieveGame()
         {
             using (var Database = new LiteDatabase(@"test.db"))
             {
@@ -54,13 +55,11 @@ namespace Mafia.UnitTests
                 gamesCollection.Insert(input);
                 gamesCollection.EnsureIndex(x => x.Id);
 
-                var output = MafiaCommand.GetGame(input.Id, (ulong id) =>
-                {
-                    if (id == user1.Object.Id)
-                        return user1.Object;
-                    else
-                        return user2.Object;
-                }, gamesCollection);
+                var channelMock = new Mock<IDiscordClient>();
+                channelMock.Setup(u => u.GetUserAsync(user1.Object.Id, It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).Returns(Task.FromResult(user1.Object));
+                channelMock.Setup(u => u.GetUserAsync(user2.Object.Id, It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).Returns(Task.FromResult(user2.Object));
+
+                var output = await Discord.Mafia.Game.GetGameAsync(input.Id, channelMock.Object, gamesCollection);
 
                 Assert.AreEqual(output.Mode, input.Mode);
                 Assert.AreEqual(input.Players.Count, output.Players.Count);
@@ -213,27 +212,19 @@ namespace Mafia.UnitTests
         }
 
         [TestMethod]
-        public void TestScore2PlayersMafiaLostBothVoteMafia()
+        public void TestScore2PlayersMafiaLostVillagerVoteMafia()
         {
             var mentions = new List<IUser>();
-
-            var user1 = new Mock<IUser>();
-            user1.Setup(u => u.Username).Returns("k");
-            user1.Setup(u => u.Id).Returns(1);
-            mentions.Add(user1.Object);
-
-            var user2 = new Mock<IUser>();
-            user2.Setup(u => u.Username).Returns("t");
-            user2.Setup(u => u.Id).Returns(2);
-            mentions.Add(user2.Object);
+            mentions.Add(GenerateUser("k", 1).Object);
+            mentions.Add(GenerateUser("t", 2).Object);
 
             var g = Discord.Mafia.Game.CreateGame(mentions, 1);
 
             var mafia = g.Mafia[0];
             var villager = g.Villagers[0];
 
-            // Both vote for Mafia
-            g.AddVotes(mafia.Id, new List<ulong>() { mafia.Id });
+            // Mafia Vote Villager and Villager vote mafia
+            g.AddVotes(mafia.Id, new List<ulong>() { villager.Id });
             // sneak test in which votes for more people than mafia to verify it discards the votes over the number of mafia
             g.AddVotes(villager.Id, new List<ulong>() { mafia.Id, villager.Id });
 
@@ -242,61 +233,49 @@ namespace Mafia.UnitTests
             var score = g.Score();
 
             // Mafia
-            Assert.AreEqual(mafia.Score, 3 + 2 - 1);
+            Assert.AreEqual(3 + 2 - 1, mafia.Score);
 
             // Villager
-            Assert.AreEqual(villager.Score, 1 + 2);
+            Assert.AreEqual(1 + 2, villager.Score);
         }
 
         [TestMethod]
-        public void TestScore2PlayersMafiaLostNoVoteMafia()
+        public void TestScore3PlayersMafiaLostNoVoteMafia()
         {
             var mentions = new List<IUser>();
-
-            var user1 = new Mock<IUser>();
-            user1.Setup(u => u.Username).Returns("k");
-            user1.Setup(u => u.Id).Returns(1);
-            mentions.Add(user1.Object);
-
-            var user2 = new Mock<IUser>();
-            user2.Setup(u => u.Username).Returns("t");
-            user2.Setup(u => u.Id).Returns(2);
-            mentions.Add(user2.Object);
+            mentions.Add(GenerateUser("a", 1).Object);
+            mentions.Add(GenerateUser("b", 2).Object);
+            mentions.Add(GenerateUser("c", 3).Object);
 
             var g = Discord.Mafia.Game.CreateGame(mentions, 1);
 
             var mafia = g.Mafia[0];
-            var villager = g.Villagers[0];
+            var villager1 = g.Villagers[0];
+            var villager2 = g.Villagers[1];
 
-            // Both vote for Mafia
-            g.AddVotes(mafia.Id, new List<ulong>() { mafia.Id });
-            g.AddVotes(villager.Id, new List<ulong>() { villager.Id });
+            // All vote villagers
+            g.AddVotes(mafia.Id, new List<ulong>() { villager1.Id });
+            g.AddVotes(villager1.Id, new List<ulong>() { villager2.Id });
+            g.AddVotes(villager2.Id, new List<ulong>() { villager1.Id });
 
             // Score such that Mafia lost
-            g.WinningTeam = villager.Team;
+            g.WinningTeam = mafia.Team == villager1.Team ? villager2.Team : villager1.Team;
             var score = g.Score();
 
             // Mafia
-            Assert.AreEqual(mafia.Score, 3 + 2);
+            Assert.AreEqual(3 + 2, mafia.Score);
 
             // Villager
-            Assert.AreEqual(villager.Score, 1 + 0);
+            Assert.AreEqual(villager1.Score, (g.WinningTeam == villager1.Team) ? 1 : 0 + 0);
+            Assert.AreEqual(villager2.Score, (g.WinningTeam == villager2.Team) ? 1 : 0 + 0);
         }
 
         [TestMethod]
-        public void TestScore2PlayersMafiaWonBothVoteMafia()
+        public void TestScore2PlayersMafiaWonVillagerVoteMafia()
         {
             var mentions = new List<IUser>();
-
-            var user1 = new Mock<IUser>();
-            user1.Setup(u => u.Username).Returns("k");
-            user1.Setup(u => u.Id).Returns(1);
-            mentions.Add(user1.Object);
-
-            var user2 = new Mock<IUser>();
-            user2.Setup(u => u.Username).Returns("t");
-            user2.Setup(u => u.Id).Returns(2);
-            mentions.Add(user2.Object);
+            mentions.Add(GenerateUser("a", 1).Object);
+            mentions.Add(GenerateUser("b", 2).Object);
 
             var g = Discord.Mafia.Game.CreateGame(mentions, 1);
 
@@ -304,7 +283,7 @@ namespace Mafia.UnitTests
             var villager = g.Villagers[0];
 
             // Both vote for Mafia
-            g.AddVotes(mafia.Id, new List<ulong>() { mafia.Id });
+            g.AddVotes(mafia.Id, new List<ulong>() { villager.Id });
             g.AddVotes(villager.Id, new List<ulong>() { mafia.Id });
 
             g.WinningTeam = mafia.Team;
@@ -318,28 +297,23 @@ namespace Mafia.UnitTests
         }
 
         [TestMethod]
-        public void TestScore2PlayersMafiaWonNoVoteMafia()
+        public void TestScore3PlayersMafiaWonNoVoteMafia()
         {
             var mentions = new List<IUser>();
-
-            var user1 = new Mock<IUser>();
-            user1.Setup(u => u.Username).Returns("k");
-            user1.Setup(u => u.Id).Returns(1);
-            mentions.Add(user1.Object);
-
-            var user2 = new Mock<IUser>();
-            user2.Setup(u => u.Username).Returns("t");
-            user2.Setup(u => u.Id).Returns(2);
-            mentions.Add(user2.Object);
+            mentions.Add(GenerateUser("a", 1).Object);
+            mentions.Add(GenerateUser("b", 2).Object);
+            mentions.Add(GenerateUser("c", 3).Object);
 
             var g = Discord.Mafia.Game.CreateGame(mentions, 1);
 
             var mafia = g.Mafia[0];
-            var villager = g.Villagers[0];
+            var villager1 = g.Villagers[0];
+            var villager2 = g.Villagers[1];
 
-            // Both vote for Mafia
-            g.AddVotes(mafia.Id, new List<ulong>() { mafia.Id });
-            g.AddVotes(villager.Id, new List<ulong>() { villager.Id });
+            // All vote villagers
+            g.AddVotes(mafia.Id, new List<ulong>() { villager1.Id });
+            g.AddVotes(villager1.Id, new List<ulong>() { villager2.Id });
+            g.AddVotes(villager2.Id, new List<ulong>() { villager1.Id });
 
             g.WinningTeam = mafia.Team;
             var score = g.Score();
@@ -348,76 +322,35 @@ namespace Mafia.UnitTests
             Assert.AreEqual(mafia.Score, 0 + 2);
 
             // Villager
-            Assert.AreEqual(villager.Score, 0 + 0);
+            Assert.AreEqual(villager1.Score, (g.WinningTeam == villager1.Team) ? 1 : 0 + 0);
+            Assert.AreEqual(villager2.Score, (g.WinningTeam == villager2.Team) ? 1 : 0 + 0);
         }
 
         [TestMethod]
-        public void TestScore2PlayersMafiaWonNoVoteMafiaMafiaDidntVote()
+        public void TestScore3PlayersMafiaLostNoVoteVillagerMafiaVoteVillager()
         {
             var mentions = new List<IUser>();
-
-            var user1 = new Mock<IUser>();
-            user1.Setup(u => u.Username).Returns("k");
-            user1.Setup(u => u.Id).Returns(1);
-            mentions.Add(user1.Object);
-
-            var user2 = new Mock<IUser>();
-            user2.Setup(u => u.Username).Returns("t");
-            user2.Setup(u => u.Id).Returns(2);
-            mentions.Add(user2.Object);
+            mentions.Add(GenerateUser("a", 1).Object);
+            mentions.Add(GenerateUser("b", 2).Object);
 
             var g = Discord.Mafia.Game.CreateGame(mentions, 1);
 
             var mafia = g.Mafia[0];
-            var villager = g.Villagers[0];
+            var villager1 = g.Villagers[0];
 
             // Both vote for Villager
-            g.AddVotes(villager.Id, new List<ulong>() { villager.Id });
-            g.AddVotes(mafia.Id, new List<ulong>() { villager.Id });
-
-            g.WinningTeam = mafia.Team;
-            var score = g.Score();
-
-            // Mafia
-            Assert.AreEqual(mafia.Score, 0 + 2);
-
-            // Villager
-            Assert.AreEqual(villager.Score, 0 + 0);
-        }
-
-        [TestMethod]
-        public void TestScore2PlayersMafiaLostNoVoteVillagerMafiaVoteVillager()
-        {
-            var mentions = new List<IUser>();
-
-            var user1 = new Mock<IUser>();
-            user1.Setup(u => u.Username).Returns("k");
-            user1.Setup(u => u.Id).Returns(1);
-            mentions.Add(user1.Object);
-
-            var user2 = new Mock<IUser>();
-            user2.Setup(u => u.Username).Returns("t");
-            user2.Setup(u => u.Id).Returns(2);
-            mentions.Add(user2.Object);
-
-            var g = Discord.Mafia.Game.CreateGame(mentions, 1);
-
-            var mafia = g.Mafia[0];
-            var villager = g.Villagers[0];
-
-            // Both vote for Villager
-            g.AddVotes(mafia.Id, new List<ulong>() { villager.Id });
-            g.AddVotes(villager.Id, new List<ulong>() { villager.Id });
+            g.AddVotes(mafia.Id, new List<ulong>() { villager1.Id });
+            g.AddVotes(villager1.Id, new List<ulong>() { mafia.Id });
 
             // Score such that Mafia lost
-            g.WinningTeam = villager.Team;
+            g.WinningTeam = villager1.Team;
             var score = g.Score();
 
             // Mafia
-            Assert.AreEqual(mafia.Score, 3 + 2);
+            Assert.AreEqual(mafia.Score, (ScoringConstants.LosingAsMafia * 1) + (ScoringConstants.MafiaNobodyGuessedMe - 1));
 
             // Villager
-            Assert.AreEqual(villager.Score, 1 + 0);
+            Assert.AreEqual(villager1.Score, (ScoringConstants.WinningGame * 1) + (ScoringConstants.GuessedMafia * 1));
         }
 
         [TestMethod]
@@ -500,9 +433,9 @@ namespace Mafia.UnitTests
                 g.AddVotes(v.Id, new List<ulong>() { t1Mafia.Id, joker.Id });
 
             foreach (var m in mafias)
-                g.AddVotes(m.Id, new List<ulong>() { t1Mafia.Id, joker.Id });
+                g.AddVotes(m.Id, new List<ulong>() { villagers[0].Id, joker.Id });
 
-            g.AddVotes(joker.Id, new List<ulong>() { t1Mafia.Id, joker.Id });
+            g.AddVotes(joker.Id, new List<ulong>() { t1Mafia.Id, villagers[0].Id });
 
             // Score such that Team 1 won WITH overtime
             g.WinningTeam = Team.Orange;

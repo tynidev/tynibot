@@ -39,30 +39,14 @@ namespace Discord.Mafia
         [Command("mafia"), Summary("**!mafia help** | Displays this help text.")]
         public async Task HelpCommand()
         {
-            var commands = typeof(MafiaCommand).GetMethods()
-                      .Where(m => m.GetCustomAttributes(typeof(SummaryAttribute), false).Length > 0)
-                      .ToArray();
-
-            EmbedBuilder embedBuilder = new EmbedBuilder();
-
-            foreach (var command in commands)
-            {
-                var name = (CommandAttribute)command.GetCustomAttributes(typeof(CommandAttribute), false)[0];
-                var summary = (SummaryAttribute)command.GetCustomAttributes(typeof(SummaryAttribute), false)[0];
-                // Get the command Summary attribute information
-                string embedFieldText = summary.Text ?? "No description available\n";
-
-                embedBuilder.AddField(name.Text, embedFieldText);
-            }
-
-            await ReplyAsync("**Mafia Commands:** ", false, embedBuilder.Build());
+            await Output.HelpText(Context.Channel);
         }
         #endregion
 
         #region Helpers
         private async Task CreateGame(int numMafias, string gameMode = "default")
         {
-            Mafia.GameMode mode = GameMode.Normal;
+            GameMode mode = GameMode.Normal;
             switch(gameMode.ToLower())
             {
                 case "b":
@@ -78,7 +62,7 @@ namespace Discord.Mafia
             Game game;
             try
             {
-                game = Mafia.Game.CreateGame(Context.Message.MentionedUsers.Select(s => (IUser)s).ToList(), numMafias, mode);
+                game = Game.CreateGame(Context.Message.MentionedUsers.Select(s => (IUser)s).ToList(), numMafias, mode);
 
                 // Set game id to ChannelId
                 game.Id = Context.Channel.Id;
@@ -95,51 +79,22 @@ namespace Discord.Mafia
             // Delete current game if exists
             try
             {
-                var existingGame = GetGame(Context.Channel.Id, Context.Guild.GetUser, games);
+                var existingGame = await Game.GetGameAsync(Context.Channel.Id, Context.Client, games);
                 if (existingGame != null)
                     games.Delete(g => g.Id == existingGame.Id);
             }
-            catch { }
-
-            // Notify each Villager
-            foreach (var user in game.Players.Values)
-                await user.SendMessageAsync($"You are a {user.Type} on {user.Team} Team!");
-
-            
-            var reactions = new List<IEmote>() { new Emoji(Game.OrangeEmoji), new Emoji(Game.BlueEmoji), new Emoji(Game.OvertimeEmoji), new Emoji(Game.EndedEmoji) };
-
-            IUserMessage scoringMessage = await OutputGameSummary(game);
-            await scoringMessage.AddReactionsAsync(reactions.ToArray());
+            catch(Exception e){}
 
             // Insert into DB
             games.Insert(game);
             games.EnsureIndex(x => x.Id);
 
+            IUserMessage scoringMessage = await Output.StartGame(game, Context.Channel);
+
+            // Register scoring message for reaction handler callback
             var reactionHandlers = Context.Database.GetCollection<IReactionHandler>();
             reactionHandlers.Insert(new ScoringHandler() { MsgId = scoringMessage.Id, GameId = game.Id });
             reactionHandlers.EnsureIndex(x => x.MsgId);
-        }
-
-        private async Task<IUserMessage> OutputGameSummary(Game game)
-        {
-            EmbedBuilder embedBuilder = new EmbedBuilder();
-
-            embedBuilder.AddField("Orange Team:", string.Join(' ', game.TeamOrange.Select(u => u.Mention)));
-            embedBuilder.AddField("Blue Team:", string.Join(' ', game.TeamBlue.Select(u => u.Mention)));
-
-            embedBuilder.AddField("Game Result:", $"{Game.OrangeEmoji} Orange Won! {Game.BlueEmoji} Blue Won!\r\n{Game.OvertimeEmoji} Went to OT! {Game.EndedEmoji} End Game!");
-
-            return await ReplyAsync($"**New Mafia Game - Mode({game.Mode}), NumMafia({game.Mafia.Count})**", false, embedBuilder.Build());
-        }
-
-        public static Game GetGame(ulong id, Func<ulong, IUser> GetUser, LiteCollection<Game> collection)
-        {
-            var game = collection.FindOne(g => g.Id == id);
-            if (game == null)
-                throw new KeyNotFoundException();
-
-            game.PopulateUser(GetUser);
-            return game;
         }
         #endregion
     }

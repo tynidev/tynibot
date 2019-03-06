@@ -1,10 +1,7 @@
-﻿using Discord.Commands;
-using Discord.WebSocket;
+﻿using Discord.WebSocket;
 using LiteDB;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using TyniBot;
 
@@ -14,141 +11,119 @@ namespace Discord.Mafia
     {
         [BsonId]
         public ulong MsgId { get; set; }
-
         public ulong GameId { get; set; }
 
         private ReactionContext Context;
+        private IUser UserReacted;
+        private Game Game;
+        private LiteCollection<Game> Games;
+        private LiteCollection<IReactionHandler> ReactionHandlers;
 
-        public ScoringHandler() { }
+        #region IReactionHandler
 
-        public async Task ReactionAdded(ReactionContext context, SocketReaction reactionAdded)
+        public async Task ReactionAdded(ReactionContext context, SocketReaction reaction)
         {
-            Context = context;
-            var user = reactionAdded.User.Value;
-            if (user.IsBot || user.IsWebhook) return;
-
-            var em = GetUnicodeString(reactionAdded.Emote.Name);
-
-            var games = Context.Database.GetCollection<Game>();
-            var game = MafiaCommand.GetGame(this.GameId, Context.Guild.GetUser, games);
-
-            if (game.HostId != user.Id)
+            if (!(await Validate(context, reaction)))
             {
-                await removeReaction(reactionAdded.Emote.Name, user, game.Id);
+                if (!UserReacted.IsBot) // we don't need to remove messages we ourselves put there
+                    await Context.Message.RemoveReactionAsync(new Emoji(reaction.Emote.Name), reaction.User.Value);
                 return;
             }
 
-            if (reactionAdded.Emote.Name == Game.OrangeEmoji)
+            switch (reaction.Emote.Name) // Which reaction was clicked?
             {
-                var metadata = Context.Message.Reactions.Where(e => e.Key.Name == Game.BlueEmoji).First().Value;
-                if (metadata.ReactionCount > 1)
-                    await removeReaction(Game.BlueEmoji, user, game.Id);
-                game.WinningTeam = Team.Orange;
-            }
-            else if(reactionAdded.Emote.Name == Game.BlueEmoji)
-            {
-                var metadata = Context.Message.Reactions.Where(e => e.Key.Name == Game.OrangeEmoji).First().Value;
-                if (metadata.ReactionCount > 1)
-                    await removeReaction(Game.OrangeEmoji, user, game.Id);
-                game.WinningTeam = Team.Blue;
-            }
-            else if(reactionAdded.Emote.Name == Game.OvertimeEmoji)
-            {
-                game.OvertimeReached = true;
-            }
-            else if(reactionAdded.Emote.Name == Game.EndedEmoji)
-            {
-                if (game.WinningTeam == null)
-                {
-                    await removeReaction(Game.EndedEmoji, user, game.Id);
-                    return;
-                }
+                case Output.OrangeEmoji:
+                    await SelectWinningTeamAsync(Team.Orange);
+                    break;
 
-                var reactionHandlers = context.Database.GetCollection<IReactionHandler>();
-                reactionHandlers.Delete(u => u.MsgId == this.MsgId); // un register myself // TODO: figure out why delete doesn't work
+                case Output.BlueEmoji:
+                    await SelectWinningTeamAsync(Team.Blue);
+                    break;
 
-                IUserMessage votingMessage = await OutputVotingMessage(game);
-                List<IEmote> reactions = new List<IEmote>();
-                foreach (var p in game.Players)
-                {
-                    reactions.Add(new Emoji(p.Value.Emoji));
-                }
-                await votingMessage.AddReactionsAsync(reactions.ToArray());
+                case Output.OvertimeEmoji:
+                    Game.OvertimeReached = true;
+                    Games.Update(Game);
+                    break;
 
-                reactionHandlers.Insert(new VotingHandler() { MsgId = votingMessage.Id, GameId = game.Id });
+                case Output.EndedEmoji:
+                    if (Game.WinningTeam == null) // if we don't have a winner remove emoji and return
+                    {
+                        await Context.Message.RemoveReactionAsync(new Emoji(Output.EndedEmoji), UserReacted);
+                        return;
+                    }
+
+                    // Un-register this message for receiving new reactions
+                    ReactionHandlers.Delete(u => u.MsgId == this.MsgId);
+
+                    // Output voting notification message
+                    var votingMessages = await Output.StartVoting(Game, Context.Channel, VotingHandler.PrivateVoting);
+                    Games.Update(Game); // Update so we store emojis on user
+
+                    // Register new message for receiving reactions
+                    foreach (var votingMessage in votingMessages)
+                        ReactionHandlers.Insert(new VotingHandler() { MsgId = votingMessage.Id, GameId = Game.Id });
+                    break;
             }
-            
-            games.Update(game);
         }
 
-        public async Task ReactionRemoved(ReactionContext context, SocketReaction reactionRemoved)
+        public async Task ReactionRemoved(ReactionContext context, SocketReaction reaction)
         {
-            Context = context;
-            var user = reactionRemoved.User.Value;
-            if (user.IsBot || user.IsWebhook) return;
-
-            var games = context.Database.GetCollection<Game>();
-            var game = MafiaCommand.GetGame(this.GameId, context.Guild.GetUser, games);
-
-            if (game.HostId != user.Id)
-            {
-                await removeReaction(reactionRemoved.Emote.Name, user, game.Id);
+            if (!(await Validate(context, reaction)))
                 return;
-            }
 
-            var blueCount = Context.Message.Reactions.Where(e => e.Key.Name == Game.BlueEmoji).First().Value.ReactionCount;
-            var orangeCount = Context.Message.Reactions.Where(e => e.Key.Name == Game.OrangeEmoji).First().Value.ReactionCount;
+            var blueCount = Context.Message.Reactions.Where(e => e.Key.Name == Output.BlueEmoji).First().Value.ReactionCount;
+            var orangeCount = Context.Message.Reactions.Where(e => e.Key.Name == Output.OrangeEmoji).First().Value.ReactionCount;
 
             if (blueCount + orangeCount == 2)
-                game.WinningTeam = null;
-            else if (reactionRemoved.Emote.Name == Game.OvertimeEmoji)
-                game.OvertimeReached = false;
+                Game.WinningTeam = null;
 
-            games.Update(game);
+            if (reaction.Emote.Name == Output.OvertimeEmoji)
+                Game.OvertimeReached = false;
+
+            Games.Update(Game);
             return;
         }
 
-        public Task ReactionsCleared(ReactionContext context)
+        public Task ReactionsCleared(ReactionContext context) // Should we do anything here?
         {
-            var games = context.Database.GetCollection<Game>();
-            var game = MafiaCommand.GetGame(this.GameId, context.Guild.GetUser, games);
-
             return Task.CompletedTask;
         }
 
-        private async Task<IUserMessage> OutputVotingMessage(Game game)
+        #endregion
+
+        #region Helpers
+
+        private async Task<bool> Validate(ReactionContext context, SocketReaction reaction)
         {
-            EmbedBuilder embedBuilder = new EmbedBuilder();
+            if (context == null || reaction == null || !reaction.User.IsSpecified) return false;
 
-            int i = 0;
-            string players = "";
-            string[] emojis = new string[] { "1\u20e3", "2\u20e3", "3\u20e3", "4\u20e3", "5\u20e3", "6\u20e3", "7\u20e3", "8\u20e3" };
-            foreach (var p in game.Players.Values)
-            {
-                p.Emoji = emojis[i++];
-                players += $"{p.Emoji} - {p.Mention} ";
-                if (i > 0 && i % 3 == 0) players += "\r\n";
-            }
+            Context = context;
+            UserReacted = reaction.User.Value;
 
-            embedBuilder.AddField("Players:", players);
+            if (UserReacted.IsBot || UserReacted.IsWebhook) return false;
 
-            return await Context.Channel.SendMessageAsync($"**Vote for Mafia!**", false, embedBuilder.Build());
+            Games = Context.Database.GetCollection<Game>();
+            ReactionHandlers = context.Database.GetCollection<IReactionHandler>();
+
+            Game = await Game.GetGameAsync(this.GameId, Context.Client, Games);
+
+            if (UserReacted.Id != Game.HostId) return false;
+
+            return true;
         }
 
-        private async Task removeReaction(string emoji, IUser user, ulong gameId)
+        private async Task SelectWinningTeamAsync(Team winningTeam)
         {
-            await Context.Message.RemoveReactionAsync(new Emoji(emoji), user);
+            Game.WinningTeam = winningTeam; // update game first
+            Games.Update(Game);
+
+            var losingEmoji = winningTeam == Team.Orange ? Output.BlueEmoji : Output.OrangeEmoji;
+            var lostReaction = Context.Message.Reactions.Where(e => e.Key.Name == losingEmoji).First().Value;
+
+            if (lostReaction.ReactionCount > 1)
+                await Context.Message.RemoveReactionAsync(new Emoji(losingEmoji), UserReacted);
         }
 
-        private string GetUnicodeString(string s)
-        {
-            StringBuilder sb = new StringBuilder();
-            foreach (char c in s)
-            {
-                sb.Append("\\u");
-                sb.Append(String.Format("{0:x4}", (int)c));
-            }
-            return sb.ToString();
-        }
+        #endregion
     }
 }

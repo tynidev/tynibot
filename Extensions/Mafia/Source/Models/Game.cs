@@ -1,8 +1,10 @@
 ﻿using Discord;
+using Discord.WebSocket;
 using LiteDB;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Discord.Mafia
 {
@@ -15,11 +17,6 @@ namespace Discord.Mafia
 
     public class Game
     {
-        public const string OrangeEmoji = "\ud83d\udd36";
-        public const string BlueEmoji = "\ud83d\udd37";
-        public const string OvertimeEmoji = "\u23f0";
-        public const string EndedEmoji = "\ud83c\udfc1";
-
         [BsonId]
         public ulong Id { get; set; }
         public Dictionary<ulong, Player> Players { get; private set; } = new Dictionary<ulong, Player>();
@@ -76,44 +73,60 @@ namespace Discord.Mafia
             };
         }
         
-        public void AddVotes(ulong userId, List<ulong> votes)
+        public bool AddVotes(ulong userId, List<ulong> votes)
         {
+            bool addedAll = true;
             foreach(var v in votes)
             {
-                AddVote(userId, v);
+                addedAll &= AddVote(userId, v);
             }
+            return addedAll;
         }
 
-        public void AddVote(ulong userId, ulong mafiaId)
+        public bool RemoveVotes(ulong userId, List<ulong> votes)
         {
-            if (!Players.ContainsKey(userId)) return; // filter out people voting who aren't in the game
+            bool removedAll = true;
+            foreach (var v in votes)
+            {
+                removedAll &= RemoveVote(userId, v);
+            }
+            return removedAll;
+        }
 
-            if (!Players.ContainsKey(mafiaId)) return; // filter out votes for users not in the game
+        public bool AddVote(ulong userId, ulong mafiaId)
+        {
+            if (userId == mafiaId) return false; // We don't allow you to vote for yourself
+
+            if (!Players.ContainsKey(userId)) return false; // filter out people voting who aren't in the game
+
+            if (!Players.ContainsKey(mafiaId)) return false; // filter out votes for users not in the game
 
             if (!Votes.ContainsKey(userId))
             {
                 Votes[userId] = new ulong[] { mafiaId };
-                return;
+                return true;
             }
 
-            if (Votes[userId].Length >= Mafia.Count) return; // only accept the first votes of up to the number of mafia
+            if (Votes[userId].Length >= Mafia.Count) return false; // only accept the first votes of up to the number of mafia
 
-            if (Votes[userId].Contains(mafiaId)) return; // we already counted this vote
+            if (Votes[userId].Contains(mafiaId)) return false; // we already counted this vote
 
             Votes[userId] = Votes[userId].Append(mafiaId).ToArray();
+            return true;
         }
 
-        public void RemoveVote(ulong userId, ulong mafiaId)
+        public bool RemoveVote(ulong userId, ulong mafiaId)
         {
-            if (!Players.ContainsKey(userId)) return; // filter out people voting who aren't in the game
+            if (!Players.ContainsKey(userId)) return false; // filter out people voting who aren't in the game
 
-            if (!Players.ContainsKey(mafiaId)) return; // filter out votes for users not in the game
+            if (!Players.ContainsKey(mafiaId)) return false; // filter out votes for users not in the game
 
-            if (!Votes.ContainsKey(userId)) return; // user hasn't voted return
+            if (!Votes.ContainsKey(userId)) return false; // user hasn't voted return
 
-            if (!Votes[userId].Contains(mafiaId)) return; // we don't have this vote anyways
+            if (!Votes[userId].Contains(mafiaId)) return false; // we don't have this vote anyways
 
             Votes[userId] = Votes[userId].Where(u => u != mafiaId).ToArray();
+            return true;
         }
 
         public bool Score()
@@ -159,10 +172,16 @@ namespace Discord.Mafia
             return true;
         }
 
-        public void PopulateUser(Func<ulong, IUser> getUser)
+        public static async Task<Game> GetGameAsync(ulong id, IDiscordClient channel, LiteCollection<Game> collection)
         {
-            foreach (var u in Players.Values)
-                u.DiscordUser = getUser(u.Id);
+            var game = collection.FindOne(g => g.Id == id);
+            if (game == null)
+                throw new KeyNotFoundException();
+
+            foreach (var u in game.Players.Values)
+                u.DiscordUser = await channel.GetUserAsync(u.Id);
+
+            return game;
         }
 
         private static Game createNormalMafiaGame(List<IUser> users, int numMafias)

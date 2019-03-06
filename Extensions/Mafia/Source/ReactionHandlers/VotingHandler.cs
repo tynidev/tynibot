@@ -1,10 +1,6 @@
-﻿using Discord.Commands;
-using Discord.WebSocket;
+﻿using Discord.WebSocket;
 using LiteDB;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using TyniBot;
 
@@ -18,65 +14,82 @@ namespace Discord.Mafia
         public ulong GameId { get; set; }
 
         private ReactionContext Context;
+        private IUser UserReacted;
+        private Player PlayerVoted;
+        private Game Game;
+        private LiteCollection<Game> Games;
 
-        public VotingHandler() { }
+        [BsonIgnore]
+        public static bool PrivateVoting { get { return false; } }
+
+        #region IReactionHandler
 
         public async Task ReactionAdded(ReactionContext context, SocketReaction reactionAdded)
         {
-            Context = context;
-            var games = context.Database.GetCollection<Game>();
-            var game = MafiaCommand.GetGame(this.GameId, context.Guild.GetUser, games);
-            var votedPlayer = game.Players.Where(p => p.Value.Emoji == reactionAdded.Emote.Name).First().Value;
-
-            if(votedPlayer.Id == reactionAdded.UserId || // we don't allow you to vote for yourself
-               (game.Votes.ContainsKey(reactionAdded.UserId) && game.Votes[reactionAdded.UserId].Length >= game.Mafia.Count)) // we don't allow more than mafia votes
+            if(!(await ValidateAsync(context, reactionAdded)) || // do we have everything we need
+               !Game.AddVote(UserReacted.Id, PlayerVoted.Id))
             {
-                await context.Message.RemoveReactionAsync(reactionAdded.Emote, reactionAdded.User.Value);
+                if (!UserReacted.IsBot) // we don't need to remove messages we ourselves put there
+                {
+                    if(PrivateVoting)
+                    {
+                        await context.Channel.SendMessageAsync($"Vote is invalid and will be ignored. You can not vote for yourself and you can only vote {Game.Mafia.Count} times.");
+                    }
+                    else
+                    {
+                        await context.Message.RemoveReactionAsync(reactionAdded.Emote, reactionAdded.User.Value);
+                    }
+                }
                 return;
             }
 
-            game.AddVote(reactionAdded.UserId, votedPlayer.Id);
-            games.Update(game);
+            Games.Update(Game);
 
-            if(game.Score())
+            if (Game.Score())
             {
-                await OutputGameEnd(game);
+                Games.Update(Game);
+                await Output.Score(Game, Context.Channel);
             }
         }
 
-        public async Task OutputGameEnd(Game game)
+        public async Task ReactionRemoved(ReactionContext context, SocketReaction reactionRemoved)
         {
-            EmbedBuilder embedBuilder = new EmbedBuilder();
+            if (!(await ValidateAsync(context, reactionRemoved)))
+                return;   
 
-            var ordered = game.Players.OrderByDescending(x => x.Value.Score);
+            Game.RemoveVote(reactionRemoved.UserId, PlayerVoted.Id);
+            Games.Update(Game);
 
-            embedBuilder.AddField("Score: ", string.Join("\r\n", ordered.Select(p => $"{p.Value.Mention} = {p.Value.Score}")));
-
-            embedBuilder.AddField("Mafia: ", string.Join(' ', game.Mafia.Select(u => u.Mention)));
-            if (game.Joker != null)
-                embedBuilder.AddField("Joker: ", game.Joker.Mention);
-
-            await Context.Channel.SendMessageAsync($"**Game Over! {ordered.First().Value.Mention} Won!**", false, embedBuilder.Build());
-        }
-
-        public Task ReactionRemoved(ReactionContext context, SocketReaction reactionRemoved)
-        {
-            var games = context.Database.GetCollection<Game>();
-            var game = MafiaCommand.GetGame(this.GameId, context.Guild.GetUser, games);
-            var votedPlayer = game.Players.Where(p => p.Value.Emoji == reactionRemoved.Emote.Name).First().Value;
-
-            game.RemoveVote(reactionRemoved.UserId, votedPlayer.Id);
-            games.Update(game);
-
-            return Task.CompletedTask;
+            return;
         }
 
         public Task ReactionsCleared(ReactionContext context)
         {
-            var games = context.Database.GetCollection<Game>();
-            var game = MafiaCommand.GetGame(this.GameId, context.Guild.GetUser, games);
-
             return Task.CompletedTask;
         }
+
+        #endregion
+
+        #region Helpers
+
+        private async Task<bool> ValidateAsync(ReactionContext context, SocketReaction reaction)
+        {
+            if (context == null || reaction == null || !reaction.User.IsSpecified) return false;
+
+            Context = context;
+
+            UserReacted = reaction.User.Value;
+
+            if (UserReacted.IsBot || UserReacted.IsWebhook) return false;
+
+            Games = Context.Database.GetCollection<Game>();
+
+            Game = await Game.GetGameAsync(this.GameId, Context.Client, Games);
+
+            PlayerVoted = Game.Players.Where(p => p.Value.Emoji == reaction.Emote.Name).First().Value;
+            return true;
+        }
+
+        #endregion
     }
 }

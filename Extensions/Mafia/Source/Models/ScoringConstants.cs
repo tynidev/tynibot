@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Discord.Mafia
 {
-    static class ScoringConstants
+    public static class ScoringConstants
     {
         public const int GuessedMafia = 2; // two points for each correct vote as villager
         public const int WinningGame = 1; // one point for winning as villager
