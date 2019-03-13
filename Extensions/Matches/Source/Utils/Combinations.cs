@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Discord.Teams
+namespace Discord.Matches
 {
     class Combinations
     {

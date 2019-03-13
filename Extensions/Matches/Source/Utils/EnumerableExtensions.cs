@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Discord.Teams
+namespace Discord.Matches
 {
     public static class EnumerableExtensions
     {

@@ -23,11 +23,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Recruiting", "Extensions\Re
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests", "Extensions\Mafia\UnitTests\UnitTests.csproj", "{6A6F7913-277D-425B-9335-A60C6B0BF082}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Teams", "Teams", "{58BB4976-8176-4166-8105-EA55E2145D8B}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Matches", "Matches", "{58BB4976-8176-4166-8105-EA55E2145D8B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Teams", "Extensions\Teams\Source\Teams.csproj", "{5A69DE86-0248-43F7-B1DD-48F46BDCA256}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Matches", "Extensions\Matches\Source\Matches.csproj", "{5A69DE86-0248-43F7-B1DD-48F46BDCA256}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests", "Extensions\Teams\UnitTests\UnitTests.csproj", "{4A515585-9944-4EB9-912B-5E85F6E07AFB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests", "Extensions\Matches\UnitTests\UnitTests.csproj", "{4A515585-9944-4EB9-912B-5E85F6E07AFB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

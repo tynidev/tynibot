@@ -4,12 +4,12 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
 
-namespace Discord.Teams
+namespace Discord.Matches
 {
-    public class TeamCommand : ModuleBase<TyniBot.CommandContext>
+    public class MatchesCommand : ModuleBase<TyniBot.CommandContext>
     {
-        [Command("teams"), Summary("Output all the possible combinations of teams in random order!")]
-        public async Task Teams([Remainder]string message = "")
+        [Command("matches"), Summary("Output all the possible combinations of teams in random order!")]
+        public async Task Matches([Remainder]string message = "")
         {
             var users = Context.Message.MentionedUsers.Select(s => s.Mention).Shuffle().ToList();
 

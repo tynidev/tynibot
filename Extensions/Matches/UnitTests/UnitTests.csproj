@@ -5,9 +5,9 @@
 
     <IsPackable>false</IsPackable>
 
-    <AssemblyName>Teams.UnitTests</AssemblyName>
+    <AssemblyName>Matches.UnitTests</AssemblyName>
 
-    <RootNamespace>Teams.UnitTests</RootNamespace>
+    <RootNamespace>Matches.UnitTests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,7 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Common\Common.csproj" />
-    <ProjectReference Include="..\Source\Teams.csproj" />
+    <ProjectReference Include="..\Source\Matches.csproj" />
   </ItemGroup>
 
 </Project>

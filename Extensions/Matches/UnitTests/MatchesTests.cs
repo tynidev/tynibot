@@ -1,20 +1,20 @@
-using Discord.Teams;
+using Discord.Matches;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
 
-namespace Teams.UnitTests
+namespace Matches.UnitTests
 {
     [TestClass]
-    public class TeamsTests
+    public class MatchesTests
     {
         [TestMethod]
         public void Test6Player()
         {
             var players = GeneratePlayers(6);
-            var matches = TeamCommand.GetUniqueMatches(players);
+            var matches = MatchesCommand.GetUniqueMatches(players);
 
             VerifyMatch(matches, players, 10);
         }
@@ -23,7 +23,7 @@ namespace Teams.UnitTests
         public void Test4Player()
         {
             var players = GeneratePlayers(4);
-            var matches = TeamCommand.GetUniqueMatches(players);
+            var matches = MatchesCommand.GetUniqueMatches(players);
 
             VerifyMatch(matches, players, 3);
         }
@@ -32,7 +32,7 @@ namespace Teams.UnitTests
         public void Test2Player()
         {
             var players = GeneratePlayers(2);
-            var matches = TeamCommand.GetUniqueMatches(players);
+            var matches = MatchesCommand.GetUniqueMatches(players);
 
             VerifyMatch(matches, players, 1);
         }
@@ -40,23 +40,23 @@ namespace Teams.UnitTests
         [TestMethod]
         public void TestErrors()
         {
-            Action act = () => TeamCommand.GetUniqueMatches(GeneratePlayers(3));
+            Action act = () => MatchesCommand.GetUniqueMatches(GeneratePlayers(3));
             act.Should().Throw<Exception>();
 
-            act = () => TeamCommand.GetUniqueMatches(GeneratePlayers(1));
+            act = () => MatchesCommand.GetUniqueMatches(GeneratePlayers(1));
             act.Should().Throw<Exception>();
 
-            act = () => TeamCommand.GetUniqueMatches(GeneratePlayers(0));
+            act = () => MatchesCommand.GetUniqueMatches(GeneratePlayers(0));
             act.Should().Throw<Exception>();
 
-            act = () => TeamCommand.GetUniqueMatches(GeneratePlayers(8));
+            act = () => MatchesCommand.GetUniqueMatches(GeneratePlayers(8));
             act.Should().Throw<Exception>();
 
             var players = GeneratePlayers(1);
             players.Add(string.Empty);
             players.Add(null);
             players.Add("   ");
-            act = () => TeamCommand.GetUniqueMatches(players);
+            act = () => MatchesCommand.GetUniqueMatches(players);
             act.Should().Throw<Exception>();
         }
 

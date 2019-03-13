@@ -58,7 +58,7 @@ namespace TyniBot
                 DefaultHandler.Commands.AddModuleAsync(typeof(Ping), Services).Wait();
                 DefaultHandler.Commands.AddModuleAsync(typeof(Clear), Services).Wait();
                 DefaultHandler.Commands.AddModuleAsync(typeof(Discord.Mafia.MafiaCommand), Services).Wait();
-                DefaultHandler.Commands.AddModuleAsync(typeof(Discord.Teams.TeamCommand), Services).Wait();
+                DefaultHandler.Commands.AddModuleAsync(typeof(Discord.Matches.MatchesCommand), Services).Wait();
 
                 // TODO: Dynamically load these from DLLs
                 ChannelHandlers.Add("recruiting", new Discord.Recruiting.Recruiting(Client, Services));
