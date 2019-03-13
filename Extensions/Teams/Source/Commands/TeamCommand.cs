@@ -13,6 +13,18 @@ namespace Discord.Teams
         {
             var users = Context.Message.MentionedUsers.Select(s => s.Mention).Shuffle().ToList();
 
+            if (users.Count < 2)
+            {
+                await Context.Channel.SendMessageAsync("Must have at least 2 players.");
+                return;
+            }
+
+            if (users.Count % 2 != 0)
+            {
+                await Context.Channel.SendMessageAsync("Must have an equal number of players.");
+                return;
+            }
+
             var teams = ItemCombinations<string>(users, minimumItems: users.Count / 2, maximumItems: users.Count / 2);
             var matches = new List<Tuple<List<string>, List<string>>>();
 
