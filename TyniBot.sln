@@ -27,6 +27,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Teams", "Teams", "{58BB4976
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Teams", "Extensions\Teams\Source\Teams.csproj", "{5A69DE86-0248-43F7-B1DD-48F46BDCA256}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests", "Extensions\Teams\UnitTests\UnitTests.csproj", "{4A515585-9944-4EB9-912B-5E85F6E07AFB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -57,6 +59,10 @@ Global
 		{5A69DE86-0248-43F7-B1DD-48F46BDCA256}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5A69DE86-0248-43F7-B1DD-48F46BDCA256}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5A69DE86-0248-43F7-B1DD-48F46BDCA256}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4A515585-9944-4EB9-912B-5E85F6E07AFB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4A515585-9944-4EB9-912B-5E85F6E07AFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4A515585-9944-4EB9-912B-5E85F6E07AFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4A515585-9944-4EB9-912B-5E85F6E07AFB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -71,6 +77,7 @@ Global
 		{6A6F7913-277D-425B-9335-A60C6B0BF082} = {5615B2E6-B382-4B40-BB56-2E569948C2B6}
 		{58BB4976-8176-4166-8105-EA55E2145D8B} = {A351B246-5276-4426-9749-2AA108E2D804}
 		{5A69DE86-0248-43F7-B1DD-48F46BDCA256} = {58BB4976-8176-4166-8105-EA55E2145D8B}
+		{4A515585-9944-4EB9-912B-5E85F6E07AFB} = {58BB4976-8176-4166-8105-EA55E2145D8B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6CCE80CF-C839-4916-BDAB-C40D113DD20F}

@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+
+    <IsPackable>false</IsPackable>
+
+    <AssemblyName>Teams.UnitTests</AssemblyName>
+
+    <RootNamespace>Teams.UnitTests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentAssertions" Version="5.6.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.0" />
+    <PackageReference Include="Moq" Version="4.10.1" />
+    <PackageReference Include="MSTest.TestAdapter" Version="1.2.1" />
+    <PackageReference Include="MSTest.TestFramework" Version="1.2.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Common\Common.csproj" />
+    <ProjectReference Include="..\Source\Teams.csproj" />
+  </ItemGroup>
+
+</Project>

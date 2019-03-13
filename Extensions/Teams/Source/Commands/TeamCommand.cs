@@ -45,31 +45,32 @@ namespace Discord.Teams
 
         public static List<Tuple<List<string>, List<string>>> GetUniqueMatches(List<string> players)
         {
+            players = players.Where(p => !string.IsNullOrWhiteSpace(p)).ToList(); // remove empty entries
+
             if (players.Count < 2)
                 throw new Exception("Must have at least 2 players.");
-
-            if (players.Count % 2 != 0)
-                throw new Exception("Must have an equal number of players.");
 
             if (players.Count > 6)
                 throw new Exception("Only supports up to 6 players total at this time.");
 
-            players = players.Shuffle().ToList();
+            if (players.Count % 2 != 0)
+                throw new Exception("Must have an equal number of players.");
+
+            players = players.Shuffle().ToList(); // randmoize initial ordering
 
             var teamSize = players.Count / 2;
-            var teams = Combinations.Combine<string>(players, minimumItems: teamSize, maximumItems: teamSize);
+            var uniqueTeams = Combinations.Combine<string>(players, minimumItems: teamSize, maximumItems: teamSize);
             var matches = new List<Tuple<List<string>, List<string>>>();
 
-            while (teams.Count > 0)
+            while (uniqueTeams.Count > 0)
             {
-                var team1 = teams.First();
-                var team2 = teams.Where(l => l.ContainsNone(team1)).First();
+                var team1 = uniqueTeams.First();
+                var team2 = uniqueTeams.Where(l => l.ContainsNone(team1)).First();
 
-                // put teams in tuple
                 matches.Add(new Tuple<List<string>, List<string>>(team1, team2));
 
-                teams.Remove(team1);
-                teams.Remove(team2);
+                uniqueTeams.Remove(team1);
+                uniqueTeams.Remove(team2);
             }
 
             return matches;
