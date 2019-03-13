@@ -45,16 +45,16 @@ namespace Discord.Matches
 
         public static List<Tuple<List<string>, List<string>>> GetUniqueMatches(List<string> players)
         {
-            players = players.Where(p => !string.IsNullOrWhiteSpace(p)).ToList(); // remove empty entries
+            players = players.Where(p => !string.IsNullOrWhiteSpace(p)).Distinct().ToList(); // remove empty entries
 
             if (players.Count < 2)
-                throw new Exception("Must have at least 2 players.");
+                throw new Exception("Must have at least 2 unique players.");
 
             if (players.Count > 6)
-                throw new Exception("Only supports up to 6 players total at this time.");
+                throw new Exception("Only supports up to 6 unique players total at this time.");
 
             if (players.Count % 2 != 0)
-                throw new Exception("Must have an equal number of players.");
+                throw new Exception("Must have an equal number of unique players.");
 
             players = players.Shuffle().ToList(); // randmoize initial ordering
 

@@ -58,6 +58,14 @@ namespace Matches.UnitTests
             players.Add("   ");
             act = () => MatchesCommand.GetUniqueMatches(players);
             act.Should().Throw<Exception>();
+
+            players = GeneratePlayers(0);
+            players.Add("1");
+            players.Add("1");
+            players.Add("1");
+            players.Add("1");
+            act = () => MatchesCommand.GetUniqueMatches(players);
+            act.Should().Throw<Exception>();
         }
 
         private void VerifyMatch(List<Tuple<List<string>, List<string>>> matches, List<string> players, int expectedMatches)
