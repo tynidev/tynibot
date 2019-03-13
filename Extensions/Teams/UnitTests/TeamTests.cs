@@ -1,13 +1,8 @@
-using Discord;
 using Discord.Teams;
-using LiteDB;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using TyniBot;
 using FluentAssertions;
 
 namespace Teams.UnitTests
@@ -31,6 +26,15 @@ namespace Teams.UnitTests
             var matches = TeamCommand.GetUniqueMatches(players);
 
             VerifyMatch(matches, players, 3);
+        }
+
+        [TestMethod]
+        public void Test2Player()
+        {
+            var players = GeneratePlayers(2);
+            var matches = TeamCommand.GetUniqueMatches(players);
+
+            VerifyMatch(matches, players, 1);
         }
 
         [TestMethod]
