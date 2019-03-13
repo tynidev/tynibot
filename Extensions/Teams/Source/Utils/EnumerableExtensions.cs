@@ -4,8 +4,13 @@ using System.Linq;
 
 namespace Discord.Teams
 {
-    public static class EnumerableExtensions
+    static class EnumerableExtensions
     {
+        public static bool ContainsNone<T>(this IEnumerable<T> a, IEnumerable<T> b)
+        {
+            return a.Except(b).Count() == a.Count();
+        }
+
         public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> source)
         {
             return source.Shuffle(new Random());
