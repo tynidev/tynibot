@@ -9,8 +9,6 @@ using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
 using LiteDB;
-using Discord.Recruiting;
-using Discord.Mafia;
 
 namespace TyniBot
 {
@@ -59,10 +57,11 @@ namespace TyniBot
                 // TODO: Dynamically load these from DLLs
                 DefaultHandler.Commands.AddModuleAsync(typeof(Ping), Services).Wait();
                 DefaultHandler.Commands.AddModuleAsync(typeof(Clear), Services).Wait();
-                DefaultHandler.Commands.AddModuleAsync(typeof(MafiaCommand), Services).Wait();
+                DefaultHandler.Commands.AddModuleAsync(typeof(Discord.Mafia.MafiaCommand), Services).Wait();
+                DefaultHandler.Commands.AddModuleAsync(typeof(Discord.Teams.TeamCommand), Services).Wait();
 
                 // TODO: Dynamically load these from DLLs
-                ChannelHandlers.Add("recruiting", new Recruiting(Client, Services));
+                ChannelHandlers.Add("recruiting", new Discord.Recruiting.Recruiting(Client, Services));
 
                 Client.Log += Log;
                 Client.MessageReceived += MessageReceived;
