@@ -25,14 +25,14 @@ namespace TyniBot
             var msgToBePinned = (await Context.Channel.GetMessagesAsync(1).FlattenAsync()).FirstOrDefault();
 
             // Write the message to the channel
-            var msg = await Context.Channel.SendMessageAsync($"**Pinned Message from: {msgToBePinned.Author.Mention}\n\n**{msgToBePinned.Content}");
+            var msg = await Context.Channel.SendMessageAsync($"**Pinned Message from: {msgToBePinned.Author.Username}\n\n**{msgToBePinned.Content}");
 
             // Insert pinned message into database
             msgCollection.Insert(new PinnedMessage()
             {
                 ChannelId = Context.Channel.Id,
                 MsgId = msg.Id,
-                Author = msgToBePinned.Author.Mention,
+                Author = msgToBePinned.Author.Username,
                 Content = msgToBePinned.Content
             });
             msgCollection.EnsureIndex(x => x.ChannelId);
