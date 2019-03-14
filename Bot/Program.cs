@@ -52,16 +52,24 @@ namespace TyniBot
             {
                 Context = new BotContext(Client, Database, Settings); 
 
-                DefaultHandler = new DefaultHandler(Client, Services);
+                DefaultHandler = new DefaultHandler(Client, Services, new List<Type>());
 
-                // TODO: Dynamically load these from DLLs
-                DefaultHandler.Commands.AddModuleAsync(typeof(Ping), Services).Wait();
-                DefaultHandler.Commands.AddModuleAsync(typeof(Clear), Services).Wait();
-                DefaultHandler.Commands.AddModuleAsync(typeof(Discord.Mafia.MafiaCommand), Services).Wait();
-                DefaultHandler.Commands.AddModuleAsync(typeof(Discord.Matches.MatchesCommand), Services).Wait();
+                var DefaultCommands = new List<Type>()
+                {
+                    typeof(Ping),
+                    typeof(Clear),
+                    typeof(Discord.Mafia.MafiaCommand),
+                    typeof(Discord.Matches.MatchesCommand)
+                };
+
+                foreach(var type in DefaultCommands)
+                    DefaultHandler.Commands.AddModuleAsync(type, Services).Wait();
 
                 // TODO: Dynamically load these from DLLs
                 ChannelHandlers.Add("recruiting", new Discord.Recruiting.Recruiting(Client, Services));
+                ChannelHandlers.Add("bot-input", new PinMessageHandler(Client, Services, DefaultCommands));
+                ChannelHandlers.Add("o365-chat", new PinMessageHandler(Client, Services, DefaultCommands));
+                ChannelHandlers.Add("tynibot", new PinMessageHandler(Client, Services, DefaultCommands));
 
                 Client.Log += Log;
                 Client.MessageReceived += MessageReceived;

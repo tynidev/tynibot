@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
@@ -14,7 +15,7 @@ namespace TyniBot
         public CommandService Commands { get; }
         protected ServiceProvider Services;
 
-        public DefaultHandler(IDiscordClient client, ServiceProvider services)
+        public DefaultHandler(IDiscordClient client, ServiceProvider services, List<Type> SupportedCommands = null)
         {
             Client = client;
             Services = services;
@@ -25,6 +26,10 @@ namespace TyniBot
                 DefaultRunMode = RunMode.Async,
                 LogLevel = LogSeverity.Debug
             });
+
+            if (SupportedCommands != null)
+                foreach (var type in SupportedCommands)
+                    Commands.AddModuleAsync(type, Services).Wait();
         }
 
         public virtual async Task<IResult> MessageReceived(CommandContext context)
@@ -32,7 +37,7 @@ namespace TyniBot
             var message = context.Message;
 
             int cmdPos = 0;
-            if (!(message.HasCharPrefix('!', ref cmdPos) || message.HasMentionPrefix(Client.CurrentUser, ref cmdPos))) return ExecuteResult.FromSuccess();
+            if (!(message.HasCharPrefix('!', ref cmdPos) || message.HasMentionPrefix(Client.CurrentUser, ref cmdPos))) return ExecuteResult.FromError(CommandError.UnknownCommand, "");
 
             return await Commands.ExecuteAsync(context, cmdPos, Services);
         }
