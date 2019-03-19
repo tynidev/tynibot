@@ -83,7 +83,7 @@ namespace Discord.Mafia
                 if (existingGame != null)
                     games.Delete(g => g.Id == existingGame.Id);
             }
-            catch(Exception e){}
+            catch(Exception){}
 
             // Insert into DB
             games.Insert(game);
