@@ -30,39 +30,37 @@ namespace Discord.Mafia
                 return;
             }
 
-            switch (reaction.Emote.Name) // Which reaction was clicked?
+            if (reaction.Emote.Name == Output.OrangeEmoji) // Which reaction was clicked?
             {
-                case Output.OrangeEmoji:
-                    await SelectWinningTeamAsync(Team.Orange);
-                    break;
+                await SelectWinningTeamAsync(Team.Orange);
+            }
+            else if (reaction.Emote.Name == Output.BlueEmoji)
+            {
+                await SelectWinningTeamAsync(Team.Blue);
+            }
+            else if (reaction.Emote.Name == Output.OvertimeEmoji)
+            {
+                Game.OvertimeReached = true;
+                Games.Update(Game);
+            }
+            else if (reaction.Emote.Name == Output.EndedEmoji)
+            {
+                if (Game.WinningTeam == null) // if we don't have a winner remove emoji and return
+                {
+                    await Context.Message.RemoveReactionAsync(new Emoji(Output.EndedEmoji), UserReacted);
+                    return;
+                }
 
-                case Output.BlueEmoji:
-                    await SelectWinningTeamAsync(Team.Blue);
-                    break;
+                // Un-register this message for receiving new reactions
+                ReactionHandlers.Delete(u => u.MsgId == this.MsgId);
 
-                case Output.OvertimeEmoji:
-                    Game.OvertimeReached = true;
-                    Games.Update(Game);
-                    break;
+                // Output voting notification message
+                var votingMessages = await Output.StartVoting(Game, Context.Channel, VotingHandler.PrivateVoting);
+                Games.Update(Game); // Update so we store emojis on user
 
-                case Output.EndedEmoji:
-                    if (Game.WinningTeam == null) // if we don't have a winner remove emoji and return
-                    {
-                        await Context.Message.RemoveReactionAsync(new Emoji(Output.EndedEmoji), UserReacted);
-                        return;
-                    }
-
-                    // Un-register this message for receiving new reactions
-                    ReactionHandlers.Delete(u => u.MsgId == this.MsgId);
-
-                    // Output voting notification message
-                    var votingMessages = await Output.StartVoting(Game, Context.Channel, VotingHandler.PrivateVoting);
-                    Games.Update(Game); // Update so we store emojis on user
-
-                    // Register new message for receiving reactions
-                    foreach (var votingMessage in votingMessages)
-                        ReactionHandlers.Insert(new VotingHandler() { MsgId = votingMessage.Id, GameId = Game.Id });
-                    break;
+                // Register new message for receiving reactions
+                foreach (var votingMessage in votingMessages)
+                    ReactionHandlers.Insert(new VotingHandler() { MsgId = votingMessage.Id, GameId = Game.Id });
             }
         }
 

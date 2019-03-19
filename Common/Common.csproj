@@ -13,4 +13,10 @@
     <PackageReference Include="LiteDB" Version="4.1.4" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Utils\emojis.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

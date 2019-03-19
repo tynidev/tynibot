@@ -5,22 +5,34 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TyniBot;
 
 namespace Discord.Mafia
 {
     public class Output
     {
-        public const string OrangeEmoji = "\ud83d\udd36";
-        public const string BlueEmoji = "\ud83d\udd37";
-        public const string OvertimeEmoji = "\u23f0";
-        public const string EndedEmoji = "\ud83c\udfc1";
+        public static readonly string OrangeEmoji = EmojiLibrary.ByShortname(":large_orange_diamond:").Unicode;
+        public static readonly string BlueEmoji = EmojiLibrary.ByShortname(":large_blue_diamond:").Unicode;
+        public static readonly string OvertimeEmoji = EmojiLibrary.ByShortname(":alarm_clock:").Unicode;
+        public static readonly string EndedEmoji = EmojiLibrary.ByShortname(":checkered_flag:").Unicode;
 
-        private static string[] PossiblePlayerEmojis
+        private static string[] PossiblePlayerEmojis()
         {
-            get
+            var possible = new List<string[]>()
             {
-                return new string[] { "1\u20e3", "2\u20e3", "3\u20e3", "4\u20e3", "5\u20e3", "6\u20e3", "7\u20e3", "8\u20e3" };
-            }
+                new string[]{
+                    EmojiLibrary.ByShortname(":one:").Unicode,
+                    EmojiLibrary.ByShortname(":two:").Unicode,
+                    EmojiLibrary.ByShortname(":three:").Unicode,
+                    EmojiLibrary.ByShortname(":four:").Unicode,
+                    EmojiLibrary.ByShortname(":five:").Unicode,
+                    EmojiLibrary.ByShortname(":six:").Unicode,
+                    EmojiLibrary.ByShortname(":seven:").Unicode,
+                    EmojiLibrary.ByShortname(":eight:").Unicode,
+                },
+            };
+
+            return possible[0];
         }
 
         public static async Task<List<IUserMessage>> NotifyStartGame(Game game)
@@ -57,7 +69,7 @@ namespace Discord.Mafia
 
             int i = 0;
             string players = "";
-            string[] emojis = PossiblePlayerEmojis;
+            string[] emojis = PossiblePlayerEmojis();
             foreach (var p in game.Players.Values)
             {
                 p.Emoji = emojis[i++];
