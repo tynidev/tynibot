@@ -50,14 +50,14 @@ namespace Discord.Mafia
 
             EmbedBuilder embedBuilder = new EmbedBuilder();
 
-            embedBuilder.AddField("Orange Team:", string.Join(' ', game.TeamOrange.Select(u => u.Mention)));
             embedBuilder.AddField("Blue Team:", string.Join(' ', game.TeamBlue.Select(u => u.Mention)));
+            embedBuilder.AddField("Orange Team:", string.Join(' ', game.TeamOrange.Select(u => u.Mention)));
 
-            embedBuilder.AddField("Game Result:", $"{Output.OrangeEmoji} Orange Won! {Output.BlueEmoji} Blue Won! {Output.OvertimeEmoji} Went to OT! {Output.EndedEmoji} End Game!");
+            embedBuilder.AddField("Game Result:", $"{Output.BlueEmoji} Blue Won! {Output.OrangeEmoji} Orange Won! {Output.OvertimeEmoji} Went to OT! {Output.EndedEmoji} End Game!");
 
             var msg = await channel.SendMessageAsync($"**New Mafia Game! {game.Mode} with {game.Mafia.Count}**", false, embedBuilder.Build());
 
-            var reactions = new List<IEmote>() { new Emoji(Output.OrangeEmoji), new Emoji(Output.BlueEmoji), new Emoji(Output.OvertimeEmoji), new Emoji(Output.EndedEmoji) };
+            var reactions = new List<IEmote>() { new Emoji(Output.BlueEmoji), new Emoji(Output.OrangeEmoji), new Emoji(Output.OvertimeEmoji), new Emoji(Output.EndedEmoji) };
             await msg.AddReactionsAsync(reactions.ToArray());
 
             return msg;
