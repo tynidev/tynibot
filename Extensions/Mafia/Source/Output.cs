@@ -16,23 +16,23 @@ namespace Discord.Mafia
         public static readonly string OvertimeEmoji = EmojiLibrary.ByShortname(":alarm_clock:").Unicode;
         public static readonly string EndedEmoji = EmojiLibrary.ByShortname(":checkered_flag:").Unicode;
 
+        private static List<string[]> PossibleEmjoiGroups = new List<string[]>()
+        {
+            new string[]{
+                EmojiLibrary.ByShortname(":one:").Unicode,
+                EmojiLibrary.ByShortname(":two:").Unicode,
+                EmojiLibrary.ByShortname(":three:").Unicode,
+                EmojiLibrary.ByShortname(":four:").Unicode,
+                EmojiLibrary.ByShortname(":five:").Unicode,
+                EmojiLibrary.ByShortname(":six:").Unicode,
+                EmojiLibrary.ByShortname(":seven:").Unicode,
+                EmojiLibrary.ByShortname(":eight:").Unicode,
+            },
+        };
+
         private static string[] PossiblePlayerEmojis()
         {
-            var possible = new List<string[]>()
-            {
-                new string[]{
-                    EmojiLibrary.ByShortname(":one:").Unicode,
-                    EmojiLibrary.ByShortname(":two:").Unicode,
-                    EmojiLibrary.ByShortname(":three:").Unicode,
-                    EmojiLibrary.ByShortname(":four:").Unicode,
-                    EmojiLibrary.ByShortname(":five:").Unicode,
-                    EmojiLibrary.ByShortname(":six:").Unicode,
-                    EmojiLibrary.ByShortname(":seven:").Unicode,
-                    EmojiLibrary.ByShortname(":eight:").Unicode,
-                },
-            };
-
-            return possible[0];
+            return PossibleEmjoiGroups[0];
         }
 
         public static async Task<List<IUserMessage>> NotifyStartGame(Game game)
