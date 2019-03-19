@@ -101,9 +101,9 @@ namespace Discord.Mafia
 
             var ordered = game.Players.OrderByDescending(x => x.Value.Score);
 
-            embedBuilder.AddField("Score: ", string.Join("\r\n", ordered.Select(p => $"{p.Emoji} {p.Value.Mention} = {p.Value.Score}")));
+            embedBuilder.AddField("Score: ", string.Join("\r\n", ordered.Select(p => $"{p.Value.Emoji} {p.Value.Mention} = {p.Value.Score}")));
 
-            embedBuilder.AddField("Mafia: ", string.Join(' | ', game.Mafia.Select(u => $"{u.Emoji} {u.Mention}")));
+            embedBuilder.AddField("Mafia: ", string.Join(" | ", game.Mafia.Select(u => $"{u.Emoji} {u.Mention}")));
             if (game.Joker != null)
                 embedBuilder.AddField("Joker: ", $"{game.Joker.Emoji} {game.Joker.Mention}");
 
