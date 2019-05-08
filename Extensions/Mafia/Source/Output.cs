@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TyniBot;
+using EmojiData;
 
 namespace Discord.Mafia
 {
@@ -28,51 +29,12 @@ namespace Discord.Mafia
                 EmojiLibrary.ByShortname(":seven:").Unicode,
                 EmojiLibrary.ByShortname(":eight:").Unicode,
             },
-            new string[]{
-                EmojiLibrary.ByShortname(":dog:").Unicode,
-                EmojiLibrary.ByShortname(":cat:").Unicode,
-                EmojiLibrary.ByShortname(":fox:").Unicode,
-                EmojiLibrary.ByShortname(":lion_face:").Unicode,
-                EmojiLibrary.ByShortname(":monkey_face:").Unicode,
-                EmojiLibrary.ByShortname(":chicken:").Unicode,
-                EmojiLibrary.ByShortname(":octopus:").Unicode,
-                EmojiLibrary.ByShortname(":fish:").Unicode,
-            },
-            new string[]{
-                EmojiLibrary.ByShortname(":banana:").Unicode,
-                EmojiLibrary.ByShortname(":watermelon:").Unicode,
-                EmojiLibrary.ByShortname(":cherries:").Unicode,
-                EmojiLibrary.ByShortname(":kiwi:").Unicode,
-                EmojiLibrary.ByShortname(":eggplant:").Unicode,
-                EmojiLibrary.ByShortname(":hot_pepper:").Unicode,
-                EmojiLibrary.ByShortname(":hotdog:").Unicode,
-                EmojiLibrary.ByShortname(":cheese:").Unicode,
-            },
-            new string[]{
-                EmojiLibrary.ByShortname(":clown:").Unicode,
-                EmojiLibrary.ByShortname(":cowboy:").Unicode,
-                EmojiLibrary.ByShortname(":ghost:").Unicode,
-                EmojiLibrary.ByShortname(":poop:").Unicode,
-                EmojiLibrary.ByShortname(":jack_o_lantern:").Unicode,
-                EmojiLibrary.ByShortname(":robot:").Unicode,
-                EmojiLibrary.ByShortname(":joy:").Unicode,
-                EmojiLibrary.ByShortname(":imp:").Unicode,
-            },
-            new string[]{
-                EmojiLibrary.ByShortname(":clown:").Unicode,
-                EmojiLibrary.ByShortname(":cowboy:").Unicode,
-                EmojiLibrary.ByShortname(":ghost:").Unicode,
-                EmojiLibrary.ByShortname(":poop:").Unicode,
-                EmojiLibrary.ByShortname(":jack_o_lantern:").Unicode,
-                EmojiLibrary.ByShortname(":robot:").Unicode,
-                EmojiLibrary.ByShortname(":joy:").Unicode,
-                EmojiLibrary.ByShortname(":imp:").Unicode,
-            }
         };
 
+        private static Random rand = new Random();
         private static string[] PossiblePlayerEmojis()
         {
-            return PossibleEmjoiGroups.PickRandom(1).Single();
+            return PossibleEmjoiGroups[rand.Next(PossibleEmjoiGroups.Count)];
         }
 
         public static async Task<List<IUserMessage>> NotifyStartGame(Game game)
