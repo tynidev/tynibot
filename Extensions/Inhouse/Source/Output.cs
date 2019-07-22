@@ -49,7 +49,11 @@ namespace Discord.Inhouse
         {
             string players = string.Join("\r\n", list.Select(p => p.Username));
             return await channel.SendMessageAsync($"The following players were removed from the Inhouse Queue!\r\n\r\n{players}");
-            throw new NotImplementedException();
+        }
+
+        public static async Task<IUserMessage> InHouseTeamsError(ISocketMessageChannel channel)
+        {
+            return await channel.SendMessageAsync("Something broke in the teams method...");
         }
     }
 }

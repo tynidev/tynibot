@@ -16,11 +16,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Common\Common.csproj" />
+    <ProjectReference Include="..\..\Matches\Source\Matches.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="ReactionHandlers\" />
     <Folder Include="Utils\" />
   </ItemGroup>
-  
 </Project>

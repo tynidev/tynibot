@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Discord.Matches
 {
-    class Combinations
+    public class Combinations
     {
         /// <summary>
         /// Method to create lists containing possible combinations of an input list of items. This is 

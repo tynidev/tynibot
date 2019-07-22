@@ -6,9 +6,29 @@ using System.Linq;
 using LiteDB;
 using TyniBot;
 using Discord.WebSocket;
+using Discord.Matches;
 
 namespace Discord.Inhouse
 {
+    public class TeamComparer : Comparer<Tuple<List<Player>, List<Player>>>
+    {
+        public override int Compare(Tuple<List<Player>, List<Player>> x, Tuple<List<Player>, List<Player>> y)
+        {
+            return MMRDifference(x).CompareTo(MMRDifference(y));
+        }
+
+        private int MMRDifference(Tuple<List<Player>, List<Player>> match)
+        {
+            // Foreach might be faster.
+
+            int mmrFirstTeam = match.Item1.Sum(item => item.MMR);
+
+            int mmrSecondTeam = match.Item2.Sum(item => item.MMR);
+
+            return mmrFirstTeam - mmrSecondTeam;
+        }
+    }
+
     public class InhouseCommand : ModuleBase<TyniBot.CommandContext>
     {
         Dictionary<string, Rank> RankMap = new Dictionary<string, Rank>()
@@ -88,7 +108,13 @@ namespace Discord.Inhouse
         public async Task TeamsCommand(string modeStr)
         {
             Mode mode = ParseMode(modeStr);
-            await DivideTeams(mode);
+            var matches = await DivideTeams(mode);
+
+            if (matches != null)
+            {
+
+            }
+
 
             // TODO: Output something
         }
@@ -182,19 +208,66 @@ namespace Discord.Inhouse
             return null;
         }
 
-        private async Task DivideTeams(Mode mode)
+        private async Task<List<Tuple<List<Player>, List<Player>>>> DivideTeams(Mode mode)
         {
             var queues = Context.Database.GetCollection<InhouseQueue>();
             try
             {
                 var queue = await InhouseQueue.GetQueueAsync(Context.Channel.Id, Context.Client, queues);
+                List<Player> players = queue.Players.Values.ToList();
+
+                int teamSize = Convert.ToInt32(mode);
+
+                var uniqueTeams = Combinations.Combine<Player>(players, minimumItems: teamSize, maximumItems: teamSize);
+                var matches = new List<Tuple<List<Player>, List<Player>>>();
+
+                while (uniqueTeams.Count > 0)
+                {
+                    var team1 = uniqueTeams.First();
+                    var team2 = uniqueTeams.Where(l => l.ContainsNone(team1)).First();
+
+                    matches.Add(new Tuple<List<Player>, List<Player>>(team1, team2));
+
+                    uniqueTeams.Remove(team1);
+                    uniqueTeams.Remove(team2);
+                }
+                TeamComparer teamComparer = new TeamComparer();
+                matches.Sort(teamComparer);
+
+                return matches;
             }
             catch (Exception)
             {
-                // TODO: Don't silently fail
+                await Output.InHouseTeamsError(Context.Channel);
             }
 
+            return null;
             // TODO: Calculate possible teams with queue.Players and Mode and return the possibilities 
+        }
+
+        private static async Task<IMessage> OutputUniqueMatches(List<Tuple<List<Player>, List<Player>>> matches, IMessageChannel channel)
+        {
+            EmbedBuilder embedBuilder = new EmbedBuilder();
+
+            for (int i = 0; i < matches.Count; i++)
+            {
+                var match = matches[i];
+                var team1 = string.Join(' ', match.Item1.Select(m => m.Username));
+                var team2 = string.Join(' ', match.Item2.Select(m => m.Username));
+
+                int team1MMR = match.Item1.Sum(item => item.MMR);
+                int team2MMR = match.Item2.Sum(item => item.MMR);
+
+                string team1Str = $"Orange: {team1}";
+                string team2Str = $"Blue: {team2}";
+                string team1MMRStr = $" OrangeMMR: {team1MMR}";
+                string team2MMRStr = $" BlueMMR: {team2MMR}";
+
+
+                embedBuilder.AddField($"Match {i + 1}:", team1Str + team1MMRStr + "\r\n" + team2Str + team2MMRStr);
+            }
+
+            return await channel.SendMessageAsync($"**Unique Matches: {matches.Count}**", false, embedBuilder.Build());
         }
 
         #endregion
