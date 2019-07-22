@@ -11,7 +11,7 @@ namespace Discord.Inhouse
         [BsonId]
         public ulong Id { get; set; }
         public string Username => DiscordUser?.Username == null ? string.Empty : DiscordUser.Username;
-        public int MMR = 0;
+        public int MMR { get; set; } = 0;
         #endregion
 
         #region IUser Members
