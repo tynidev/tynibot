@@ -41,14 +41,14 @@ namespace Discord.Inhouse
 
         public static async Task<IUserMessage> PlayersAdded(ISocketMessageChannel channel, InhouseQueue queue, List<Player> list)
         {
-            string players = string.Join("\r\n", list.Select(p => p.Username));
-            return await channel.SendMessageAsync($"The following players were added to the Inhouse Queue!\r\n\r\n{players}");
+            string players = string.Join("\r\n", queue.Players.Select(p => p.Value.Username));
+            return await channel.SendMessageAsync($"Players were added succesfully!\r\n\r\n Queue: {players}");
         }
 
         public static async Task<IUserMessage> PlayersRemoved(ISocketMessageChannel channel, InhouseQueue queue, List<Player> list)
         {
-            string players = string.Join("\r\n", list.Select(p => p.Username));
-            return await channel.SendMessageAsync($"The following players were removed from the Inhouse Queue!\r\n\r\n{players}");
+            string players = string.Join("\r\n", queue.Players.Select(p => p.Value.Username));
+            return await channel.SendMessageAsync($"Players were removed succesfully!\r\n\r\n Queue: {players}");
         }
 
         public static async Task<IUserMessage> InHouseTeamsError(ISocketMessageChannel channel)

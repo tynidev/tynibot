@@ -65,58 +65,83 @@ namespace Discord.Inhouse
         [Command("inhouse"), Summary("**!inhouse <rank=(c1,d2,p3 etc....)>** Creates a new game of inhouse soccar! Each individual player needs to join.")]
         public async Task NewInhouseCommand(string rank)
         {
-            int mmr = (int)ParseRank(rank);
-            var owner = Player.ToPlayer(Context.User, mmr);
-
-            var queue = await CreateQueue(owner);
-
-            await Output.QueueStarted(Context.Channel, queue);
+            try
+            {
+                int mmr = (int)ParseRank(rank);
+                var owner = Player.ToPlayer(Context.User, mmr);
+                var queue = await CreateQueue(owner);
+                await Output.QueueStarted(Context.Channel, queue);
+            }
+            catch (Exception e)
+            {
+                await Context.Channel.SendMessageAsync($"Error: {e.Message}");
+            }
         }
 
         [Command("join"), Summary("**!join <rank=(c1,d2,p3 etc....)>** Joins a new game of inhouse soccar!")]
         public async Task JoinCommand(string rank)
         {
-            int mmr = (int)ParseRank(rank);
-            var player = Player.ToPlayer(Context.User, mmr);
-
-            var queue = await QueuePlayer(player);
-
-            await Output.PlayersAdded(Context.Channel, queue, new List<Player>() { player });
+            try
+            {
+                int mmr = (int)ParseRank(rank);
+                var player = Player.ToPlayer(Context.User, mmr);
+                var queue = await QueuePlayer(player);
+                await Output.PlayersAdded(Context.Channel, queue, new List<Player>() { player });
+            }
+            catch (Exception e)
+            {
+                await Context.Channel.SendMessageAsync($"Error: {e.Message}");
+            }
         }
 
         [Command("leave"), Summary("**!leave** Leaves a new game of inhouse soccar!")]
         public async Task LeaveCommand()
         {
-            var player = Player.ToPlayer(Context.User, 0);
-            var players = new List<Player>() { player };
-
-            var queue = await DequeuePlayers(players);
-
-            await Output.PlayersRemoved(Context.Channel, queue, players);
+            try
+            {
+                var player = Player.ToPlayer(Context.User, 0);
+                var players = new List<Player>() { player };
+                var queue = await DequeuePlayers(players);
+                await Output.PlayersRemoved(Context.Channel, queue, players);
+            }
+            catch (Exception e)
+            {
+                await Context.Channel.SendMessageAsync($"Error: {e.Message}");
+            }
         }
 
         [Command("boot"), Summary("**!boot <@player>** Kicks a player from the queue for inhouse soccar!")]
         public async Task BootCommand([Remainder]string message = "")
         {
-            var players = Context.Message.MentionedUsers.Select(s => Player.ToPlayer(s, 0)).ToList();
-            var queue = await DequeuePlayers(players);
-
-            await Output.PlayersRemoved(Context.Channel, queue, players);
+            try
+            {
+                var players = Context.Message.MentionedUsers.Select(s => Player.ToPlayer(s, 0)).ToList();
+                var queue = await DequeuePlayers(players);
+                await Output.PlayersRemoved(Context.Channel, queue, players);
+            }
+            catch(Exception e)
+            {
+                await Context.Channel.SendMessageAsync($"Error: {e.Message}");
+            }
         }
 
         [Command("teams"), Summary("**!teams <mode=(3,2,1)>** Divides teams \"equally\"!")]
         public async Task TeamsCommand(string modeStr)
         {
-            Mode mode = ParseMode(modeStr);
-            var matches = await DivideTeams(mode);
-
-            if (matches != null)
+            try
             {
+                Mode mode = ParseMode(modeStr);
+                var matches = await DivideTeams(mode);
 
+                if (matches != null)
+                {
+
+                }
             }
-
-
-            // TODO: Output something
+            catch (Exception e)
+            {
+                await Context.Channel.SendMessageAsync($"Error: {e.Message}");
+            }
         }
 
         [Command("inhouse"), Summary("**!inhouse help** | Displays this help text.")]
@@ -169,43 +194,38 @@ namespace Discord.Inhouse
         private async Task<InhouseQueue> QueuePlayer(Player player)
         {
             var queues = Context.Database.GetCollection<InhouseQueue>();
-            try
-            {
-                var queue = await InhouseQueue.GetQueueAsync(Context.Channel.Id, Context.Client, queues);
+            var queue = await InhouseQueue.GetQueueAsync(Context.Channel.Id, Context.Client, queues);
+            if (queue == null) throw new ArgumentException("Did not find any current inhouse queue for this channel.");
+
+            if (queue.Players.ContainsKey(player.Id))
+            {   // update player if already exists to allow MMR updates
+                queue.Players[player.Id] = player;
+            }
+            else
+            {   // else just queue the new player
                 queue.Players.Add(player.Id, player);
-                queues.Update(queue);
-                return queue;
             }
-            catch (Exception)
-            {
-                // TODO: Don't silently fail
-            }
-            return null;
+
+            queues.Update(queue);
+            return queue;
         }
 
         private async Task<InhouseQueue> DequeuePlayers(List<Player> players)
         {
             var queues = Context.Database.GetCollection<InhouseQueue>();
-            try
-            {
-                var queue = await InhouseQueue.GetQueueAsync(Context.Channel.Id, Context.Client, queues);
+            var queue = await InhouseQueue.GetQueueAsync(Context.Channel.Id, Context.Client, queues);
+            if (queue == null) throw new ArgumentException("Did not find any current inhouse queue for this channel.");
 
-                foreach (var player in players)
+            foreach (var player in players)
+            {
+                if (queue.Players.ContainsKey(player.Id))
                 {
-                    if (queue.Players.ContainsKey(player.Id))
-                    {
-                        queue.Players.Remove(player.Id);
-                    }
+                    queue.Players.Remove(player.Id);
                 }
+            }
 
-                queues.Update(queue);
-                return queue;
-            }
-            catch(Exception)
-            {
-                // TODO: Don't silently fail
-            }
-            return null;
+            queues.Update(queue);
+            return queue;
         }
 
         private async Task<List<Tuple<List<Player>, List<Player>>>> DivideTeams(Mode mode)
@@ -243,6 +263,7 @@ namespace Discord.Inhouse
 
             return null;
             // TODO: Calculate possible teams with queue.Players and Mode and return the possibilities 
+            return null;
         }
 
         private static async Task<IMessage> OutputUniqueMatches(List<Tuple<List<Player>, List<Player>>> matches, IMessageChannel channel)

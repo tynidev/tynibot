@@ -42,9 +42,11 @@ namespace Discord.Inhouse
         [BsonId]
         public ulong Id { get; set; }
 
-        public Player Owner;
+        public Player Owner { get; set; }
 
         public Dictionary<ulong, Player> Players { get; private set; } = new Dictionary<ulong, Player>();
+
+        public InhouseQueue() { }
 
         public InhouseQueue(ulong id, Player owner)
         {
