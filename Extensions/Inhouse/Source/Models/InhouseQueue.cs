@@ -32,9 +32,9 @@ namespace Discord.Inhouse
 
     public enum Mode
     {
-        Standard,
-        Doubles,
-        Duel
+        Duel = 1, 
+        Doubles = 2,
+        Standard = 3
     }
 
     public class InhouseQueue

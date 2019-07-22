@@ -135,7 +135,7 @@ namespace Discord.Inhouse
 
                 if (matches != null)
                 {
-
+                    await OutputUniqueMatches(matches, Context.Channel);
                 }
             }
             catch (Exception e)
