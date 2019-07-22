@@ -59,7 +59,8 @@ namespace TyniBot
                     typeof(Ping),
                     typeof(Clear),
                     typeof(Discord.Mafia.MafiaCommand),
-                    typeof(Discord.Matches.MatchesCommand)
+                    typeof(Discord.Matches.MatchesCommand),
+                    typeof(Discord.Inhouse.InhouseCommand)
                 };
 
                 foreach(var type in DefaultCommands)
