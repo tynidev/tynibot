@@ -34,18 +34,18 @@ namespace Discord.Inhouse
             return await channel.SendMessageAsync("**Inhouse Commands:** ", false, embedBuilder.Build());
         }
 
-        public static async Task<IUserMessage> QueueStarted(ISocketMessageChannel channel, InhouseQueue queue)
+        public static async Task<IUserMessage> QueueStarted(IMessageChannel channel, InhouseQueue queue)
         {
             return await channel.SendMessageAsync($"{queue.Owner.Username} started a new Inhouse Queue!");
         }
 
-        public static async Task<IUserMessage> PlayersAdded(ISocketMessageChannel channel, InhouseQueue queue, List<Player> list)
+        public static async Task<IUserMessage> PlayersAdded(IMessageChannel channel, InhouseQueue queue, List<Player> list)
         {
             string players = string.Join("\r\n", queue.Players.Select(p => p.Value.Username));
             return await channel.SendMessageAsync($"Players were added succesfully!\r\n\r\n Queue: {players}");
         }
 
-        public static async Task<IUserMessage> PlayersRemoved(ISocketMessageChannel channel, InhouseQueue queue, List<Player> list)
+        public static async Task<IUserMessage> PlayersRemoved(IMessageChannel channel, InhouseQueue queue, List<Player> list)
         {
             string players = string.Join("\r\n", queue.Players.Select(p => p.Value.Username));
             return await channel.SendMessageAsync($"Players were removed succesfully!\r\n\r\n Queue: {players}");
