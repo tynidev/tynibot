@@ -50,10 +50,5 @@ namespace Discord.Inhouse
             string players = string.Join("\r\n", queue.Players.Select(p => p.Value.Username));
             return await channel.SendMessageAsync($"Players were removed succesfully!\r\n\r\n Queue: {players}");
         }
-
-        public static async Task<IUserMessage> InHouseTeamsError(ISocketMessageChannel channel)
-        {
-            return await channel.SendMessageAsync("Something broke in the teams method...");
-        }
     }
 }

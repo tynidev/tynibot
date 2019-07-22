@@ -231,39 +231,31 @@ namespace Discord.Inhouse
         private async Task<List<Tuple<List<Player>, List<Player>>>> DivideTeams(Mode mode)
         {
             var queues = Context.Database.GetCollection<InhouseQueue>();
-            try
+            var queue = await InhouseQueue.GetQueueAsync(Context.Channel.Id, Context.Client, queues);
+            if (queue == null) throw new ArgumentException("Did not find any current inhouse queue for this channel.");
+
+            List<Player> players = queue.Players.Values.ToList();
+
+            int teamSize = Convert.ToInt32(mode);
+
+            var uniqueTeams = Combinations.Combine<Player>(players, minimumItems: teamSize, maximumItems: teamSize);
+            var matches = new List<Tuple<List<Player>, List<Player>>>();
+
+            while (uniqueTeams.Count > 0)
             {
-                var queue = await InhouseQueue.GetQueueAsync(Context.Channel.Id, Context.Client, queues);
-                List<Player> players = queue.Players.Values.ToList();
+                var team1 = uniqueTeams.First();
+                var team2 = uniqueTeams.Where(l => l.ContainsNone(team1)).First();
 
-                int teamSize = Convert.ToInt32(mode);
+                matches.Add(new Tuple<List<Player>, List<Player>>(team1, team2));
 
-                var uniqueTeams = Combinations.Combine<Player>(players, minimumItems: teamSize, maximumItems: teamSize);
-                var matches = new List<Tuple<List<Player>, List<Player>>>();
-
-                while (uniqueTeams.Count > 0)
-                {
-                    var team1 = uniqueTeams.First();
-                    var team2 = uniqueTeams.Where(l => l.ContainsNone(team1)).First();
-
-                    matches.Add(new Tuple<List<Player>, List<Player>>(team1, team2));
-
-                    uniqueTeams.Remove(team1);
-                    uniqueTeams.Remove(team2);
-                }
-                TeamComparer teamComparer = new TeamComparer();
-                matches.Sort(teamComparer);
-
-                return matches;
+                uniqueTeams.Remove(team1);
+                uniqueTeams.Remove(team2);
             }
-            catch (Exception)
-            {
-                await Output.InHouseTeamsError(Context.Channel);
-            }
+            TeamComparer teamComparer = new TeamComparer();
+            matches.Sort(teamComparer);
 
-            return null;
             // TODO: Calculate possible teams with queue.Players and Mode and return the possibilities 
-            return null;
+            return matches;
         }
 
         private static async Task<IMessage> OutputUniqueMatches(List<Tuple<List<Player>, List<Player>>> matches, IMessageChannel channel)
