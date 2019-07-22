@@ -11,74 +11,86 @@ namespace Discord.Inhouse
 {
     public class InhouseCommand : ModuleBase<TyniBot.CommandContext>
     {
-        public enum Rank
+        Dictionary<string, Rank> RankMap = new Dictionary<string, Rank>()
         {
-            GrandChamp = 1500,
-            Champ3 = 1400,
-            Champ2 = 1300,
-            Champ1 = 1200,
-            Diamond3 = 1100,
-            Diamond2 = 1000,
-            Diamond1 = 930,
-            Plat3 = 855,
-            Plat2 = 775,
-            Plat1 = 700,
-            Gold3 = 615,
-            Gold2 = 555,
-            Gold1 = 495,
-            Silver3 = 435,
-            Silver2 = 375,
-            Silver1 = 315,
-            Bronze3 = 255,
-            Bronze2 = 195,
-            Bronze1 = 60
-        }
+            { "gc", Rank.GrandChamp },
+            { "c3", Rank.Champ3 },
+            { "c2", Rank.Champ2 },
+            { "c1", Rank.Champ1 },
+            { "d3", Rank.Diamond3 },
+            { "d2", Rank.Diamond2 },
+            { "d1", Rank.Diamond1 },
+            { "p3", Rank.Plat3 },
+            { "p2", Rank.Plat2 },
+            { "p1", Rank.Plat1 },
+            { "g3", Rank.Gold3 },
+            { "g2", Rank.Gold2 },
+            { "g1", Rank.Gold1 },
+            { "s3", Rank.Silver3 },
+            { "s2", Rank.Silver2 },
+            { "s1", Rank.Silver1 },
+            { "b3", Rank.Bronze3 },
+            { "b2", Rank.Bronze2 },
+            { "b1", Rank.Bronze1 }
+        };
 
-        public enum Mode
+        Dictionary<string, Mode> ModeMap = new Dictionary<string, Mode>()
         {
-            Standard,
-            Doubles,
-            Duel
-        }
+            { "3", Mode.Standard },
+            { "2", Mode.Doubles },
+            { "1", Mode.Duel },
+        };
 
         #region Commands
         [Command("inhouse"), Summary("**!inhouse <rank=(c1,d2,p3 etc....)>** Creates a new game of inhouse soccar! Each individual player needs to join.")]
         public async Task NewInhouseCommand(string rank)
         {
-            var owner = (IUser)Context.User;
-            int mmr = 0;
+            int mmr = (int)ParseRank(rank);
+            var owner = Player.ToPlayer(Context.User, mmr);
 
-            await CreateQueue(owner);
+            var queue = await CreateQueue(owner);
 
-            await QueuePlayer(owner, mmr);
+            await Output.QueueStarted(Context.Channel, queue);
         }
 
         [Command("join"), Summary("**!join <rank=(c1,d2,p3 etc....)>** Joins a new game of inhouse soccar!")]
         public async Task JoinCommand(string rank)
         {
-            int mmr = 0;
-            var player = (IUser)Context.User;
-            await QueuePlayer(player, mmr);
+            int mmr = (int)ParseRank(rank);
+            var player = Player.ToPlayer(Context.User, mmr);
+
+            var queue = await QueuePlayer(player);
+
+            await Output.PlayersAdded(Context.Channel, queue, new List<Player>() { player });
         }
 
         [Command("leave"), Summary("**!leave** Leaves a new game of inhouse soccar!")]
         public async Task LeaveCommand()
         {
-            var player = (IUser)Context.User;
-            await DequeuePlayer(player);
+            var player = Player.ToPlayer(Context.User, 0);
+            var players = new List<Player>() { player };
+
+            var queue = await DequeuePlayers(players);
+
+            await Output.PlayersRemoved(Context.Channel, queue, players);
         }
 
         [Command("boot"), Summary("**!boot <@player>** Kicks a player from the queue for inhouse soccar!")]
         public async Task BootCommand([Remainder]string message = "")
         {
-            var player = Context.Message.MentionedUsers.Select(s => (IUser)s).ToList().First();
-            await DequeuePlayer(player);
+            var players = Context.Message.MentionedUsers.Select(s => Player.ToPlayer(s, 0)).ToList();
+            var queue = await DequeuePlayers(players);
+
+            await Output.PlayersRemoved(Context.Channel, queue, players);
         }
 
         [Command("teams"), Summary("**!teams <mode=(3,2,1)>** Divides teams \"equally\"!")]
-        public async Task TeamsCommand(string mode)
+        public async Task TeamsCommand(string modeStr)
         {
+            Mode mode = ParseMode(modeStr);
             await DivideTeams(mode);
+
+            // TODO: Output something
         }
 
         [Command("inhouse"), Summary("**!inhouse help** | Displays this help text.")]
@@ -89,24 +101,100 @@ namespace Discord.Inhouse
         #endregion
 
         #region Helpers
-        private Task CreateQueue(IUser owner)
+
+        private Mode ParseMode(string mode)
         {
-            throw new NotImplementedException();
+            if (!ModeMap.ContainsKey(mode.ToLower()))
+                throw new ArgumentException($"Unsupported Mode({mode})");
+
+            return ModeMap[mode];
         }
 
-        private Task QueuePlayer(IUser owner, int mmr)
+        private Rank ParseRank(string rank)
         {
-            throw new NotImplementedException();
+            if (!RankMap.ContainsKey(rank.ToLower()))
+                throw new ArgumentException($"Unsupported Rank({rank})");
+
+            return RankMap[rank];
         }
 
-        private Task DequeuePlayer(IUser player)
+        private async Task<InhouseQueue> CreateQueue(Player owner)
         {
-            throw new NotImplementedException();
+            var newQueue = new InhouseQueue(Context.Channel.Id, owner);
+
+            var queues = Context.Database.GetCollection<InhouseQueue>();
+
+            // Delete current queue if exists
+            try
+            {
+                var existing = await InhouseQueue.GetQueueAsync(Context.Channel.Id, Context.Client, queues);
+                if (existing != null)
+                    queues.Delete(g => g.Id == existing.Id);
+            }
+            catch (Exception) { }
+
+            // Insert into DB
+            queues.Insert(newQueue);
+            queues.EnsureIndex(x => x.Id);
+
+            return newQueue;
         }
 
-        private Task DivideTeams(string mode)
+        private async Task<InhouseQueue> QueuePlayer(Player player)
         {
-            throw new NotImplementedException();
+            var queues = Context.Database.GetCollection<InhouseQueue>();
+            try
+            {
+                var queue = await InhouseQueue.GetQueueAsync(Context.Channel.Id, Context.Client, queues);
+                queue.Players.Add(player.Id, player);
+                queues.Update(queue);
+                return queue;
+            }
+            catch (Exception)
+            {
+                // TODO: Don't silently fail
+            }
+            return null;
+        }
+
+        private async Task<InhouseQueue> DequeuePlayers(List<Player> players)
+        {
+            var queues = Context.Database.GetCollection<InhouseQueue>();
+            try
+            {
+                var queue = await InhouseQueue.GetQueueAsync(Context.Channel.Id, Context.Client, queues);
+
+                foreach (var player in players)
+                {
+                    if (queue.Players.ContainsKey(player.Id))
+                    {
+                        queue.Players.Remove(player.Id);
+                    }
+                }
+
+                queues.Update(queue);
+                return queue;
+            }
+            catch(Exception)
+            {
+                // TODO: Don't silently fail
+            }
+            return null;
+        }
+
+        private async Task DivideTeams(Mode mode)
+        {
+            var queues = Context.Database.GetCollection<InhouseQueue>();
+            try
+            {
+                var queue = await InhouseQueue.GetQueueAsync(Context.Channel.Id, Context.Client, queues);
+            }
+            catch (Exception)
+            {
+                // TODO: Don't silently fail
+            }
+
+            // TODO: Calculate possible teams with queue.Players and Mode and return the possibilities 
         }
 
         #endregion

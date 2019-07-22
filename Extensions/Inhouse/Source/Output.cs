@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TyniBot;
 using EmojiData;
+using Discord.WebSocket;
 
 namespace Discord.Inhouse
 {
@@ -31,6 +32,24 @@ namespace Discord.Inhouse
             }
 
             return await channel.SendMessageAsync("**Inhouse Commands:** ", false, embedBuilder.Build());
+        }
+
+        public static async Task<IUserMessage> QueueStarted(ISocketMessageChannel channel, InhouseQueue queue)
+        {
+            return await channel.SendMessageAsync($"{queue.Owner.Username} started a new Inhouse Queue!");
+        }
+
+        public static async Task<IUserMessage> PlayersAdded(ISocketMessageChannel channel, InhouseQueue queue, List<Player> list)
+        {
+            string players = string.Join("\r\n", list.Select(p => p.Username));
+            return await channel.SendMessageAsync($"The following players were added to the Inhouse Queue!\r\n\r\n{players}");
+        }
+
+        public static async Task<IUserMessage> PlayersRemoved(ISocketMessageChannel channel, InhouseQueue queue, List<Player> list)
+        {
+            string players = string.Join("\r\n", list.Select(p => p.Username));
+            return await channel.SendMessageAsync($"The following players were removed from the Inhouse Queue!\r\n\r\n{players}");
+            throw new NotImplementedException();
         }
     }
 }
