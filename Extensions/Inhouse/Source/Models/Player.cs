@@ -6,12 +6,37 @@ using System.Threading.Tasks;
 namespace Discord.Inhouse
 {
     public class Player : IUser
-    {
+    { 
         #region Mafia Members
         [BsonId]
         public ulong Id { get; set; }
-        public string Username => DiscordUser?.Username == null ? string.Empty : DiscordUser.Username;
-        public int MMR = 0;
+
+        private string m_userName;
+        public string Username
+        {
+            get
+            {
+                if (DiscordUser == null && m_userName == null)
+                {
+                    return string.Empty;
+                }
+                else if (DiscordUser != null)
+                {
+                    return DiscordUser.Username;
+                }
+                else
+                {
+                    return m_userName;
+                }
+            }
+
+            set
+            {
+                m_userName = value;
+            }
+        }
+
+        public int MMR { get; set; } = 0;
         #endregion
 
         #region IUser Members

@@ -25,7 +25,7 @@ namespace Discord.Inhouse
 
             int mmrSecondTeam = match.Item2.Sum(item => item.MMR);
 
-            return mmrFirstTeam - mmrSecondTeam;
+            return Math.Abs(mmrFirstTeam - mmrSecondTeam);
         }
     }
 
@@ -137,6 +137,42 @@ namespace Discord.Inhouse
                 {
                     await OutputUniqueMatches(matches, Context.Channel);
                 }
+            }
+            catch (Exception e)
+            {
+                await Context.Channel.SendMessageAsync($"Error: {e.Message}");
+            }
+        }
+
+        [Command("fakeTeams"), Summary("**!fakeTeams <players>** Fills up the queue with enough fake players at random ranks, up to the number of players requested.")]
+        public async Task FakeTeamsCommand(string playersCount)
+        {
+            try
+            {
+                int numPlayers;
+                Int32.TryParse(playersCount, out numPlayers);
+                var queues = Context.Database.GetCollection<InhouseQueue>();
+                var queue = await InhouseQueue.GetQueueAsync(Context.Channel.Id, Context.Client, queues);
+
+                if (numPlayers <= queue.Players.Count)
+                {
+                    await Context.Channel.SendMessageAsync($"Already enough players!");
+                    return;
+                }
+
+                Random rnd = new Random();
+
+                for (int i=0; i < numPlayers - queue.Players.Count; i++)
+                {
+                    Player botPlayer = new Player();
+                    botPlayer.Id = (ulong)i;
+                    botPlayer.Username = i.ToString();
+                    botPlayer.MMR = (int)RankMap.Values.ElementAt<Rank>(rnd.Next(1, RankMap.Values.Count));
+
+                    await QueuePlayer(botPlayer);
+                   
+                }
+
             }
             catch (Exception e)
             {
@@ -261,8 +297,6 @@ namespace Discord.Inhouse
                 await Output.InHouseTeamsError(Context.Channel);
             }
 
-            return null;
-            // TODO: Calculate possible teams with queue.Players and Mode and return the possibilities 
             return null;
         }
 
