@@ -30,7 +30,7 @@ namespace Discord.Inhouse
         Bronze1 = 60
     }
 
-    public enum Mode
+    public enum TeamSize
     {
         Duel = 1, 
         Doubles = 2,
