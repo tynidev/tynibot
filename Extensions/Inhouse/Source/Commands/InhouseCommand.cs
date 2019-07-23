@@ -10,33 +10,6 @@ using Discord.Matches;
 
 namespace Discord.Inhouse
 {
-    public class TeamComparer : Comparer<Tuple<List<Player>, List<Player>>>
-    {
-        public override int Compare(Tuple<List<Player>, List<Player>> x, Tuple<List<Player>, List<Player>> y)
-        {
-            return MMRDifference(x).CompareTo(MMRDifference(y));
-        }
-
-        private int MMRDifference(Tuple<List<Player>, List<Player>> match)
-        {
-            // Foreach might be faster.
-
-            int mmrFirstTeam = match.Item1.Sum(item => item.MMR);
-
-            int mmrSecondTeam = match.Item2.Sum(item => item.MMR);
-
-            return Math.Abs(mmrFirstTeam - mmrSecondTeam);
-        }
-    }
-
-    public class PlayerMMRComparer : Comparer<Player>
-    {
-        public override int Compare(Player x, Player y)
-        {
-            return x.MMR.CompareTo(y.MMR);
-        }
-    }
-
     [Group("inhouse")]
     public class InhouseCommand : ModuleBase<TyniBot.CommandContext>
     {

@@ -21,6 +21,5 @@
 
   <ItemGroup>
     <Folder Include="ReactionHandlers\" />
-    <Folder Include="Utils\" />
   </ItemGroup>
 </Project>
