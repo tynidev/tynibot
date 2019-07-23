@@ -49,6 +49,22 @@ namespace Discord.Inhouse
             { "skillgroup", SplitMode.SkillGroup},
         };
 
+        Dictionary<int, List<int>> PlayerMatchSplits = new Dictionary<int, List<int>>()
+        {
+            { 1, new List<int>(){ 1 } },
+            { 2, new List<int>(){ 2 } },
+            { 3, new List<int>(){ 3 } },
+            { 4, new List<int>(){ 4 } },
+            { 5, new List<int>(){ 5 } },
+            { 6, new List<int>(){ 6 } },
+            { 7, new List<int>(){ 7 } },
+            { 8, new List<int>(){ 4, 4 } },
+            { 9, new List<int>(){ 5, 4 } },
+            { 10, new List<int>(){ 6, 4 } },
+            { 11, new List<int>(){ 7, 4 } },
+        };
+        private static readonly int MaxMatchDisplayCount = 5;
+
         #region Commands
         [Command("new"), Summary("**!inhouse new <queueName>** Creates a new game of inhouse soccar! Each individual player needs to join.")]
         public async Task NewInhouseCommand(string name)
@@ -131,7 +147,7 @@ namespace Discord.Inhouse
 
                 foreach (List<Player> players in playerGroups)
                 {
-                    var matches = await DivideTeams(size, players);
+                    var matches = DivideTeams(players);
 
                     if (matches != null)
                     {
@@ -282,17 +298,28 @@ namespace Discord.Inhouse
             return queue;
         }
 
-        private async Task<List<Tuple<List<Player>, List<Player>>>> DivideTeams(TeamSize size, List<Player> players)
+        private List<Tuple<List<Player>, List<Player>>> DivideTeams(List<Player> players)
         {
-            int teamSize = Convert.ToInt32(size);
+            int teamSize = players.Count / 2;
+            int remainder = players.Count % 2;
 
-            var uniqueTeams = Combinations.Combine<Player>(players, minimumItems: teamSize, maximumItems: teamSize);
+            var uniqueTeams = Combinations.Combine<Player>(players, minimumItems: teamSize, maximumItems: teamSize+remainder);
             var matches = new List<Tuple<List<Player>, List<Player>>>();
 
             while (uniqueTeams.Count > 0)
             {
                 var team1 = uniqueTeams.First();
-                var team2 = uniqueTeams.Where(l => l.ContainsNone(team1)).First();
+                var team2 = uniqueTeams.Where(l => {
+                    if (remainder == 0 || l.Count > teamSize)
+                    {
+                        return l.ContainsNone(team1);
+                    }
+                    else
+                    {
+                        return l.Count < team1.Count && team1.ContainsNone(l);
+                    }
+                }
+                ).First();
 
                 matches.Add(new Tuple<List<Player>, List<Player>>(team1, team2));
 
@@ -306,7 +333,7 @@ namespace Discord.Inhouse
             return matches;
         }
 
-        private List<List<Player>> SplitQueue(TeamSize size, InhouseQueue queue, SplitMode splitMode)
+        private List<List<Player>> SplitQueue(TeamSize sizeHint, InhouseQueue queue, SplitMode splitMode)
         {
             if (queue == null)
             {
@@ -317,11 +344,11 @@ namespace Discord.Inhouse
 
             if (splitMode == SplitMode.Random)
             {
-                return SplitQueueRandom(players, size);
+                return SplitQueueRandom(players, sizeHint);
             }
             else if (splitMode == SplitMode.SkillGroup)
             {
-                return SplitQueueSkillGroup(players, size);
+                return SplitQueueSkillGroup(players, sizeHint);
             }
             else
             {
@@ -329,33 +356,45 @@ namespace Discord.Inhouse
             }
         }
 
-        private List<List<Player>> SplitQueueSkillGroup(List<Player> players, TeamSize size)
+        private List<List<Player>> SplitQueueSkillGroup(List<Player> players, TeamSize sizeHint)
         {
             PlayerMMRComparer mmrComparer = new PlayerMMRComparer();
             players.Sort(mmrComparer);
-            return SplitSortedGroup(players, size);
+            return SplitSortedGroup(players, sizeHint);
         }
 
-        private List<List<Player>> SplitQueueRandom(List<Player> players, TeamSize size)
+        private List<List<Player>> SplitQueueRandom(List<Player> players, TeamSize sizeHint)
         {
             Random rnd = new Random();
             
-            return SplitSortedGroup(players.OrderBy(x => rnd.Next()).ToList(), size);
+            return SplitSortedGroup(players.OrderBy(x => rnd.Next()).ToList(), sizeHint);
         }
 
-        private static List<List<Player>> SplitSortedGroup(List<Player> players, TeamSize size)
+        private List<List<Player>> SplitSortedGroup(List<Player> players, TeamSize sizeHint)
         {
-            int matchSize = (int)size * 2;
+            int matchSize = (int)sizeHint * 2;
 
             List<List<Player>> playerGroups = new List<List<Player>>();
 
-            while (players.Count > matchSize)
+            while (players.Count > PlayerMatchSplits.Count)
             {
                 playerGroups.Add(players.Take(matchSize).ToList());
                 players.RemoveRange(0, matchSize);
             }
 
-            playerGroups.Add(players.ToList());
+            if (players.Count > 0)
+            {
+                foreach(int playerCount in PlayerMatchSplits[players.Count])
+                {
+                    playerGroups.Add(players.Take(playerCount).ToList());
+                    players.RemoveRange(0, playerCount);
+                }
+            }
+
+            if (players.Count > 0)
+            {
+                throw new ArgumentException($"We didn't handle the last {players.Count} players when splitting!");
+            }
 
             return playerGroups;
         }
@@ -364,7 +403,7 @@ namespace Discord.Inhouse
         {
             EmbedBuilder embedBuilder = new EmbedBuilder();
 
-            for (int i = 0; i < matches.Count; i++)
+            for (int i = 0; i < matches.Count && i < MaxMatchDisplayCount; i++)
             {
                 var match = matches[i];
                 var team1 = string.Join(' ', match.Item1.Select(m => m.Username));
