@@ -36,7 +36,7 @@ namespace Discord.Inhouse
 
         public static async Task<IUserMessage> QueueStarted(IMessageChannel channel, InhouseQueue queue)
         {
-            return await channel.SendMessageAsync($"{queue.Owner.Username} started a new Inhouse Queue!");
+            return await channel.SendMessageAsync($"New Inhouse Queue created named {queue.Name}!");
         }
 
         public static async Task<IUserMessage> PlayersAdded(IMessageChannel channel, InhouseQueue queue, List<Player> list)

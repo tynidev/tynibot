@@ -23,24 +23,23 @@ namespace Inhouse.UnitTests
                 user1.Setup(u => u.Username).Returns("bob");
                 user1.Setup(u => u.Id).Returns(543);
 
-                var input = new InhouseQueue(987, Player.ToPlayer(user1.Object, 1000));
+                var input = new InhouseQueue(987, "test");
+                input.Players.Add(user1.Object.Id, Player.ToPlayer(user1.Object, 1000));
 
                 var col = Database.GetCollection<InhouseQueue>();
 
                 col.Delete(u => true);
                 col.Insert(input);
-                col.EnsureIndex(x => x.Id);
+                col.EnsureIndex(x => x.Name);
 
                 var channelMock = new Mock<IDiscordClient>();
                 channelMock.Setup(u => u.GetUserAsync(user1.Object.Id, It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).Returns(Task.FromResult(user1.Object));
 
-                var output = await InhouseQueue.GetQueueAsync(input.Id, channelMock.Object, col);
+                var output = await InhouseQueue.GetQueueAsync(input.ChannelId, input.Name, channelMock.Object, col);
 
-                Assert.AreEqual(input.Id, output.Id);
+                Assert.AreEqual(input.ChannelId, output.ChannelId);
+                Assert.AreEqual(input.Name, output.Name);
                 Assert.AreEqual(input.Players.Count, output.Players.Count);
-
-                Assert.AreEqual(input.Owner.Id, output.Owner.Id);
-                Assert.AreEqual(input.Owner.MMR, output.Owner.MMR);
 
                 foreach (var player in input.Players)
                 {

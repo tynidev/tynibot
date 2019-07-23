@@ -39,26 +39,26 @@ namespace Discord.Inhouse
 
     public class InhouseQueue
     {
-        [BsonId]
-        public ulong Id { get; set; }
+        public ulong ChannelId { get; set; }
 
-        public Player Owner { get; set; }
+        [BsonId]
+        public string Name { get; set; }
 
         public Dictionary<ulong, Player> Players { get; private set; } = new Dictionary<ulong, Player>();
 
         public InhouseQueue() { }
 
-        public InhouseQueue(ulong id, Player owner)
+        public InhouseQueue(ulong channelId, string name)
         {
-            Id = id;
-            Owner = owner;
-            Players = new Dictionary<ulong, Player>() { { owner.Id, owner } };
+            ChannelId = channelId;
+            Name = name;
+            Players = new Dictionary<ulong, Player>();
         }
-        public static async Task<InhouseQueue> GetQueueAsync(ulong id, IDiscordClient channel, LiteCollection<InhouseQueue> collection)
+        public static async Task<InhouseQueue> GetQueueAsync(ulong channelId, string name, IDiscordClient channel, LiteCollection<InhouseQueue> collection)
         {
-            var queue = collection.FindOne(g => g.Id == id);
+            var queue = collection.FindOne(g => g.ChannelId == channelId && g.Name == name);
             if (queue == null)
-                throw new KeyNotFoundException();
+                return null;
 
             foreach (var u in queue.Players.Values)
                 u.DiscordUser = await channel.GetUserAsync(u.Id);
