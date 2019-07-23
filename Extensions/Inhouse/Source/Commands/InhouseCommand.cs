@@ -179,8 +179,14 @@ namespace Discord.Inhouse
             }
         }
 
-        [Command("inhouse"), Summary("**!inhouse help** | Displays this help text.")]
+        [Command("help"), Summary("**!inhouse help** | Displays this help text.")]
         public async Task HelpCommand()
+        {
+            await Output.HelpText(Context.Channel);
+        }
+
+        [Command(""), Summary("**!inhouse** | Displays this help text.")]
+        public async Task CatchAllCommand()
         {
             await Output.HelpText(Context.Channel);
         }

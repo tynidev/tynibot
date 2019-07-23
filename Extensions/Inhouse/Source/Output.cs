@@ -25,10 +25,14 @@ namespace Discord.Inhouse
             {
                 var name = (CommandAttribute)command.GetCustomAttributes(typeof(CommandAttribute), false)[0];
                 var summary = (SummaryAttribute)command.GetCustomAttributes(typeof(SummaryAttribute), false)[0];
-                // Get the command Summary attribute information
-                string embedFieldText = summary.Text ?? "No description available\n";
 
-                embedBuilder.AddField(name.Text, embedFieldText);
+                if (!string.IsNullOrWhiteSpace(name.Text))
+                {
+                    // Get the command Summary attribute information
+                    string embedFieldText = summary.Text ?? "No description available\n";
+
+                    embedBuilder.AddField(name.Text, embedFieldText);
+                }
             }
 
             return await channel.SendMessageAsync("**Inhouse Commands:** ", false, embedBuilder.Build());
