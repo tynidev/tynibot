@@ -164,6 +164,36 @@ namespace Discord.Inhouse
             }
         }
 
+        [Command("listqueues"), Summary("**!inhouse listqueues ** List all queues for inhouse soccar in this channel!")]
+        public async Task ListQueuesCommand([Remainder]string message = "")
+        {
+            try
+            {
+                var queues = Context.Database.GetCollection<InhouseQueue>();
+
+                var channelQueues = queues.Find(g => g.ChannelId == Context.Channel.Id);
+
+                if (channelQueues.Count() > 0)
+                {
+                    string queuesString = "";
+                    foreach (InhouseQueue queue in channelQueues)
+                    {
+                        queuesString += queue.Name + "\r\n";
+                    }
+
+                    await Context.Channel.SendMessageAsync($"Active queues: \r\n{queuesString}");
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync($"No active queues running in this channel.");
+                }
+            }
+            catch (Exception e)
+            {
+                await Context.Channel.SendMessageAsync($"Error: {e.Message}");
+            }
+        }
+
         [Command("teams"), Summary("**!inhouse teams <queueName> <mode=(3,2,1)> <splitMode=(random, skillgroup)>** Divides teams \"equally\"!")]
         public async Task TeamsCommand(string queueName, string teamSizeStr, string splitModeStr)
         {
