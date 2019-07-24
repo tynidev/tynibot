@@ -127,6 +127,43 @@ namespace Discord.Inhouse
             }
         }
 
+        [Command("close"), Summary("**!inhouse close <queueName>** Kills a queue for inhouse soccar!")]
+        public async Task CloseCommand(string queueName, [Remainder]string message = "")
+        {
+            try
+            {
+                await DeleteQueue(queueName);
+            }
+            catch (Exception e)
+            {
+                await Context.Channel.SendMessageAsync($"Error: {e.Message}");
+            }
+        }
+
+        [Command("closeall"), Summary("**!inhouse closeall ** Kills all queues for inhouse soccar in this channel!")]
+        public async Task CloseAllCommand([Remainder]string message = "")
+        {
+            try
+            {
+                var queues = Context.Database.GetCollection<InhouseQueue>();
+                int numDeleted = queues.Delete(g => g.ChannelId == Context.Channel.Id);
+
+                string letterS = "s";
+
+                if (numDeleted == 1)
+                {
+                    letterS = "";
+                }
+
+                await Context.Channel.SendMessageAsync($"Deleted {numDeleted} queue" + letterS + " from this channel.");
+
+            }
+            catch (Exception e)
+            {
+                await Context.Channel.SendMessageAsync($"Error: {e.Message}");
+            }
+        }
+
         [Command("teams"), Summary("**!inhouse teams <queueName> <mode=(3,2,1)> <splitMode=(random, skillgroup)>** Divides teams \"equally\"!")]
         public async Task TeamsCommand(string queueName, string teamSizeStr, string splitModeStr)
         {
@@ -261,6 +298,22 @@ namespace Discord.Inhouse
             queues.EnsureIndex(x => x.Name);
 
             return newQueue;
+        }
+
+        private async Task DeleteQueue(string queueName)
+        {
+            var queues = Context.Database.GetCollection<InhouseQueue>();
+
+            var existing = await InhouseQueue.GetQueueAsync(Context.Channel.Id, queueName, Context.Client, queues);
+            if (existing != null)
+            {
+                queues.Delete(g => g.Name == existing.Name);
+                await Context.Channel.SendMessageAsync($"Queue {queueName} deleted.");
+            }
+            else
+            {
+                await Context.Channel.SendMessageAsync($"Queue {queueName} not found in this channel.");
+            }
         }
 
         private async Task<InhouseQueue> QueuePlayer(string queueName, Player player)
