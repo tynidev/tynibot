@@ -67,6 +67,7 @@ namespace Discord.Inhouse
 
         #region Commands
         [Command("new"), Summary("**!inhouse new <queueName>** Creates a new game of inhouse soccar! Each individual player needs to join.")]
+        [Alias("newQueue", "makeQueue", "newqueue", "makequeue")]
         public async Task NewInhouseCommand(string name)
         {
             try
@@ -81,6 +82,7 @@ namespace Discord.Inhouse
         }
 
         [Command("join"), Summary("**!inhouse join <queueName> <rank=(c1,d2,p3 etc....)>** Joins a new game of inhouse soccar!")]
+        [Alias("queue")]
         public async Task JoinCommand(string queueOrRank, [Remainder]string maybeRank = "")
         {
             try
@@ -117,6 +119,7 @@ namespace Discord.Inhouse
         }
 
         [Command("leave"), Summary("**!inhouse leave <queueName>** Leaves a new game of inhouse soccar!")]
+        [Alias("drop")]
         public async Task LeaveCommand([Remainder]string queueName ="")
         {
             try
@@ -159,7 +162,8 @@ namespace Discord.Inhouse
             }
         }
 
-        [Command("boot"), Summary("**!inhouse boot <queueName> <@player>** Kicks a player from the queue for inhouse soccar!")]
+        [Command("kick"), Summary("**!inhouse kick <queueName> <@player>** Kicks a player from the queue for inhouse soccar!")]
+        [Alias("boot")]
         public async Task BootCommand(string queueName, [Remainder]string message = "")
         {
             try
@@ -175,6 +179,7 @@ namespace Discord.Inhouse
         }
 
         [Command("close"), Summary("**!inhouse close <queueName>** Kills a queue for inhouse soccar!")]
+        [Alias ("delete", "kill")]
         public async Task CloseCommand(string queueName, [Remainder]string message = "")
         {
             try
@@ -188,6 +193,7 @@ namespace Discord.Inhouse
         }
 
         [Command("closeall"), Summary("**!inhouse closeall ** Kills all queues for inhouse soccar in this channel!")]
+        [Alias("killall", "deleteall")]
         public async Task CloseAllCommand([Remainder]string message = "")
         {
             try
@@ -212,6 +218,7 @@ namespace Discord.Inhouse
         }
 
         [Command("listqueues"), Summary("**!inhouse listqueues ** List all queues for inhouse soccar in this channel!")]
+        [Alias("listall")]
         public async Task ListQueuesCommand([Remainder]string message = "")
         {
             try
@@ -242,6 +249,7 @@ namespace Discord.Inhouse
         }
 
         [Command("teams"), Summary("**!inhouse teams <queueName> <mode=(3,2,1)> <splitMode=(random, skillgroup)>** Divides teams \"equally\"!")]
+        [Alias("maketeams")]
         public async Task TeamsCommand(string queueName, string teamSizeStr, string splitModeStr)
         {
             try
@@ -278,7 +286,8 @@ namespace Discord.Inhouse
             }
         }
 
-        [Command("fakeTeams"), Summary("**!inhouse fakeTeams <queueName> <players>** Fills up the queue with enough fake players at random ranks, up to the number of players requested.")]
+        [Command("faketeams"), Summary("**!inhouse faketeams <queueName> <players>** Fills up the queue with enough fake players at random ranks, up to the number of players requested.")]
+        [Alias("fakeTeams")]
         public async Task FakeTeamsCommand(string queueName, string playersCount)
         {
             try
