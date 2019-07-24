@@ -80,7 +80,7 @@ namespace Discord.Inhouse
             }
         }
 
-        [Command("queue"), Summary("**!inhouse queue <queueName> <rank=(c1,d2,p3 etc....)>** Joins a new game of inhouse soccar!")]
+        [Command("join"), Summary("**!inhouse join <queueName> <rank=(c1,d2,p3 etc....)>** Joins a new game of inhouse soccar!")]
         public async Task JoinCommand(string queueName, string rank)
         {
             try
