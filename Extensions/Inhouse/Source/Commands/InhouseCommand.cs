@@ -81,11 +81,31 @@ namespace Discord.Inhouse
         }
 
         [Command("join"), Summary("**!inhouse join <queueName> <rank=(c1,d2,p3 etc....)>** Joins a new game of inhouse soccar!")]
-        public async Task JoinCommand(string queueName, string rank)
+        public async Task JoinCommand(string queueOrRank, [Remainder]string maybeRank = "")
         {
             try
             {
-                int mmr = (int)ParseRank(rank);
+                int mmr = 0;
+                string queueName = queueOrRank;
+                var queues = Context.Database.GetCollection<InhouseQueue>();
+                var localQueues = queues.Find(q => q.ChannelId == Context.Channel.Id);
+                
+
+                if ( localQueues.Count() == 1)
+                {
+                    try
+                    {
+                        mmr = (int)ParseRank(queueOrRank);
+                        queueName = localQueues.First().Name;
+                    }
+                    catch (ArgumentException){}
+                }
+
+                if (mmr == 0)
+                {
+                    mmr = (int)ParseRank(maybeRank);
+                }
+
                 var player = Player.ToPlayer(Context.User, mmr);
                 var queue = await QueuePlayer(queueName, player);
                 await Output.PlayersAdded(Context.Channel, queue, new List<Player>() { player });
@@ -97,14 +117,41 @@ namespace Discord.Inhouse
         }
 
         [Command("leave"), Summary("**!inhouse leave <queueName>** Leaves a new game of inhouse soccar!")]
-        public async Task LeaveCommand(string queueName)
+        public async Task LeaveCommand([Remainder]string queueName ="")
         {
             try
             {
                 var player = Player.ToPlayer(Context.User, 0);
                 var players = new List<Player>() { player };
-                var queue = await DequeuePlayers(queueName, players);
-                await Output.PlayersRemoved(Context.Channel, queue, players);
+
+                if (queueName == "")
+                {
+                    var queues = Context.Database.GetCollection<InhouseQueue>();
+                    var localQueues = queues.Find(q => q.ChannelId == Context.Channel.Id);
+                    int queuesLeft = 0;
+                    string letterS = "s";
+
+                    if (queuesLeft == 1)
+                    {
+                        letterS = "";
+                    }
+
+                    foreach (InhouseQueue inhouseQueue in localQueues)
+                    {
+                        if (inhouseQueue.Players.ContainsKey(player.Id))
+                        {
+                            inhouseQueue.Players.Remove(player.Id);
+                            queuesLeft++;
+                        }
+                    }
+
+                    await Context.Channel.SendMessageAsync($"Successfully left {queuesLeft} queue{letterS}");
+                }
+                else
+                {
+                    var queue = await DequeuePlayers(queueName, players);
+                    await Output.PlayersRemoved(Context.Channel, queue, players);
+                }
             }
             catch (Exception e)
             {
