@@ -54,7 +54,7 @@ namespace Discord.Recruiting
             {
                 var parts = x.Split('|');
                 return new KeyValuePair<string, string>(parts[0].Trim(), parts[1].Trim());
-            }).ToDictionary(x => x.Key, x => x.Value);
+            }).ToDictionary(x => x.Key, x => x.Value).OrderBy(x => x.Key) as Dictionary<string, string>; 
         }
 
         private string BoardToString(Dictionary<string, string> board)
