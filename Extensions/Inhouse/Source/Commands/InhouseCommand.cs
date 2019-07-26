@@ -63,7 +63,6 @@ namespace Discord.Inhouse
             { 10, new List<int>(){ 6, 4 } },
             { 11, new List<int>(){ 7, 4 } },
         };
-        private static readonly int MaxMatchDisplayCount = 5;
 
         #region Commands
         [Command("new"), Summary("**!inhouse new <queueName>** Creates a new game of inhouse soccar! Each individual player needs to join.")]
@@ -274,7 +273,7 @@ namespace Discord.Inhouse
                     if (matches != null)
                     {
                         await Context.Channel.SendMessageAsync($"Group {groupNumber}");
-                        await OutputUniqueMatches(matches, Context.Channel);
+                        await Output.OutputUniqueMatches(matches, Context.Channel);
                     }
 
                     ++groupNumber;
@@ -536,31 +535,6 @@ namespace Discord.Inhouse
             }
 
             return playerGroups;
-        }
-
-        private static async Task<IMessage> OutputUniqueMatches(List<Tuple<List<Player>, List<Player>>> matches, IMessageChannel channel)
-        {
-            EmbedBuilder embedBuilder = new EmbedBuilder();
-
-            for (int i = 0; i < matches.Count && i < MaxMatchDisplayCount; i++)
-            {
-                var match = matches[i];
-                var team1 = string.Join(' ', match.Item1.Select(m => m.Username));
-                var team2 = string.Join(' ', match.Item2.Select(m => m.Username));
-
-                int team1MMR = match.Item1.Sum(item => item.MMR) / match.Item1.Count;
-                int team2MMR = match.Item2.Sum(item => item.MMR) / match.Item2.Count;
-
-                string team1Str = $"Orange: {team1}";
-                string team2Str = $"Blue: {team2}";
-                string team1MMRStr = $" OrangeMMR: {team1MMR}";
-                string team2MMRStr = $" BlueMMR: {team2MMR}";
-
-
-                embedBuilder.AddField($"Match {i + 1}:", team1Str + team1MMRStr + "\r\n" + team2Str + team2MMRStr);
-            }
-
-            return await channel.SendMessageAsync($"**Unique Matches: {matches.Count}**", false, embedBuilder.Build());
         }
 
         private async Task<InhouseQueue> GetQueue(string queueName)

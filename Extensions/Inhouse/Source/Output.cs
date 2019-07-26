@@ -38,6 +38,37 @@ namespace Discord.Inhouse
             return await channel.SendMessageAsync("**Inhouse Commands:** ", false, embedBuilder.Build());
         }
 
+        /*
+         Match Output
+         @param matches - List of Match Pairings
+         @param channel - Channel Object for the Output Channel
+        */
+        public static async Task<IMessage> OutputUniqueMatches(List<Tuple<List<Player>, List<Player>>> matches, IMessageChannel channel)
+        {
+
+            int MaxMatchDisplayCount = 5;
+            EmbedBuilder embedBuilder = new EmbedBuilder();
+
+            for (int i = 0; i < matches.Count && i < MaxMatchDisplayCount; i++)
+            {
+                var match = matches[i];
+                var team1 = string.Join('\n', match.Item1.Select(m => m.Username));
+                var team2 = string.Join('\n', match.Item2.Select(m => m.Username));
+
+                int team1MMR = match.Item1.Sum(item => item.MMR) / match.Item1.Count;
+                int team2MMR = match.Item2.Sum(item => item.MMR) / match.Item2.Count;
+
+                string team1Str = $"Orange: {team1}";
+                string team2Str = $"Blue: {team2}";
+
+                embedBuilder.AddField($"Match {i + 1}", "\n");
+                embedBuilder.AddField($"Orange ({team1MMR}):", team1Str, true);
+                embedBuilder.AddField($"Blue ({team2MMR}):", team2Str, true);
+            }
+
+            return await channel.SendMessageAsync($"**Unique Matches: {matches.Count}**", false, embedBuilder.Build());
+        }
+
         public static async Task<IUserMessage> QueueStarted(IMessageChannel channel, InhouseQueue queue)
         {
             return await channel.SendMessageAsync($"New Inhouse Queue created named {queue.Name}!");
