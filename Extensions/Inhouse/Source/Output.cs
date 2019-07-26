@@ -1,4 +1,4 @@
-﻿using Discord;
+using Discord;
 using Discord.Commands;
 using System;
 using System.Collections.Generic;
@@ -36,6 +36,38 @@ namespace Discord.Inhouse
             }
 
             return await channel.SendMessageAsync("**Inhouse Commands:** ", false, embedBuilder.Build());
+        }
+
+        /*
+         Match Output
+         @param matches - List of Match Pairings
+         @param channel - Channel Object for the Output Channel
+        */
+        public static async Task<IMessage> OutputUniqueMatches(List<Tuple<List<Player>, List<Player>>> matches, int groupNumber, IMessageChannel channel)
+        {
+
+            int MaxMatchDisplayCount = 5;
+            EmbedBuilder embedBuilder = new EmbedBuilder();
+
+            for (int i = 0; i < matches.Count && i < MaxMatchDisplayCount; i++)
+            {
+                // Generate Strings for Team Compositions
+                var match = matches[i];
+                var team1 = string.Join('\n', match.Item1.Select(m => m.Username + " (~" + m.MMR + ")"));
+                var team2 = string.Join('\n', match.Item2.Select(m => m.Username + " (~" + m.MMR + ")"));
+
+                // Generate Strings for Average Team MMRs
+                int team1MMR = match.Item1.Sum(item => item.MMR) / match.Item1.Count;
+                int team2MMR = match.Item2.Sum(item => item.MMR) / match.Item2.Count;
+
+                // Add fields to EmbedBuilder
+                embedBuilder.AddField($"Match {i + 1}", "\u200b");
+                embedBuilder.AddField($"Orange ({team1MMR}):", team1, true);
+                embedBuilder.AddField($"Blue ({team2MMR}):", team1, true);
+                embedBuilder.AddField("\u200B", "\u200B");
+            }
+
+            return await channel.SendMessageAsync($"**Group {groupNumber} ({matches.Count} Matches)**", false, embedBuilder.Build());
         }
 
         public static async Task<IUserMessage> QueueStarted(IMessageChannel channel, InhouseQueue queue)
