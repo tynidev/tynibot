@@ -307,7 +307,7 @@ namespace Discord.Inhouse
                 {
                     Player botPlayer = new Player();
                     botPlayer.Id = (ulong)i;
-                    botPlayer.Username = i.ToString();
+                    botPlayer.Username = "[MSFT] FizzBuzz " + i.ToString();
                     botPlayer.MMR = (int)RankMap.Values.ElementAt<Rank>(rnd.Next(1, RankMap.Values.Count));
 
                     await QueuePlayer(queueName, botPlayer);
