@@ -1,4 +1,4 @@
-﻿using Discord.Commands;
+using Discord.Commands;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -272,8 +272,7 @@ namespace Discord.Inhouse
 
                     if (matches != null)
                     {
-                        await Context.Channel.SendMessageAsync($"Group {groupNumber}");
-                        await Output.OutputUniqueMatches(matches, Context.Channel);
+                        await Output.OutputUniqueMatches(matches, groupNumber, Context.Channel);
                     }
 
                     ++groupNumber;
