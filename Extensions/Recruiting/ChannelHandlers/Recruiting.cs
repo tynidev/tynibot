@@ -54,12 +54,12 @@ namespace Discord.Recruiting
             {
                 var parts = x.Split('|');
                 return new KeyValuePair<string, string>(parts[0].Trim(), parts[1].Trim());
-            }).ToDictionary(x => x.Key, x => x.Value).OrderBy(x => x.Key) as Dictionary<string, string>; 
+            }).ToDictionary(x => x.Key, x => x.Value); 
         }
 
         private string BoardToString(Dictionary<string, string> board)
         {
-            var pairs = board.Select(x => $"{x.Key} | {x.Value}");
+            var pairs = board.OrderBy(x => x.Key).Select(x => $"{x.Key} | {x.Value}");
             return string.Join("\r\n", pairs);
         }
     }
