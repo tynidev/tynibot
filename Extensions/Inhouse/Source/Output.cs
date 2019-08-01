@@ -63,7 +63,7 @@ namespace Discord.Inhouse
                 // Add fields to EmbedBuilder
                 embedBuilder.AddField($"Match {i + 1}", "\u200b");
                 embedBuilder.AddField($"Orange ({team1MMR}):", team1, true);
-                embedBuilder.AddField($"Blue ({team2MMR}):", team1, true);
+                embedBuilder.AddField($"Blue ({team2MMR}):", team2, true);
                 embedBuilder.AddField("\u200B", "\u200B");
             }
 
