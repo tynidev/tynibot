@@ -53,8 +53,8 @@ namespace Discord.Inhouse
             {
                 // Generate Strings for Team Compositions
                 var match = matches[i];
-                var team1 = string.Join('\n', match.Item1.Select(m => m.Username + " (~" + m.MMR + ")"));
-                var team2 = string.Join('\n', match.Item2.Select(m => m.Username + " (~" + m.MMR + ")"));
+                var team1 = string.Join('\n', match.Item1.Select(m => m.Mention + " (~" + m.MMR + ")"));
+                var team2 = string.Join('\n', match.Item2.Select(m => m.Mention + " (~" + m.MMR + ")"));
 
                 // Generate Strings for Average Team MMRs
                 int team1MMR = match.Item1.Sum(item => item.MMR) / match.Item1.Count;
