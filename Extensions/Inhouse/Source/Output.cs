@@ -64,7 +64,8 @@ namespace Discord.Inhouse
                 embedBuilder.AddField($"Match {i + 1}", "\u200b");
                 embedBuilder.AddField($"Orange ({team1MMR}):", team1, true);
                 embedBuilder.AddField($"Blue ({team2MMR}):", team2, true);
-                embedBuilder.AddField("\u200B", "\u200B");
+                if (i + 1 < matches.Count && i + 1 < MaxMatchDisplayCount) // Only attach blank field if it's not the last one. 
+                    embedBuilder.AddField("\u200B", "\u200B");
             }
 
             return await channel.SendMessageAsync($"**Group {groupNumber} ({matches.Count} Matches)**", false, embedBuilder.Build());
@@ -77,14 +78,20 @@ namespace Discord.Inhouse
 
         public static async Task<IUserMessage> PlayersAdded(IMessageChannel channel, InhouseQueue queue, List<Player> list)
         {
-            string players = string.Join("\r\n", queue.Players.Select(p => p.Value.Username));
-            return await channel.SendMessageAsync($"Players were added succesfully!\r\n\r\n Queue: {players}");
+            string players = string.Join("\r\n", queue.Players.Select(p => "- " + p.Value.Mention));
+            
+            EmbedBuilder embedBuilder = new EmbedBuilder();
+            embedBuilder.AddField("Queue:", players);
+            return await channel.SendMessageAsync($"Players were added succesfully!", false, embedBuilder.Build());
         }
 
         public static async Task<IUserMessage> PlayersRemoved(IMessageChannel channel, InhouseQueue queue, List<Player> list)
         {
-            string players = string.Join("\r\n", queue.Players.Select(p => p.Value.Username));
-            return await channel.SendMessageAsync($"Players were removed succesfully!\r\n\r\n Queue: {players}");
+            string players = string.Join("\r\n- ", queue.Players.Select(p => "- " + p.Value.Mention));
+
+            EmbedBuilder embedBuilder = new EmbedBuilder();
+            embedBuilder.AddField("Queue:", players);
+            return await channel.SendMessageAsync($"Players were removed succesfully!", false, embedBuilder.Build());
         }
     }
 }
