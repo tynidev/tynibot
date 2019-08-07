@@ -77,11 +77,17 @@ namespace TyniBot
                 Client.ReactionAdded += ReactionAddedAsync;
                 Client.ReactionRemoved += ReactionRemovedAsync;
                 Client.ReactionsCleared += ReactionsClearedAsync;
+                Client.UserJoined += AnnounceJoinedUser;
 
                 await Client.LoginAsync(TokenType.Bot, Settings.BotToken);
                 await Client.StartAsync();
                 await Task.Delay(-1); // Wait forever
             }
+        }
+        public async Task AnnounceJoinedUser(SocketGuildUser user) //Welcomes the new user
+        {
+            var channel = Client.GetChannel(124366291611025417) as SocketTextChannel; // Gets the channel to send the message in
+            await channel.SendMessageAsync($"Welcome {user.Mention} to {channel.Guild.Name}. Please wait while we load the real humans. For general guidance in the meantime, check out #announcements"); //Welcomes the new user
         }
 
         #region EventHandlers
