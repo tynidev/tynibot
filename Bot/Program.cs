@@ -68,9 +68,6 @@ namespace TyniBot
 
                 // TODO: Dynamically load these from DLLs
                 ChannelHandlers.Add("recruiting", new Discord.Recruiting.Recruiting(Client, Services));
-                ChannelHandlers.Add("bot-input", new PinMessageHandler(Client, Services, DefaultCommands));
-                ChannelHandlers.Add("o365-chat", new PinMessageHandler(Client, Services, DefaultCommands));
-                ChannelHandlers.Add("tynibot", new PinMessageHandler(Client, Services, DefaultCommands));
 
                 Client.Log += Log;
                 Client.MessageReceived += MessageReceived;

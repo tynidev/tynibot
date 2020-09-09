@@ -31,13 +31,18 @@ namespace Discord.Mafia
             {
                 if (!UserReacted.IsBot) // we don't need to remove messages we ourselves put there
                 {
-                    if(PrivateVoting)
+                    await UserReacted.SendMessageAsync($"Vote is invalid and will be ignored. You can not vote for yourself and you can only vote {Game.Mafia.Count} time{(Game.Mafia.Count > 1 ? "s" : "")}.");
+                    if (!PrivateVoting)
                     {
-                        await context.Channel.SendMessageAsync($"Vote is invalid and will be ignored. You can not vote for yourself and you can only vote {Game.Mafia.Count} times.");
-                    }
-                    else
-                    {
-                        await context.Message.RemoveReactionAsync(reactionAdded.Emote, reactionAdded.User.Value);
+                        try
+                        {
+                            await context.Message.RemoveReactionAsync(reactionAdded.Emote, reactionAdded.User.Value);
+                        }
+                        catch (Discord.Net.HttpException)
+                        {
+                            await context.Channel.SendMessageAsync($"Vote is invalid and will be ignored. You can not vote for yourself and you can only vote {Game.Mafia.Count} time{(Game.Mafia.Count > 1 ? "s" : "")}.");
+                            await context.Channel.SendMessageAsync($"This bot needs manage message permissions to remove the reaction from above. Until this permission is given the user must remove it themselves.");
+                        }
                     }
                 }
                 return;

@@ -17,6 +17,8 @@ namespace Discord.Recruiting
         {
             var message = context.Message;
             var channel = context.Channel;
+            //var user = context.User;
+            //var role = context.Guild.Roles.FirstOrDefault(x => x.Id == 740316086284845093);
 
             KeyValuePair<string, string> addition = ParseMsg(message);
             await message.DeleteAsync();
@@ -34,6 +36,8 @@ namespace Discord.Recruiting
                 board.Add(addition.Key, addition.Value);
             }
 
+            //await (user as IGuildUser).AddRoleAsync(role);
+
             await boardMsg.DeleteAsync();
 
             await channel.SendMessageAsync(BoardToString(board));
@@ -43,6 +47,7 @@ namespace Discord.Recruiting
 
         private KeyValuePair<string, string> ParseMsg(IUserMessage message)
         {
+
             Uri uri = new Uri(message.Content);
             return new KeyValuePair<string, string>(message.Author.Username, uri.AbsoluteUri);
         }
