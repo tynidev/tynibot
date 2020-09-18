@@ -84,7 +84,7 @@ namespace TyniBot
         public async Task AnnounceJoinedUser(SocketGuildUser user) //Welcomes the new user
         {
             var channel = Client.GetChannel(124366291611025417) as SocketTextChannel; // Gets the channel to send the message in
-            await channel.SendMessageAsync($"Welcome {user.Mention} to {channel.Guild.Name}. Please wait while we load the real humans. For general guidance in the meantime, check out #announcements"); //Welcomes the new user
+            await channel.SendMessageAsync($"Welcome {user.Mention} to {channel.Guild.Name}. Please wait while we load the real humans. For general guidance in the meantime, check out <#549039583459934209>"); //Welcomes the new user
         }
 
         #region EventHandlers
