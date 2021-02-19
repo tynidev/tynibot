@@ -15,7 +15,7 @@ namespace Discord.Inhouse
     {
         Dictionary<string, Rank> RankMap = new Dictionary<string, Rank>()
         {
-            { "ssl", Rank.SuperSonicLegend },
+            { "ssl", Rank.SupersonicLegend },
             { "gc3", Rank.GrandChamp3 },
             { "gc2", Rank.GrandChamp2 },
             { "gc1", Rank.GrandChamp1 },

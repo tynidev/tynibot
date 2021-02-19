@@ -9,7 +9,7 @@ namespace Discord.Inhouse
 {
     public enum Rank
     {
-        SuperSonicLegend = 1880,
+        SupersonicLegend = 1880,
         GrandChamp3 = 1770,
         GrandChamp2 = 1655,
         GrandChamp1 = 1535,
