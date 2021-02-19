@@ -52,7 +52,7 @@ namespace TyniBot
             }
 
             // Update database
-            msgCollection.Delete(m => m.ChannelId == pinnedMsg.ChannelId);
+            msgCollection.Delete(pinnedMsg.ChannelId);
 
             return Task.CompletedTask;
         }

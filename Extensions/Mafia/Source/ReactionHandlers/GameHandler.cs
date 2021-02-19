@@ -16,8 +16,8 @@ namespace Discord.Mafia
         private ReactionContext Context;
         private IUser UserReacted;
         private Game Game;
-        private LiteCollection<Game> Games;
-        private LiteCollection<IReactionHandler> ReactionHandlers;
+        private ILiteCollection<Game> Games;
+        private ILiteCollection<IReactionHandler> ReactionHandlers;
 
         #region IReactionHandler
 
@@ -52,7 +52,7 @@ namespace Discord.Mafia
                 }
 
                 // Un-register this message for receiving new reactions
-                ReactionHandlers.Delete(u => u.MsgId == this.MsgId);
+                ReactionHandlers.Delete(this.MsgId);
 
                 // Output voting notification message
                 var votingMessages = await Output.StartVoting(Game, Context.Channel, VotingHandler.PrivateVoting);

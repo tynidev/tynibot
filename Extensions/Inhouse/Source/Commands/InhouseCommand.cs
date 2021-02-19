@@ -198,7 +198,7 @@ namespace Discord.Inhouse
             try
             {
                 var queues = Context.Database.GetCollection<InhouseQueue>();
-                int numDeleted = queues.Delete(g => g.ChannelId == Context.Channel.Id);
+                int numDeleted = queues.DeleteMany(g => g.ChannelId == Context.Channel.Id);
 
                 string letterS = "s";
 
@@ -373,7 +373,7 @@ namespace Discord.Inhouse
             {
                 var existing = await InhouseQueue.GetQueueAsync(Context.Channel.Id, queueName, Context.Client, queues);
                 if (existing != null)
-                    queues.Delete(g => g.Name == existing.Name);
+                    queues.Delete(existing.Name);
             }
             catch (Exception) { }
 
@@ -391,7 +391,7 @@ namespace Discord.Inhouse
             var existing = await InhouseQueue.GetQueueAsync(Context.Channel.Id, queueName, Context.Client, queues);
             if (existing != null)
             {
-                queues.Delete(g => g.Name == existing.Name);
+                queues.Delete(existing.Name);
                 await Context.Channel.SendMessageAsync($"Queue {queueName} deleted.");
             }
             else

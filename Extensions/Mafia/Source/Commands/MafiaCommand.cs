@@ -81,7 +81,7 @@ namespace Discord.Mafia
             {
                 var existingGame = await Game.GetGameAsync(Context.Channel.Id, Context.Client, games);
                 if (existingGame != null)
-                    games.Delete(g => g.Id == existingGame.Id);
+                    games.Delete(existingGame.Id);
             }
             catch(Exception){}
 

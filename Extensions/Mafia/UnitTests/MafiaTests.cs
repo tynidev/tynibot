@@ -20,7 +20,7 @@ namespace Mafia.UnitTests
             using (var Database = new LiteDatabase(@"test.db"))
             {
                 var col = Database.GetCollection<IReactionHandler>();
-                col.Delete(u => true);
+                col.DeleteMany(u => true);
                 col.Insert(new GameHandler() { MsgId = 1, GameId = 4 });
                 col.EnsureIndex(x => x.MsgId);
                 var handler = col.Find(rh => rh.MsgId == 1).FirstOrDefault() as GameHandler;
@@ -51,7 +51,7 @@ namespace Mafia.UnitTests
                 input.Id = 1;
 
                 var gamesCollection = Database.GetCollection<Discord.Mafia.Game>();
-                gamesCollection.Delete(u => true);
+                gamesCollection.DeleteMany(u => true);
                 gamesCollection.Insert(input);
                 gamesCollection.EnsureIndex(x => x.Id);
 
