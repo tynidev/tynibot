@@ -172,7 +172,7 @@ namespace Discord.Mafia
             return true;
         }
 
-        public static async Task<Game> GetGameAsync(ulong id, IDiscordClient channel, LiteCollection<Game> collection)
+        public static async Task<Game> GetGameAsync(ulong id, IDiscordClient channel, ILiteCollection<Game> collection)
         {
             var game = collection.FindOne(g => g.Id == id);
             if (game == null)

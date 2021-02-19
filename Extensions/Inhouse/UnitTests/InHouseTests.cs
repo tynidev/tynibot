@@ -28,7 +28,7 @@ namespace Inhouse.UnitTests
 
                 var col = Database.GetCollection<InhouseQueue>();
 
-                col.Delete(u => true);
+                col.DeleteMany(u => true);
                 col.Insert(input);
                 col.EnsureIndex(x => x.Name);
 

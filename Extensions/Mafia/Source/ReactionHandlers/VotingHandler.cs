@@ -17,7 +17,7 @@ namespace Discord.Mafia
         private IUser UserReacted;
         private Player PlayerVoted;
         private Game Game;
-        private LiteCollection<Game> Games;
+        private ILiteCollection<Game> Games;
 
         [BsonIgnore]
         public static bool PrivateVoting { get { return false; } }

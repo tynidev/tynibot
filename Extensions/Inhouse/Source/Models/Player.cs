@@ -2,6 +2,7 @@
 using LiteDB;
 using System;
 using System.Threading.Tasks;
+using System.Collections.Immutable;
 
 namespace Discord.Inhouse
 {
@@ -69,6 +70,15 @@ namespace Discord.Inhouse
 
         [BsonIgnore]
         public UserStatus Status => DiscordUser.Status;
+
+        [BsonIgnore]
+        public UserProperties? PublicFlags => DiscordUser.PublicFlags;
+
+        [BsonIgnore]
+        public IImmutableSet<ClientType> ActiveClients => DiscordUser.ActiveClients;
+
+        [BsonIgnore]
+        public IImmutableList<IActivity> Activities => DiscordUser.Activities;
 
         public string GetAvatarUrl(ImageFormat format = ImageFormat.Auto, ushort size = 128)
         {

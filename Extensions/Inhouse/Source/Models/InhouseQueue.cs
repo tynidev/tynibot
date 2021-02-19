@@ -54,7 +54,7 @@ namespace Discord.Inhouse
             Name = name;
             Players = new Dictionary<ulong, Player>();
         }
-        public static async Task<InhouseQueue> GetQueueAsync(ulong channelId, string name, IDiscordClient channel, LiteCollection<InhouseQueue> collection)
+        public static async Task<InhouseQueue> GetQueueAsync(ulong channelId, string name, IDiscordClient channel, ILiteCollection<InhouseQueue> collection)
         {
             var queue = collection.FindOne(g => g.ChannelId == channelId && g.Name == name);
             if (queue == null)
