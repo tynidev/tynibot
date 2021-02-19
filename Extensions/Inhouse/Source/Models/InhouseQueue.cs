@@ -9,25 +9,28 @@ namespace Discord.Inhouse
 {
     public enum Rank
     {
-        GrandChamp = 1500,
-        Champ3 = 1400,
-        Champ2 = 1300,
-        Champ1 = 1200,
-        Diamond3 = 1100,
-        Diamond2 = 1000,
-        Diamond1 = 930,
+        SupersonicLegend = 1880,
+        GrandChamp3 = 1770,
+        GrandChamp2 = 1655,
+        GrandChamp1 = 1535,
+        Champ3 = 1435,
+        Champ2 = 1335,
+        Champ1 = 1235,
+        Diamond3 = 1135,
+        Diamond2 = 1035,
+        Diamond1 = 935,
         Plat3 = 855,
         Plat2 = 775,
-        Plat1 = 700,
-        Gold3 = 615,
-        Gold2 = 555,
-        Gold1 = 495,
-        Silver3 = 435,
-        Silver2 = 375,
+        Plat1 = 695,
+        Gold3 = 610,
+        Gold2 = 550,
+        Gold1 = 490,
+        Silver3 = 430,
+        Silver2 = 370,
         Silver1 = 315,
-        Bronze3 = 255,
-        Bronze2 = 195,
-        Bronze1 = 60
+        Bronze3 = 250,
+        Bronze2 = 190,
+        Bronze1 = 0
     }
 
     public enum TeamSize
