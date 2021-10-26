@@ -1,33 +1,37 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26124.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31702.278
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TyniBot", "Bot\TyniBot.csproj", "{325D7C7D-0260-4921-8964-38835F0F1211}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TyniBotLib", "Bot\TyniBotLib.csproj", "{325D7C7D-0260-4921-8964-38835F0F1211}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "Common\Common.csproj", "{E47716DE-D351-4143-ACA8-659E30B0F3DB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common", "Common\Common.csproj", "{E47716DE-D351-4143-ACA8-659E30B0F3DB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Extensions", "Extensions", "{F89B4664-DBD5-4FDB-9B1B-F87EBB0C026D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Inhouse", "Inhouse", "{E930BEE7-847B-473C-9364-D8FD1EEE2591}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inhouse", "Extensions\Inhouse\Source\Inhouse.csproj", "{E16F9D52-3A52-45AE-8D0B-6B1B0D1E3111}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Inhouse", "Extensions\Inhouse\Source\Inhouse.csproj", "{E16F9D52-3A52-45AE-8D0B-6B1B0D1E3111}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "Extensions\Inhouse\UnitTests\UnitTests.csproj", "{86D05545-AAF9-4B3A-9389-BC6DAEAD93D5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests", "Extensions\Inhouse\UnitTests\UnitTests.csproj", "{86D05545-AAF9-4B3A-9389-BC6DAEAD93D5}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Mafia", "Mafia", "{ABC538B1-607F-4CA4-84CE-6C77E7DC530A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mafia", "Extensions\Mafia\Source\Mafia.csproj", "{C59D0844-3907-416E-A1EF-0F68FA094798}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mafia", "Extensions\Mafia\Source\Mafia.csproj", "{C59D0844-3907-416E-A1EF-0F68FA094798}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "Extensions\Mafia\UnitTests\UnitTests.csproj", "{6F6F21E8-A236-483A-897F-D173F34BF67D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests", "Extensions\Mafia\UnitTests\UnitTests.csproj", "{6F6F21E8-A236-483A-897F-D173F34BF67D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Matches", "Matches", "{16CD55EB-FB96-4F09-82D4-F79837A48C94}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Matches", "Extensions\Matches\Source\Matches.csproj", "{06A38D63-5F60-407C-8C6D-EAA362BCDEC5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Matches", "Extensions\Matches\Source\Matches.csproj", "{06A38D63-5F60-407C-8C6D-EAA362BCDEC5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "Extensions\Matches\UnitTests\UnitTests.csproj", "{AA49EA18-424D-4803-A6AE-A40D18AAD754}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests", "Extensions\Matches\UnitTests\UnitTests.csproj", "{AA49EA18-424D-4803-A6AE-A40D18AAD754}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Recruiting", "Extensions\Recruiting\Recruiting.csproj", "{7DEF8A60-D532-4757-8E40-C069539CAE1E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Recruiting", "Extensions\Recruiting\Recruiting.csproj", "{7DEF8A60-D532-4757-8E40-C069539CAE1E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TyniBotConsoleApp", "TyniBotConsoleApp\TyniBotConsoleApp.csproj", "{194C787C-5C48-4835-8B10-494C67777BF2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TyniBotDockerService", "TyniBotDockerService\TyniBotDockerService.csproj", "{99019363-4027-4F62-A106-74A163547C50}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,9 +41,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{325D7C7D-0260-4921-8964-38835F0F1211}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -150,6 +151,33 @@ Global
 		{7DEF8A60-D532-4757-8E40-C069539CAE1E}.Release|x64.Build.0 = Release|Any CPU
 		{7DEF8A60-D532-4757-8E40-C069539CAE1E}.Release|x86.ActiveCfg = Release|Any CPU
 		{7DEF8A60-D532-4757-8E40-C069539CAE1E}.Release|x86.Build.0 = Release|Any CPU
+		{194C787C-5C48-4835-8B10-494C67777BF2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{194C787C-5C48-4835-8B10-494C67777BF2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{194C787C-5C48-4835-8B10-494C67777BF2}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{194C787C-5C48-4835-8B10-494C67777BF2}.Debug|x64.Build.0 = Debug|Any CPU
+		{194C787C-5C48-4835-8B10-494C67777BF2}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{194C787C-5C48-4835-8B10-494C67777BF2}.Debug|x86.Build.0 = Debug|Any CPU
+		{194C787C-5C48-4835-8B10-494C67777BF2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{194C787C-5C48-4835-8B10-494C67777BF2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{194C787C-5C48-4835-8B10-494C67777BF2}.Release|x64.ActiveCfg = Release|Any CPU
+		{194C787C-5C48-4835-8B10-494C67777BF2}.Release|x64.Build.0 = Release|Any CPU
+		{194C787C-5C48-4835-8B10-494C67777BF2}.Release|x86.ActiveCfg = Release|Any CPU
+		{194C787C-5C48-4835-8B10-494C67777BF2}.Release|x86.Build.0 = Release|Any CPU
+		{99019363-4027-4F62-A106-74A163547C50}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{99019363-4027-4F62-A106-74A163547C50}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{99019363-4027-4F62-A106-74A163547C50}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{99019363-4027-4F62-A106-74A163547C50}.Debug|x64.Build.0 = Debug|Any CPU
+		{99019363-4027-4F62-A106-74A163547C50}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{99019363-4027-4F62-A106-74A163547C50}.Debug|x86.Build.0 = Debug|Any CPU
+		{99019363-4027-4F62-A106-74A163547C50}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{99019363-4027-4F62-A106-74A163547C50}.Release|Any CPU.Build.0 = Release|Any CPU
+		{99019363-4027-4F62-A106-74A163547C50}.Release|x64.ActiveCfg = Release|Any CPU
+		{99019363-4027-4F62-A106-74A163547C50}.Release|x64.Build.0 = Release|Any CPU
+		{99019363-4027-4F62-A106-74A163547C50}.Release|x86.ActiveCfg = Release|Any CPU
+		{99019363-4027-4F62-A106-74A163547C50}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{E930BEE7-847B-473C-9364-D8FD1EEE2591} = {F89B4664-DBD5-4FDB-9B1B-F87EBB0C026D}
@@ -162,5 +190,8 @@ Global
 		{06A38D63-5F60-407C-8C6D-EAA362BCDEC5} = {16CD55EB-FB96-4F09-82D4-F79837A48C94}
 		{AA49EA18-424D-4803-A6AE-A40D18AAD754} = {16CD55EB-FB96-4F09-82D4-F79837A48C94}
 		{7DEF8A60-D532-4757-8E40-C069539CAE1E} = {F89B4664-DBD5-4FDB-9B1B-F87EBB0C026D}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FEA1002F-F86C-4E46-BAE8-965951A6B60F}
 	EndGlobalSection
 EndGlobal

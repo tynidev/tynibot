@@ -1,0 +1,4 @@
+﻿{
+  "_comment":  "Copy this file to botsettings.json and insert your Discord BotToken to be able to run the project locally. botsettings.json is included in the .gitignore to try to minimize people checking in personal tokens.",
+  "BotToken": "yourDiscordBotTokenHere"
+}
