@@ -1,18 +1,15 @@
-﻿using System;
-using System.Reflection;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.WebSocket;
-using Discord.Commands;
-using Microsoft.Extensions.DependencyInjection;
-using System.Collections.Generic;
-using System.IO;
-using Newtonsoft.Json;
 using LiteDB;
+using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace TyniBot
 {
-    class Program
+    public class TynibotHost
     {
         private DiscordSocketClient Client;
         private ServiceProvider Services;
@@ -21,25 +18,14 @@ namespace TyniBot
         private BotContext Context = null;
 
         private DefaultHandler DefaultHandler = null;
-        private Dictionary<string, IChannelHandler> ChannelHandlers = new Dictionary<string, IChannelHandler>();
+        private readonly Dictionary<string, IChannelHandler> ChannelHandlers = new Dictionary<string, IChannelHandler>();
 
-        private static string AssemblyDirectory
+        public async Task RunAsync(
+            BotSettings settings,
+            Func<LogMessage, Task> logFunction,
+            CancellationToken? stoppingToken = null)
         {
-            get
-            {
-                string location = Assembly.GetExecutingAssembly().Location;
-                UriBuilder uri = new UriBuilder(location);
-                string path = Uri.UnescapeDataString(uri.Path);
-                return Path.GetDirectoryName(path);
-            }
-        }
-        private string SettingsPath => $"{AssemblyDirectory}/botsettings.json";
-
-        static void Main(string[] args) => new Program().MainAsync().GetAwaiter().GetResult();
-
-        private async Task MainAsync()
-        {
-            Settings = JsonConvert.DeserializeObject<BotSettings>(File.ReadAllText(SettingsPath));
+            this.Settings = settings;
 
             Client = new DiscordSocketClient(new DiscordSocketConfig()
             {
@@ -50,7 +36,7 @@ namespace TyniBot
 
             using (Database = new LiteDatabase(@"tynibotdata.db")) // DB for long term state
             {
-                Context = new BotContext(Client, Database, Settings); 
+                Context = new BotContext(Client, Database, this.Settings);
 
                 DefaultHandler = new DefaultHandler(Client, Services, new List<Type>());
 
@@ -63,24 +49,38 @@ namespace TyniBot
                     typeof(Discord.Inhouse.InhouseCommand)
                 };
 
-                foreach(var type in DefaultCommands)
+                foreach (var type in DefaultCommands)
                     DefaultHandler.Commands.AddModuleAsync(type, Services).Wait();
 
                 // TODO: Dynamically load these from DLLs
                 ChannelHandlers.Add("recruiting", new Discord.Recruiting.Recruiting(Client, Services));
 
-                Client.Log += Log;
+                Client.Log += logFunction;
+
                 Client.MessageReceived += MessageReceived;
                 Client.ReactionAdded += ReactionAddedAsync;
                 Client.ReactionRemoved += ReactionRemovedAsync;
                 Client.ReactionsCleared += ReactionsClearedAsync;
                 Client.UserJoined += AnnounceJoinedUser;
 
-                await Client.LoginAsync(TokenType.Bot, Settings.BotToken);
+                await Client.LoginAsync(TokenType.Bot, this.Settings.BotToken);
                 await Client.StartAsync();
-                await Task.Delay(-1); // Wait forever
+
+                if (!stoppingToken.HasValue)
+                {
+                    await Task.Delay(-1); // Wait forever
+                }
+                else
+                {
+                    // Wait until cancellation is requested.
+                    while (!stoppingToken.Value.IsCancellationRequested)
+                    {
+                        await Task.Delay(int.MaxValue, stoppingToken.Value);
+                    }
+                }
             }
         }
+
         public async Task AnnounceJoinedUser(SocketGuildUser user) //Welcomes the new user
         {
             var channel = Client.GetChannel(124366291611025417) as SocketTextChannel; // Gets the channel to send the message in
@@ -92,8 +92,7 @@ namespace TyniBot
         private async Task MessageReceived(SocketMessage msg)
         {
             // Take input and Validate
-            var message = msg as SocketUserMessage;
-            if (message == null) return; // We only accept SocketUserMessages
+            if (msg is not SocketUserMessage message) return; // We only accept SocketUserMessages
 
             if (message.Author.IsBot) return; // We don't allow bots to talk to each other lest they take over the world!
 
@@ -136,12 +135,6 @@ namespace TyniBot
             var context = new ReactionContext(Context, msg);
 
             await handler.ReactionAdded(context, addedReaction);
-        }
-
-        private Task Log(LogMessage msg)
-        {
-            Console.WriteLine(msg.ToString());
-            return Task.CompletedTask;
         }
 
         #endregion
