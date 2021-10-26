@@ -21,11 +21,11 @@ namespace TyniBotWorkerService
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            string environmentSecret = "";
+            string token = Environment.GetEnvironmentVariable("discordToken");
 
             BotSettings settings = new BotSettings
             {
-                BotToken = environmentSecret
+                BotToken = token
             };
 
             TynibotHost botHost = new TynibotHost();
