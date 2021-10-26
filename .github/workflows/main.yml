@@ -29,5 +29,5 @@ jobs:
           password: ${{ secrets.REGISTRY_PASSWORD }}
 
       - run: |
-          docker build . -f .\TyniBotDockerService\Dockerfile -t test
-          docker push test
+          docker build . -f .\TyniBotDockerService\Dockerfile -t tynibotcontainerregistry.azurecr.io/tynibotdockerservice:test
+          docker push tynibotcontainerregistry.azurecr.io/tynibotdockerservice:test
