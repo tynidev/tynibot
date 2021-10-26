@@ -1,14 +1,11 @@
-using Discord;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TyniBot;
 
-namespace TyniBotWorkerService
+namespace TyniBotDockerService
 {
     public class Worker : BackgroundService
     {
@@ -32,7 +29,7 @@ namespace TyniBotWorkerService
             await botHost.RunAsync(settings, Log, stoppingToken);
         }
 
-        private Task Log(LogMessage msg)
+        private Task Log(Discord.LogMessage msg)
         {
             _logger.LogInformation(msg.ToString());
             return Task.CompletedTask;

@@ -13,4 +13,10 @@
     <ProjectReference Include="..\Bot\TyniBotLib.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="botsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
