@@ -1,15 +1,11 @@
-﻿using System;
-using System.Reflection;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.WebSocket;
-using Discord.Commands;
-using Microsoft.Extensions.DependencyInjection;
-using System.Collections.Generic;
-using System.IO;
-using Newtonsoft.Json;
 using LiteDB;
+using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace TyniBot
 {
@@ -24,17 +20,6 @@ namespace TyniBot
         private DefaultHandler DefaultHandler = null;
         private readonly Dictionary<string, IChannelHandler> ChannelHandlers = new Dictionary<string, IChannelHandler>();
 
-        private static string AssemblyDirectory
-        {
-            get
-            {
-                string location = Assembly.GetExecutingAssembly().Location;
-                UriBuilder uri = new UriBuilder(location);
-                string path = Uri.UnescapeDataString(uri.Path);
-                return Path.GetDirectoryName(path);
-            }
-        }
-        
         public async Task RunAsync(
             BotSettings settings,
             Func<LogMessage, Task> logFunction,
@@ -51,7 +36,7 @@ namespace TyniBot
 
             using (Database = new LiteDatabase(@"tynibotdata.db")) // DB for long term state
             {
-                Context = new BotContext(Client, Database, this.Settings); 
+                Context = new BotContext(Client, Database, this.Settings);
 
                 DefaultHandler = new DefaultHandler(Client, Services, new List<Type>());
 
@@ -64,7 +49,7 @@ namespace TyniBot
                     typeof(Discord.Inhouse.InhouseCommand)
                 };
 
-                foreach(var type in DefaultCommands)
+                foreach (var type in DefaultCommands)
                     DefaultHandler.Commands.AddModuleAsync(type, Services).Wait();
 
                 // TODO: Dynamically load these from DLLs
@@ -85,7 +70,7 @@ namespace TyniBot
                 {
                     await Task.Delay(-1); // Wait forever
                 }
-                else 
+                else
                 {
                     // Wait until cancellation is requested.
                     while (!stoppingToken.Value.IsCancellationRequested)

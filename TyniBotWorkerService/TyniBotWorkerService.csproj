@@ -7,7 +7,7 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Bot\TyniBot.csproj" />
+    <ProjectReference Include="..\Bot\TyniBotLib.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="Settings.job">
