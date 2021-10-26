@@ -43,7 +43,7 @@ namespace TyniBot
                 var DefaultCommands = new List<Type>()
                 {
                     typeof(Ping),
-                    typeof(Clear),
+                    //typeof(Clear),
                     typeof(Discord.Mafia.MafiaCommand),
                     typeof(Discord.Matches.MatchesCommand),
                     typeof(Discord.Inhouse.InhouseCommand)
@@ -53,7 +53,7 @@ namespace TyniBot
                     DefaultHandler.Commands.AddModuleAsync(type, Services).Wait();
 
                 // TODO: Dynamically load these from DLLs
-                ChannelHandlers.Add("recruiting", new Discord.Recruiting.Recruiting(Client, Services));
+                //ChannelHandlers.Add("recruiting", new Discord.Recruiting.Recruiting(Client, Services));
 
                 Client.Log += logFunction;
 
