@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
+using System.Reflection;
+using System.Linq;
 
 namespace TyniBot
 {
@@ -13,7 +15,14 @@ namespace TyniBot
         public async Task VersionCommand()
         {
             var version = FileVersionInfo.GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            await Context.Channel.SendMessageAsync($"{ToDate(version.ProductBuildPart, version.ProductPrivatePart).ToString()} UTC");
+            string date = $"{ToDate(version.ProductBuildPart, version.ProductPrivatePart).ToString()} UTC";
+            string gitHash = version.ProductVersion.Substring(version.ProductVersion.IndexOf('+') + 1);
+
+            await Context.Channel.SendMessageAsync(
+                $"Version: {version.FileVersion}\n" +
+                $"GitHash: {gitHash}\n" +
+                $"Date: {date}\n"
+                );
         }
 
         private (int, int) ToVersion(DateTime date)
