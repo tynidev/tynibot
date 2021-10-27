@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using TyniBot;
+using Discord.Bot;
 
 namespace TyniBot
 {
@@ -29,7 +29,7 @@ namespace TyniBot
             base.Commands.AddModuleAsync(typeof(PinMessage), Services).Wait();
         }
 
-        public override async Task<IResult> MessageReceived(CommandContext context)
+        public override async Task<IResult> MessageReceived(Discord.Bot.CommandContext context)
         {
             if (context.User.IsBot || context.User.IsWebhook) return ExecuteResult.FromSuccess(); // ignore bot messages
 

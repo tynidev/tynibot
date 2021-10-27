@@ -2,10 +2,9 @@
 using Discord.Commands;
 using System.Linq;
 using System.Threading.Tasks;
-
 namespace TyniBot
 {
-    public class PinMessage : ModuleBase<CommandContext>
+    public class PinMessage : ModuleBase<Discord.Bot.CommandContext>
     {
         [Command("pin"), Summary("Command to pin the last message to the bottom of the channel!")]
         public async Task Pin()
