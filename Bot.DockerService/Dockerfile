@@ -8,14 +8,14 @@ WORKDIR /app
 
 FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
 WORKDIR /src
-COPY ["TyniBotDockerService/TyniBotDockerService.csproj", "TyniBotDockerService/"]
-RUN dotnet restore "TyniBotDockerService/TyniBotDockerService.csproj"
+COPY ["Bot.DockerService/DockerService.csproj", "Bot.DockerService/"]
+RUN dotnet restore "Bot.DockerService/DockerService.csproj"
 COPY . .
-WORKDIR "/src/TyniBotDockerService"
-RUN dotnet build "TyniBotDockerService.csproj" -c Release -o /app/build
+WORKDIR "/src/Bot.DockerService"
+RUN dotnet build "DockerService.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "TyniBotDockerService.csproj" -c Release -o /app/publish
+RUN dotnet publish "DockerService.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
