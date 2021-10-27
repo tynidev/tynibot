@@ -44,6 +44,7 @@ namespace TyniBot
                 var DefaultCommands = new List<Type>()
                 {
                     typeof(Ping),
+                    typeof(Version),
                     //typeof(Clear),
                     typeof(Discord.Mafia.MafiaCommand),
                     typeof(Discord.Matches.MatchesCommand),
