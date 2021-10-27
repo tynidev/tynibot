@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Discord.Bot;
 
 namespace TyniBot
 {
@@ -43,6 +44,7 @@ namespace TyniBot
                 var DefaultCommands = new List<Type>()
                 {
                     typeof(Ping),
+                    typeof(Version),
                     //typeof(Clear),
                     typeof(Discord.Mafia.MafiaCommand),
                     typeof(Discord.Matches.MatchesCommand),
