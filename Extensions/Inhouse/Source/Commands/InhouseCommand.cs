@@ -13,7 +13,7 @@ namespace Discord.Inhouse
     [Group("inhouse")]
     public class InhouseCommand : ModuleBase<TyniBot.CommandContext>
     {
-        Dictionary<string, Rank> RankMap = new Dictionary<string, Rank>()
+        Dictionary<string, Rank> RankMap = new Dictionary<string, Rank>(StringComparer.OrdinalIgnoreCase)
         {
             { "ssl", Rank.SupersonicLegend },
             { "gc3", Rank.GrandChamp3 },
@@ -46,7 +46,7 @@ namespace Discord.Inhouse
             { "1", TeamSize.Duel },
         };
 
-        Dictionary<string, SplitMode> SplitModeMap = new Dictionary<string, SplitMode>()
+        Dictionary<string, SplitMode> SplitModeMap = new Dictionary<string, SplitMode>(StringComparer.OrdinalIgnoreCase)
         {
             { "random", SplitMode.Random},
             { "skillgroup", SplitMode.SkillGroup},
