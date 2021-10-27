@@ -13,7 +13,7 @@ namespace TyniBot
         public async Task VersionCommand()
         {
             var version = FileVersionInfo.GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            await Context.Channel.SendMessageAsync($"{version.ToString()}");
+            await Context.Channel.SendMessageAsync($"{version.ProductVersion.ToString()}");
         }
     }
 }
