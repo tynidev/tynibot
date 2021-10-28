@@ -9,5 +9,9 @@ namespace Discord.Bot
     {
         [JsonProperty(Required = Required.Always)]
         public string BotToken { get; set; }
+
+        
+        [JsonProperty(Required = Required.Always)]
+        public string ApplicationId { get; set; }
     }
 }

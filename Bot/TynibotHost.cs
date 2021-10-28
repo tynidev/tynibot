@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using Discord.Bot;
 using TyniBot.Commands;
 using TyniBot.Models;
+using System.Net.Http;
+using System.Text;
 
 namespace TyniBot
 {
@@ -61,10 +63,6 @@ namespace TyniBot
                 foreach (var type in DefaultCommands)
                     DefaultHandler.Commands.AddModuleAsync(type, Services).Wait();
 
-                foreach (var slashCommand in SlashCommands.Values)
-                {
-                    await Client.CreateGlobalApplicationCommandAsync(slashCommand.CreateSlashCommand());
-                }
                 // TODO: Dynamically load these from DLLs
                 //ChannelHandlers.Add("recruiting", new Discord.Recruiting.Recruiting(Client, Services));
 
@@ -79,6 +77,32 @@ namespace TyniBot
 
                 await Client.LoginAsync(TokenType.Bot, this.Settings.BotToken);
                 await Client.StartAsync();
+
+                Console.WriteLine(Client.CurrentUser);
+                using (HttpClient client = new HttpClient())
+                {
+                    client.DefaultRequestHeaders.Add("Authorization", $"Bot {this.Settings.BotToken}");
+                    foreach (var slashCommand in SlashCommands.Values)
+                    {
+                        if (Client.CurrentUser == null)
+                        {
+                            string body = $"{{\"name\": \"{slashCommand.Name}\",\"type\": 1,\"description\": \"{slashCommand.Description}\",\"options\": []}}";
+                            var content = new StringContent(body, Encoding.UTF8, "application/json");
+
+
+                            HttpResponseMessage message = await client.PostAsync($"https://discord.com/api/v8/applications/{(string.IsNullOrEmpty(this.Settings.ApplicationId) ? "903392373403426858" : this.Settings.ApplicationId)}/commands", content);
+                            string response = await message.Content.ReadAsStringAsync();
+
+                            Console.WriteLine(response);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Using slash command builder");
+                            await Client.CreateGlobalApplicationCommandAsync(slashCommand.CreateSlashCommand());
+                        }
+                    }
+
+                }
 
                 if (!stoppingToken.HasValue)
                 {
