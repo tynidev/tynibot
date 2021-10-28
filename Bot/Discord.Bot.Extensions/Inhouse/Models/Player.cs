@@ -66,8 +66,6 @@ namespace Discord.Inhouse
         [BsonIgnore]
         public string Mention => DiscordUser.Mention;
 
-        [BsonIgnore]
-        public IActivity Activity => DiscordUser.Activities.FirstOrDefault();
 
         [BsonIgnore]
         public UserStatus Status => DiscordUser.Status;
@@ -97,7 +95,12 @@ namespace Discord.Inhouse
             return DiscordUser.GetDefaultAvatarUrl();
         }
 
-        public Task<IDMChannel> GetOrCreateDMChannelAsync(RequestOptions options = null)
+        public string GetBannerUrl(ImageFormat format = ImageFormat.Auto, ushort size = 256)
+        {
+            return DiscordUser.GetBannerUrl(format, size);
+        }
+
+        public Task<IDMChannel> CreateDMChannelAsync(RequestOptions options = null)
         {
             return DiscordUser.CreateDMChannelAsync(options);
         }
@@ -116,16 +119,6 @@ namespace Discord.Inhouse
                 DiscordUser = user,
                 MMR = mmr
             };
-        }
-
-        public string GetBannerUrl(ImageFormat format = ImageFormat.Auto, ushort size = 256)
-        {
-            return DiscordUser.GetBannerUrl(format, size);
-        }
-
-        public Task<IDMChannel> CreateDMChannelAsync(RequestOptions options = null)
-        {
-            return DiscordUser.CreateDMChannelAsync(options);
         }
     }
 }

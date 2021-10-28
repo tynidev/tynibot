@@ -58,9 +58,6 @@ namespace Discord.Mafia
         public string Mention => DiscordUser.Mention;
 
         [BsonIgnore]
-        public IActivity Activity => DiscordUser.Activities.FirstOrDefault();
-
-        [BsonIgnore]
         public UserStatus Status => DiscordUser.Status;
 
         [BsonIgnore]
@@ -72,8 +69,10 @@ namespace Discord.Mafia
         [BsonIgnore]
         public IImmutableList<IActivity> Activities => DiscordUser.Activities;
 
+        [BsonIgnore]
         public string BannerId => DiscordUser.BannerId;
 
+        [BsonIgnore]
         public Color? AccentColor => DiscordUser.AccentColor;
 
         public Task<IDMChannel> CreateDMChannelAsync(RequestOptions options = null)
@@ -94,11 +93,6 @@ namespace Discord.Mafia
         public string GetDefaultAvatarUrl()
         {
             return DiscordUser.GetDefaultAvatarUrl();
-        }
-
-        public Task<IDMChannel> GetOrCreateDMChannelAsync(RequestOptions options = null)
-        {
-            return DiscordUser.CreateDMChannelAsync(options);
         }
         #endregion
 

@@ -14,10 +14,6 @@ namespace TyniBot
 {
     public class TynibotHost
     {
-        private readonly Dictionary<string, SlashCommand> SlashCommands = new Dictionary<string, SlashCommand>()
-        {
-            { "ping", new PingSlashCommand() }
-        };
 
         private DiscordSocketClient Client;
         private ServiceProvider Services;
@@ -27,6 +23,10 @@ namespace TyniBot
 
         private DefaultHandler DefaultHandler = null;
         private readonly Dictionary<string, IChannelHandler> ChannelHandlers = new Dictionary<string, IChannelHandler>();
+        private readonly Dictionary<string, SlashCommand> SlashCommands = new Dictionary<string, SlashCommand>()
+        {
+            { "ping", new PingSlashCommand() }
+        };
 
         public async Task RunAsync(
             BotSettings settings,
