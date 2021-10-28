@@ -1,6 +1,7 @@
 ﻿using Discord;
 using LiteDB;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Immutable;
 
@@ -66,7 +67,7 @@ namespace Discord.Inhouse
         public string Mention => DiscordUser.Mention;
 
         [BsonIgnore]
-        public IActivity Activity => DiscordUser.Activity;
+        public IActivity Activity => DiscordUser.Activities.FirstOrDefault();
 
         [BsonIgnore]
         public UserStatus Status => DiscordUser.Status;
@@ -80,6 +81,12 @@ namespace Discord.Inhouse
         [BsonIgnore]
         public IImmutableList<IActivity> Activities => DiscordUser.Activities;
 
+        [BsonIgnore]
+        public string BannerId => DiscordUser.BannerId;
+
+        [BsonIgnore]
+        public Color? AccentColor => DiscordUser.AccentColor;
+
         public string GetAvatarUrl(ImageFormat format = ImageFormat.Auto, ushort size = 128)
         {
             return DiscordUser.GetAvatarUrl(format, size);
@@ -92,7 +99,7 @@ namespace Discord.Inhouse
 
         public Task<IDMChannel> GetOrCreateDMChannelAsync(RequestOptions options = null)
         {
-            return DiscordUser.GetOrCreateDMChannelAsync(options);
+            return DiscordUser.CreateDMChannelAsync(options);
         }
         #endregion
 
@@ -109,6 +116,16 @@ namespace Discord.Inhouse
                 DiscordUser = user,
                 MMR = mmr
             };
+        }
+
+        public string GetBannerUrl(ImageFormat format = ImageFormat.Auto, ushort size = 256)
+        {
+            return DiscordUser.GetBannerUrl(format, size);
+        }
+
+        public Task<IDMChannel> CreateDMChannelAsync(RequestOptions options = null)
+        {
+            return DiscordUser.CreateDMChannelAsync(options);
         }
     }
 }

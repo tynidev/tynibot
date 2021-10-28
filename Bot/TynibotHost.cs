@@ -7,11 +7,18 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord.Bot;
+using TyniBot.Commands;
+using TyniBot.Models;
 
 namespace TyniBot
 {
     public class TynibotHost
     {
+        private readonly Dictionary<string, SlashCommand> SlashCommands = new Dictionary<string, SlashCommand>()
+        {
+            { "ping", new PingSlashCommand() }
+        };
+
         private DiscordSocketClient Client;
         private ServiceProvider Services;
         private BotSettings Settings = null;
@@ -34,11 +41,11 @@ namespace TyniBot
             });
 
             Services = new ServiceCollection().BuildServiceProvider();
-
+            
             using (Database = new LiteDatabase(@"tynibotdata.db")) // DB for long term state
             {
                 Context = new BotContext(Client, Database, this.Settings);
-
+                
                 DefaultHandler = new DefaultHandler(Client, Services, new List<Type>());
 
                 var DefaultCommands = new List<Type>()
@@ -54,6 +61,10 @@ namespace TyniBot
                 foreach (var type in DefaultCommands)
                     DefaultHandler.Commands.AddModuleAsync(type, Services).Wait();
 
+                foreach (var slashCommand in SlashCommands.Values)
+                {
+                    await Client.CreateGlobalApplicationCommandAsync(slashCommand.CreateSlashCommand());
+                }
                 // TODO: Dynamically load these from DLLs
                 //ChannelHandlers.Add("recruiting", new Discord.Recruiting.Recruiting(Client, Services));
 
@@ -64,6 +75,7 @@ namespace TyniBot
                 Client.ReactionRemoved += ReactionRemovedAsync;
                 Client.ReactionsCleared += ReactionsClearedAsync;
                 Client.UserJoined += AnnounceJoinedUser;
+                Client.SlashCommandExecuted += SlashCommandTriggeredAsync;
 
                 await Client.LoginAsync(TokenType.Bot, this.Settings.BotToken);
                 await Client.StartAsync();
@@ -106,7 +118,7 @@ namespace TyniBot
             await handler.MessageReceived(context);
         }
 
-        private async Task ReactionsClearedAsync(Cacheable<IUserMessage, ulong> cachedMsg, ISocketMessageChannel channel)
+        private async Task ReactionsClearedAsync(Cacheable<IUserMessage, ulong> cachedMsg, Cacheable<IMessageChannel, ulong> channel)
         {
             var msg = await cachedMsg.DownloadAsync();
             if (msg == null) return;
@@ -117,7 +129,7 @@ namespace TyniBot
             await handler.ReactionsCleared(context);
         }
 
-        private async Task ReactionRemovedAsync(Cacheable<IUserMessage, ulong> cachedMsg, ISocketMessageChannel channel, SocketReaction removedReaction)
+        private async Task ReactionRemovedAsync(Cacheable<IUserMessage, ulong> cachedMsg, Cacheable<IMessageChannel, ulong> channel, SocketReaction removedReaction)
         {
             var msg = await cachedMsg.DownloadAsync();
             if (msg == null) return;
@@ -128,7 +140,7 @@ namespace TyniBot
             await handler.ReactionRemoved(context, removedReaction);
         }
 
-        private async Task ReactionAddedAsync(Cacheable<IUserMessage, ulong> cachedMsg, ISocketMessageChannel channel, SocketReaction addedReaction)
+        private async Task ReactionAddedAsync(Cacheable<IUserMessage, ulong> cachedMsg, Cacheable<IMessageChannel, ulong> channel, SocketReaction addedReaction)
         {
             var msg = await cachedMsg.DownloadAsync();
             if (msg == null) return;
@@ -137,6 +149,16 @@ namespace TyniBot
             var context = new ReactionContext(Context, msg);
 
             await handler.ReactionAdded(context, addedReaction);
+        }
+
+        private async Task SlashCommandTriggeredAsync(SocketSlashCommand command)
+        {
+            if (SlashCommands.TryGetValue(command.Data.Name, out SlashCommand slashCommand))
+            {
+                await slashCommand.HandleCommandAsync(command);
+            }
+
+            await command.RespondAsync("Invalid command", ephemeral: true);
         }
 
         #endregion
