@@ -1,5 +1,4 @@
-﻿using Discord;
-using LiteDB;
+﻿using LiteDB;
 using System;
 using System.Threading.Tasks;
 using System.Collections.Immutable;
@@ -57,9 +56,6 @@ namespace Discord.Mafia
         public string Mention => DiscordUser.Mention;
 
         [BsonIgnore]
-        public IActivity Activity => DiscordUser.Activity;
-
-        [BsonIgnore]
         public UserStatus Status => DiscordUser.Status;
 
         [BsonIgnore]
@@ -71,19 +67,30 @@ namespace Discord.Mafia
         [BsonIgnore]
         public IImmutableList<IActivity> Activities => DiscordUser.Activities;
 
+        [BsonIgnore]
+        public string BannerId => DiscordUser.BannerId;
+
+        [BsonIgnore]
+        public Color? AccentColor => DiscordUser.AccentColor;
+
+        public Task<IDMChannel> CreateDMChannelAsync(RequestOptions options = null)
+        {
+            return DiscordUser.CreateDMChannelAsync(options);
+        }
+
         public string GetAvatarUrl(ImageFormat format = ImageFormat.Auto, ushort size = 128)
         {
             return DiscordUser.GetAvatarUrl(format, size);
         }
 
+        public string GetBannerUrl(ImageFormat format = ImageFormat.Auto, ushort size = 256)
+        {
+            return DiscordUser.GetBannerUrl(format, size);
+        }
+
         public string GetDefaultAvatarUrl()
         {
             return DiscordUser.GetDefaultAvatarUrl();
-        }
-
-        public Task<IDMChannel> GetOrCreateDMChannelAsync(RequestOptions options = null)
-        {
-            return DiscordUser.GetOrCreateDMChannelAsync(options);
         }
         #endregion
 
