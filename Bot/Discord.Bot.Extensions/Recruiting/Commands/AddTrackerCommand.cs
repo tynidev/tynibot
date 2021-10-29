@@ -48,15 +48,18 @@ namespace TyniBot.Commands
                 await command.RespondAsync("Channel message was sent from is not the recruiting enabled channel", ephemeral: true);
                 return;
             }
-
+            IMessage messageToEdit = null;
+            int count = 0;
             var messages = await command.Channel.GetMessagesAsync().FlattenAsync();
-            var messageToEdit = messages.Where(m => m.Author.Id == client.CurrentUser.Id).FirstOrDefault();
-
-            var count = 0;
-            while (messageToEdit == null && count < 10)
+            while (messageToEdit == null && count < 10 && messages.Count() > 0)
             {
+                messageToEdit = messages.Where(m => m.Author.Id == client.CurrentUser.Id).FirstOrDefault();                
+
+                if (messageToEdit != null)
+                {
+                    break;
+                }
                 messages = await command.Channel.GetMessagesAsync(messages.Last(), Direction.Before).FlattenAsync();
-                messageToEdit = messages.Where(m => m.Author.Id == client.CurrentUser.Id).FirstOrDefault();
                 count++;
             }
 
