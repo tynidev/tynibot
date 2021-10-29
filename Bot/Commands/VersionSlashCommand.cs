@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Discord.Bot;
 using System.Linq;
+using Discord.Rest;
 
 namespace TyniBot.Commands
 {
@@ -26,11 +27,11 @@ namespace TyniBot.Commands
             string msg = $"Version: {version.ProductVersion}\n" +
                          $"Date: {ToDate(version.ProductBuildPart, version.ProductPrivatePart)} UTC";
 
-            foreach(var o in command.Data.Options.Where(o => true).ToList())
+            foreach(var o in command.Data.Options.Where(o => true))
             {
                 if(o.Name == "number_only" && (bool)o.Value)
                 {
-                    msg = $"Version: {version.ProductVersion}";
+                    msg = $"{version.ProductVersion}";
                 }
             }
 
@@ -45,12 +46,20 @@ namespace TyniBot.Commands
             return date;
         }
 
-        public override void AddOptions(SlashCommandBuilder builder) 
-        { 
+        public override ApplicationCommandProperties Build()
+        {
+
+            var builder = new SlashCommandBuilder()
+                    .WithName(this.Name)
+                    .WithDescription(this.Description)
+                    .WithDefaultPermission(this.DefaultPermissions);
+
             builder.AddOption(
                 name: "number_only",
                 type: ApplicationCommandOptionType.Boolean,
                 description: "Outputs only the version number");
+
+            return builder.Build();
         }
     }
 }

@@ -100,9 +100,10 @@ namespace TyniBot
 
         private async Task ReadyAsync()
         {
+            await Client.Rest.DeleteAllGlobalCommandsAsync();
             foreach (var slashCommand in SlashCommands.Values)
             {
-                await Client.Rest.CreateGlobalCommand(slashCommand.CreateSlashCommand());                
+                await slashCommand.RegisterCommandAsync(Client);
             }            
         }
 

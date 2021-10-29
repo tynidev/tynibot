@@ -4,11 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
 
 namespace Discord.Bot
 {
-    public abstract class SlashCommand
+    public abstract class SlashCommand : IApplicationCommand
     {
         public abstract string Name { get; }
 
@@ -16,19 +17,21 @@ namespace Discord.Bot
 
         public abstract bool DefaultPermissions { get; }
 
-        public virtual SlashCommandProperties CreateSlashCommand()
+        public virtual async Task<RestApplicationCommand> RegisterCommandAsync(DiscordSocketClient discordSocketClient)
+        {
+            return await discordSocketClient.Rest.CreateGlobalCommand(this.Build());
+        }
+
+        public virtual ApplicationCommandProperties Build()
         {
 
             var builder = new SlashCommandBuilder()
                     .WithName(this.Name)
                     .WithDescription(this.Description)
                     .WithDefaultPermission(this.DefaultPermissions);
-            this.AddOptions(builder);
             return builder.Build();
         }
 
         public abstract Task HandleCommandAsync(SocketSlashCommand command);
-
-        public virtual void AddOptions(SlashCommandBuilder builder) { }
     }
 }
