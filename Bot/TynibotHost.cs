@@ -11,6 +11,7 @@ using TyniBot.Commands;
 using TyniBot.Models;
 using System.Net.Http;
 using System.Text;
+using System.Linq;
 
 namespace TyniBot
 {
@@ -72,32 +73,9 @@ namespace TyniBot
                 Client.ReactionsCleared += ReactionsClearedAsync;
                 Client.UserJoined += AnnounceJoinedUser;
                 Client.SlashCommandExecuted += SlashCommandTriggeredAsync;
-
+                Client.Ready += ReadyAsync;
                 await Client.LoginAsync(TokenType.Bot, this.Settings.BotToken);
                 await Client.StartAsync();
-
-                Console.WriteLine(Client.CurrentUser);
-                using (HttpClient client = new HttpClient())
-                {
-                    client.DefaultRequestHeaders.Add("Authorization", $"Bot {this.Settings.BotToken}");
-                    foreach (var slashCommand in SlashCommands.Values)
-                    {
-                        if (Client.Rest.CurrentUser == null)
-                        {
-                            var applicationId = (await Client.GetApplicationInfoAsync()).Id;
-                            var content = new StringContent(slashCommand.CreateRestSlashCommandBody(), Encoding.UTF8, "application/json");
-                            HttpResponseMessage message = await client.PostAsync($"https://discord.com/api/v8/applications/{applicationId}/commands", content);
-                            string response = await message.Content.ReadAsStringAsync();
-
-                            Console.WriteLine(response);
-                        }
-                        else
-                        {
-                            Console.WriteLine("Using slash command builder");
-                            await Client.Rest.CreateGlobalCommand(slashCommand.CreateSlashCommand());
-                        }
-                    }
-                }
 
                 if (!stoppingToken.HasValue)
                 {
@@ -121,6 +99,14 @@ namespace TyniBot
         }
 
         #region EventHandlers
+
+        private async Task ReadyAsync()
+        {            
+            foreach (var slashCommand in SlashCommands.Values)
+            {
+                await Client.Rest.CreateGlobalCommand(slashCommand.CreateSlashCommand());                
+            }            
+        }
 
         private async Task MessageReceived(SocketMessage msg)
         {

@@ -24,8 +24,5 @@ namespace TyniBot.Models
                    .Build();
 
         public abstract Task HandleCommandAsync(SocketSlashCommand command);
-
-        public virtual string CreateRestSlashCommandBody() =>
-            $"{{\"name\": \"{Name}\",\"type\": 1,\"description\": \"{Description}\",\"options\": []}}";
     }
 }
