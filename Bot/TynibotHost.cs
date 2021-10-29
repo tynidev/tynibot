@@ -27,7 +27,8 @@ namespace TyniBot
         private readonly Dictionary<string, IChannelHandler> ChannelHandlers = new Dictionary<string, IChannelHandler>();
         private readonly Dictionary<string, SlashCommand> SlashCommands = new Dictionary<string, SlashCommand>()
         {
-            { "ping", new PingSlashCommand() }
+            { "ping", new PingSlashCommand() },
+            { "version", new VersionSlashCommand() }
         };
 
         public async Task RunAsync(
@@ -52,8 +53,6 @@ namespace TyniBot
 
                 var DefaultCommands = new List<Type>()
                 {
-                    typeof(Ping),
-                    typeof(Version),
                     //typeof(Clear),
                     typeof(Discord.Mafia.MafiaCommand),
                     typeof(Discord.Matches.MatchesCommand),
