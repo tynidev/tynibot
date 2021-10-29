@@ -10,6 +10,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using Discord.Rest;
 using Discord.Bot;
+using System.Net;
 
 namespace TyniBot.Commands
 {
@@ -77,8 +78,8 @@ namespace TyniBot.Commands
                 newContent = splitStringSet.Aggregate((res, item) => $"{res}\n{item}").TrimStart();
             }
             
-            // todo: html escape epic ids
-            await recruitingChannel.SendMessageAsync($"{newContent}\n{command.User.Username}: https://rocketleague.tracker.network/rocket-league/profile/epic/{command.Data.Options.Where(o => string.Equals(o.Name, "epicid")).First().Value}/overview");
+            string trackerUri = $"https://rocketleague.tracker.network/rocket-league/profile/epic/{WebUtility.HtmlEncode(command.Data.Options.Where(o => string.Equals(o.Name, "epicid")).First().Value.ToString())}/overview";
+            await recruitingChannel.SendMessageAsync($"{newContent}\n{command.User.Username}: {trackerUri}");
             
             await messageToEdit.DeleteAsync();
             await command.RespondAsync($"Your RL tracker has been added to the recruiting board in channel #{(client.GetChannel(recruitingChannelId) as SocketGuildChannel).Name}", ephemeral: true);
