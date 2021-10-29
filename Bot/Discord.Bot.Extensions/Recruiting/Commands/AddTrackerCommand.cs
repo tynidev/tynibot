@@ -44,13 +44,17 @@ namespace TyniBot.Commands
                 return;
             }
 
+            /*
             if (recruitingChannelId != channel.Id) {
                 await command.RespondAsync($"Channel message was sent from is not the recruiting enabled channel. Recruitng channel is {(client.GetChannel(recruitingChannelId) as SocketGuildChannel).Name}", ephemeral: true);
                 return;
-            }
+            }*/
+
             IMessage messageToEdit = null;
             int count = 0;
-            var messages = await command.Channel.GetMessagesAsync().FlattenAsync();
+            var recruitingChannel = await client.GetChannelAsync(recruitingChannelId) as ISocketMessageChannel;
+
+            var messages = await recruitingChannel.GetMessagesAsync().FlattenAsync();
             while (messageToEdit == null && count < 10 && messages.Count() > 0)
             {
                 messageToEdit = messages.Where(m => m.Author.Id == client.CurrentUser.Id).FirstOrDefault();                
@@ -59,13 +63,13 @@ namespace TyniBot.Commands
                 {
                     break;
                 }
-                messages = await command.Channel.GetMessagesAsync(messages.Last(), Direction.Before).FlattenAsync();
+                messages = await recruitingChannel.GetMessagesAsync(messages.Last(), Direction.Before).FlattenAsync();
                 count++;
             }
 
             if (messageToEdit == null)
             {
-                messageToEdit = await command.Channel.SendMessageAsync("__Free Agents__");
+                messageToEdit = await recruitingChannel.SendMessageAsync("__Free Agents__");
             }
 
             var newContent = messageToEdit.Content;
@@ -78,7 +82,7 @@ namespace TyniBot.Commands
                 newContent = splitStringSet.Aggregate((res, item) => $"{res}\n{item}").TrimStart();
             }
             
-            await command.Channel.SendMessageAsync($"{newContent}\n{command.User.Username}: https://rocketleague.tracker.network/rocket-league/profile/epic/{command.Data.Options.Where(o => string.Equals(o.Name, "epicid")).First().Value}/overview");
+            await recruitingChannel.SendMessageAsync($"{newContent}\n{command.User.Username}: https://rocketleague.tracker.network/rocket-league/profile/epic/{command.Data.Options.Where(o => string.Equals(o.Name, "epicid")).First().Value}/overview");
             
             await messageToEdit.DeleteAsync();
             await command.RespondAsync("Yoiur RL tracker has been added to the recruiting board", ephemeral: true);
