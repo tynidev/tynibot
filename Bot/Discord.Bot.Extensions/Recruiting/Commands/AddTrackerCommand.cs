@@ -6,10 +6,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
-using TyniBot.Models;
 using System.Collections.Immutable;
 using System.Linq;
 using Discord.Rest;
+using Discord.Bot;
 
 namespace TyniBot.Commands
 {
