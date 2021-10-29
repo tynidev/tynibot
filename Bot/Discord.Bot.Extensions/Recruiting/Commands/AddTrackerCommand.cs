@@ -13,6 +13,7 @@ using Discord.Bot;
 
 namespace TyniBot.Commands
 {
+    // Todo: store guild Ids, role ids, and channel ids in permanent external storage to allow for servers to configure their addtracker command 
     public class AddTrackerCommand : SlashCommand
     {
         public override string Name => "addtracker";
@@ -43,12 +44,6 @@ namespace TyniBot.Commands
                 await command.RespondAsync("Channel is not part of a guild that supports recruiting", ephemeral: true);
                 return;
             }
-
-            /*
-            if (recruitingChannelId != channel.Id) {
-                await command.RespondAsync($"Channel message was sent from is not the recruiting enabled channel. Recruitng channel is {(client.GetChannel(recruitingChannelId) as SocketGuildChannel).Name}", ephemeral: true);
-                return;
-            }*/
 
             IMessage messageToEdit = null;
             int count = 0;
@@ -82,10 +77,11 @@ namespace TyniBot.Commands
                 newContent = splitStringSet.Aggregate((res, item) => $"{res}\n{item}").TrimStart();
             }
             
+            // todo: html escape epic ids
             await recruitingChannel.SendMessageAsync($"{newContent}\n{command.User.Username}: https://rocketleague.tracker.network/rocket-league/profile/epic/{command.Data.Options.Where(o => string.Equals(o.Name, "epicid")).First().Value}/overview");
             
             await messageToEdit.DeleteAsync();
-            await command.RespondAsync("Yoiur RL tracker has been added to the recruiting board", ephemeral: true);
+            await command.RespondAsync($"Your RL tracker has been added to the recruiting board in channel #{(client.GetChannel(recruitingChannelId) as SocketGuildChannel).Name}", ephemeral: true);
         }
 
         public override SlashCommandProperties CreateSlashCommand()
