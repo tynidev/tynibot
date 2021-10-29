@@ -68,8 +68,18 @@ namespace TyniBot.Commands
                 messageToEdit = await command.Channel.SendMessageAsync("__Free Agents__");
             }
 
-            await command.Channel.SendMessageAsync($"{messageToEdit.Content}\n[{command.User.Username}](https://rocketleague.tracker.network/rocket-league/profile/epic/{command.Data.Options.Where(o => string.Equals(o.Name, "epicid")).First().Value}/overview)");
+            var newContent = messageToEdit.Content;
 
+            if (messageToEdit.Content.Contains($"\n{command.User.Username}:"))
+            {
+                string[] splitString = messageToEdit.Content.Split("\n");
+                var splitStringSet = splitString.ToHashSet();
+                splitStringSet.RemoveWhere(trackerLink => trackerLink.StartsWith($"{command.User.Username}:"));
+                newContent = splitStringSet.Aggregate((res, item) => $"{res}\n{item}").TrimStart();
+            }
+            
+            await command.Channel.SendMessageAsync($"{newContent}\n{command.User.Username}: https://rocketleague.tracker.network/rocket-league/profile/epic/{command.Data.Options.Where(o => string.Equals(o.Name, "epicid")).First().Value}/overview");
+            
             await messageToEdit.DeleteAsync();
             await command.RespondAsync("Yoiur RL tracker has been added to the recruiting board", ephemeral: true);
         }
