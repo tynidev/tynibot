@@ -16,7 +16,6 @@ namespace TyniBot
 {
     public class TynibotHost
     {
-
         private DiscordSocketClient Client;
         private ServiceProvider Services;
         private BotSettings Settings = null;
@@ -43,11 +42,11 @@ namespace TyniBot
             });
 
             Services = new ServiceCollection().BuildServiceProvider();
-            
+
             using (Database = new LiteDatabase(@"tynibotdata.db")) // DB for long term state
             {
                 Context = new BotContext(Client, Database, this.Settings);
-                
+
                 DefaultHandler = new DefaultHandler(Client, Services, new List<Type>());
 
                 var DefaultCommands = new List<Type>()
@@ -67,14 +66,13 @@ namespace TyniBot
                 //ChannelHandlers.Add("recruiting", new Discord.Recruiting.Recruiting(Client, Services));
 
                 Client.Log += logFunction;
-
                 Client.MessageReceived += MessageReceived;
                 Client.ReactionAdded += ReactionAddedAsync;
                 Client.ReactionRemoved += ReactionRemovedAsync;
                 Client.ReactionsCleared += ReactionsClearedAsync;
                 Client.UserJoined += AnnounceJoinedUser;
                 Client.SlashCommandExecuted += SlashCommandTriggeredAsync;
-                
+
                 await Client.LoginAsync(TokenType.Bot, this.Settings.BotToken);
                 await Client.StartAsync();
 
@@ -99,7 +97,6 @@ namespace TyniBot
                             await Client.Rest.CreateGlobalCommand(slashCommand.CreateSlashCommand());
                         }
                     }
-
                 }
 
                 if (!stoppingToken.HasValue)
@@ -182,7 +179,6 @@ namespace TyniBot
 
             await command.RespondAsync("Invalid command", ephemeral: true);
         }
-
         #endregion
     }
 }
