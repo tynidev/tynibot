@@ -99,7 +99,7 @@ namespace TyniBot
         #region EventHandlers
 
         private async Task ReadyAsync()
-        {            
+        {
             foreach (var slashCommand in SlashCommands.Values)
             {
                 await Client.Rest.CreateGlobalCommand(slashCommand.CreateSlashCommand());                
@@ -160,8 +160,10 @@ namespace TyniBot
             {
                 await slashCommand.HandleCommandAsync(command);
             }
-
-            await command.RespondAsync("Invalid command", ephemeral: true);
+            else
+            {
+                await command.RespondAsync("Invalid command", ephemeral: true);
+            }
         }
         #endregion
     }
