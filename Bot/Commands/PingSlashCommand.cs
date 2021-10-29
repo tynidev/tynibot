@@ -17,7 +17,7 @@ namespace TyniBot.Commands
 
         public override bool DefaultPermissions => true;
 
-        public override async Task HandleCommandAsync(SocketSlashCommand command)
+        public override async Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client)
         {
             await command.RespondAsync("Pong!");
         }

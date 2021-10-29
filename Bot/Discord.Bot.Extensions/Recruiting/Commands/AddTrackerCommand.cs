@@ -8,6 +8,8 @@ using System.Text;
 using System.Threading.Tasks;
 using TyniBot.Models;
 using System.Collections.Immutable;
+using System.Linq;
+using Discord.Rest;
 
 namespace TyniBot.Commands
 {
@@ -33,9 +35,40 @@ namespace TyniBot.Commands
             this.GuildIdsAndPermissions.Add(124366291611025417, new List<ApplicationCommandPermission> { new ApplicationCommandPermission(598569589512863764, ApplicationCommandPermissionTarget.Role, true) }); // msft rl
         }
 
-        public override async Task HandleCommandAsync(SocketSlashCommand command)
+        public override async Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client)
         {
-            await command.RespondAsync("addtracker command has beemn used");
+            var channel = command.Channel as SocketGuildChannel;
+
+            if (!recruitingChannelForGuild.TryGetValue(channel.Guild.Id, out var recruitingChannelId)) {
+                await command.RespondAsync("Channel is not part of a guild that supports recruiting", ephemeral: true);
+                return;
+            }
+
+            if (recruitingChannelId != channel.Id) {
+                await command.RespondAsync("Channel message was sent from is not the recruiting enabled channel", ephemeral: true);
+                return;
+            }
+
+            var messages = await command.Channel.GetMessagesAsync().FlattenAsync();
+            var messageToEdit = messages.Where(m => m.Author.Id == client.CurrentUser.Id).FirstOrDefault();
+
+            var count = 0;
+            while (messageToEdit == null && count < 10)
+            {
+                messages = await command.Channel.GetMessagesAsync(messages.Last(), Direction.Before).FlattenAsync();
+                messageToEdit = messages.Where(m => m.Author.Id == client.CurrentUser.Id).FirstOrDefault();
+                count++;
+            }
+
+            if (messageToEdit == null)
+            {
+                messageToEdit = await command.Channel.SendMessageAsync("__Free Agents__");
+            }
+
+            await command.Channel.SendMessageAsync($"{messageToEdit.Content}\n[{command.User.Username}](https://rocketleague.tracker.network/rocket-league/profile/epic/{command.Data.Options.Where(o => string.Equals(o.Name, "epicid")).First().Value}/overview)");
+
+            await messageToEdit.DeleteAsync();
+            await command.RespondAsync("Yoiur RL tracker has been added to the recruiting board", ephemeral: true);
         }
 
         public override SlashCommandProperties CreateSlashCommand()
@@ -43,7 +76,7 @@ namespace TyniBot.Commands
                    .WithName(this.Name)
                    .WithDescription(this.Description)
                    .WithDefaultPermission(this.DefaultPermissions)
-                   .AddOption("EpicId", ApplicationCommandOptionType.String, "Your Epic ID to retrieve RL tracker", required: true)         
-                   .Build();
+                   .AddOption("epicid", ApplicationCommandOptionType.String, "Your Epic ID to retrieve RL tracker", required: true)         
+                   .Build();        
     }
 }

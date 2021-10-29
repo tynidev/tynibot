@@ -112,11 +112,18 @@ namespace TyniBot
                 {
                     foreach ((var guildId, var permissions) in slashCommand.GuildIdsAndPermissions)
                     {
-                        var createdCommand = await Client.Rest.CreateGuildCommand(slashCommand.CreateSlashCommand(), guildId);
-
-                        if (permissions.Count > 0)
+                        try
                         {
-                            await createdCommand.ModifyCommandPermissions(permissions.ToArray());
+                            var createdCommand = await Client.Rest.CreateGuildCommand(slashCommand.CreateSlashCommand(), guildId);
+                        
+                            if (permissions.Count > 0)
+                            {
+                                await createdCommand.ModifyCommandPermissions(permissions.ToArray());
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Console.Error.WriteLine(e);
                         }
                     }
                 }
@@ -175,7 +182,7 @@ namespace TyniBot
         {
             if (SlashCommands.TryGetValue(command.Data.Name, out SlashCommand slashCommand))
             {
-                await slashCommand.HandleCommandAsync(command);
+                await slashCommand.HandleCommandAsync(command, Client);
             }
 
             await command.RespondAsync("Invalid command", ephemeral: true);

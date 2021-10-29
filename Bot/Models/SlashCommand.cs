@@ -18,7 +18,7 @@ namespace TyniBot.Models
 
         public virtual bool IsGlobal => true;
 
-        public virtual Dictionary<ulong, List<ApplicationCommandPermission>> GuildIdsAndPermissions => new Dictionary<ulong, List<ApplicationCommandPermission>>();
+        public Dictionary<ulong, List<ApplicationCommandPermission>> GuildIdsAndPermissions = new Dictionary<ulong, List<ApplicationCommandPermission>>();
 
 
         public virtual SlashCommandProperties CreateSlashCommand() =>
@@ -28,6 +28,6 @@ namespace TyniBot.Models
                    .WithDefaultPermission(this.DefaultPermissions)
                    .Build();
 
-        public abstract Task HandleCommandAsync(SocketSlashCommand command);
+        public abstract Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client);
     }
 }

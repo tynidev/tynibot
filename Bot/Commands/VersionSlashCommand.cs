@@ -18,7 +18,7 @@ namespace TyniBot.Commands
 
         public override bool DefaultPermissions => true;
 
-        public override async Task HandleCommandAsync(SocketSlashCommand command)
+        public override async Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client)
         {
             var version = FileVersionInfo.GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location);
             await command.RespondAsync($"{ToDate(version.ProductBuildPart, version.ProductPrivatePart)} UTC");
