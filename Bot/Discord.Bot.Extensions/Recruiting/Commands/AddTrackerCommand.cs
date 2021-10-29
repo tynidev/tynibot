@@ -1,16 +1,11 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using Discord.Commands;
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
 using System.Threading.Tasks;
 using System.Collections.Immutable;
 using System.Linq;
-using Discord.Rest;
 using Discord.Bot;
-using System.Net;
+using System.Web;
 
 namespace TyniBot.Commands
 {
@@ -69,17 +64,17 @@ namespace TyniBot.Commands
             }
 
             var newContent = messageToEdit.Content;
-
-            if (messageToEdit.Content.Contains($"\n{command.User.Username}:"))
+            var user = command.User as SocketGuildUser;
+            if (messageToEdit.Content.Contains($"\n{user.Nickname}:"))
             {
                 string[] splitString = messageToEdit.Content.Split("\n");
                 var splitStringSet = splitString.ToHashSet();
-                splitStringSet.RemoveWhere(trackerLink => trackerLink.StartsWith($"{command.User.Username}:"));
+                splitStringSet.RemoveWhere(trackerLink => trackerLink.StartsWith($"{user.Nickname}:"));
                 newContent = splitStringSet.Aggregate((res, item) => $"{res}\n{item}").TrimStart();
             }
             
-            string trackerUri = $"https://rocketleague.tracker.network/rocket-league/profile/epic/{WebUtility.HtmlEncode(command.Data.Options.Where(o => string.Equals(o.Name, "epicid")).First().Value.ToString())}/overview";
-            await recruitingChannel.SendMessageAsync($"{newContent}\n{command.User.Username}: {trackerUri}");
+            string trackerUri = $"https://rocketleague.tracker.network/rocket-league/profile/epic/{HttpUtility.UrlEncode(command.Data.Options.Where(o => string.Equals(o.Name, "epicid")).First().Value.ToString())}/overview";
+            await recruitingChannel.SendMessageAsync($"{newContent}\n{user.Nickname}: {trackerUri}");
             
             await messageToEdit.DeleteAsync();
             await command.RespondAsync($"Your RL tracker has been added to the recruiting board in channel #{(client.GetChannel(recruitingChannelId) as SocketGuildChannel).Name}", ephemeral: true);
