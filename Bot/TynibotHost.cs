@@ -28,7 +28,8 @@ namespace TyniBot
         private readonly Dictionary<string, SlashCommand> SlashCommands = new Dictionary<string, SlashCommand>()
         {
             { "ping", new PingSlashCommand() },
-            { "version", new VersionSlashCommand() }
+            { "version", new VersionSlashCommand() },
+            { "addtracker", new AddTrackerCommand() }
         };
 
         public async Task RunAsync(
@@ -103,7 +104,22 @@ namespace TyniBot
         {            
             foreach (var slashCommand in SlashCommands.Values)
             {
-                await Client.Rest.CreateGlobalCommand(slashCommand.CreateSlashCommand());                
+                if (slashCommand.IsGlobal)
+                {
+                    await Client.Rest.CreateGlobalCommand(slashCommand.CreateSlashCommand());
+                }
+                else
+                {
+                    foreach ((var guildId, var permissions) in slashCommand.GuildIdsAndPermissions)
+                    {
+                        var createdCommand = await Client.Rest.CreateGuildCommand(slashCommand.CreateSlashCommand(), guildId);
+
+                        if (permissions.Count > 0)
+                        {
+                            await createdCommand.ModifyCommandPermissions(permissions.ToArray());
+                        }
+                    }
+                }
             }            
         }
 

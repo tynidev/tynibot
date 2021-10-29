@@ -16,6 +16,11 @@ namespace TyniBot.Models
 
         public abstract bool DefaultPermissions { get; }
 
+        public virtual bool IsGlobal => true;
+
+        public virtual Dictionary<ulong, List<ApplicationCommandPermission>> GuildIdsAndPermissions => new Dictionary<ulong, List<ApplicationCommandPermission>>();
+
+
         public virtual SlashCommandProperties CreateSlashCommand() =>
             new SlashCommandBuilder()
                    .WithName(this.Name)
