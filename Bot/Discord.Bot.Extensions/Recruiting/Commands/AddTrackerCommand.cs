@@ -45,7 +45,7 @@ namespace TyniBot.Commands
             }
 
             if (recruitingChannelId != channel.Id) {
-                await command.RespondAsync("Channel message was sent from is not the recruiting enabled channel", ephemeral: true);
+                await command.RespondAsync($"Channel message was sent from is not the recruiting enabled channel. Recruitng channel is {(client.GetChannel(recruitingChannelId) as SocketGuildChannel).Name}", ephemeral: true);
                 return;
             }
             IMessage messageToEdit = null;
