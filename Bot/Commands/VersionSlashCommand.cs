@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
-using TyniBot.Models;
+using Discord.Bot;
 
 namespace TyniBot.Commands
 {
@@ -21,7 +21,9 @@ namespace TyniBot.Commands
         public override async Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client)
         {
             var version = FileVersionInfo.GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            await command.RespondAsync($"{ToDate(version.ProductBuildPart, version.ProductPrivatePart)} UTC");
+            await command.RespondAsync(
+                $"Version: {version.ProductVersion}\n" +
+                $"Date: {ToDate(version.ProductBuildPart, version.ProductPrivatePart)} UTC");
         }
 
         private static DateTime ToDate(int days, int seconds)

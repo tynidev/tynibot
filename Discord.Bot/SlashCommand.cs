@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 
-namespace TyniBot.Models
+namespace Discord.Bot
 {
     public abstract class SlashCommand
     {

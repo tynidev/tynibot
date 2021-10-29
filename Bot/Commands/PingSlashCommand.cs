@@ -1,11 +1,11 @@
 ﻿using Discord;
+using Discord.Bot;
 using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TyniBot.Models;
 
 namespace TyniBot.Commands
 {

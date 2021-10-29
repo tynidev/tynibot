@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Discord.Bot;
 using TyniBot.Commands;
-using TyniBot.Models;
 using System.Net.Http;
 using System.Text;
 using System.Linq;
@@ -101,7 +100,7 @@ namespace TyniBot
         #region EventHandlers
 
         private async Task ReadyAsync()
-        {            
+        {
             foreach (var slashCommand in SlashCommands.Values)
             {
                 if (slashCommand.IsGlobal)
@@ -184,8 +183,10 @@ namespace TyniBot
             {
                 await slashCommand.HandleCommandAsync(command, Client);
             }
-
-            await command.RespondAsync("Invalid command", ephemeral: true);
+            else
+            {
+                await command.RespondAsync("Invalid command", ephemeral: true);
+            }
         }
         #endregion
     }
