@@ -74,7 +74,7 @@ namespace TyniBot
                 Client.ReactionsCleared += ReactionsClearedAsync;
                 Client.UserJoined += AnnounceJoinedUser;
                 Client.SlashCommandExecuted += SlashCommandTriggeredAsync;
-
+                
                 await Client.LoginAsync(TokenType.Bot, this.Settings.BotToken);
                 await Client.StartAsync();
 
@@ -84,13 +84,11 @@ namespace TyniBot
                     client.DefaultRequestHeaders.Add("Authorization", $"Bot {this.Settings.BotToken}");
                     foreach (var slashCommand in SlashCommands.Values)
                     {
-                        if (Client.CurrentUser == null)
+                        if (Client.Rest.CurrentUser == null)
                         {
-                            string body = $"{{\"name\": \"{slashCommand.Name}\",\"type\": 1,\"description\": \"{slashCommand.Description}\",\"options\": []}}";
-                            var content = new StringContent(body, Encoding.UTF8, "application/json");
-
-
-                            HttpResponseMessage message = await client.PostAsync($"https://discord.com/api/v8/applications/{(string.IsNullOrEmpty(this.Settings.ApplicationId) ? "903392373403426858" : this.Settings.ApplicationId)}/commands", content);
+                            var applicationId = (await Client.GetApplicationInfoAsync()).Id;
+                            var content = new StringContent(slashCommand.CreateRestSlashCommandBody(), Encoding.UTF8, "application/json");
+                            HttpResponseMessage message = await client.PostAsync($"https://discord.com/api/v8/applications/{applicationId}/commands", content);
                             string response = await message.Content.ReadAsStringAsync();
 
                             Console.WriteLine(response);
@@ -98,7 +96,7 @@ namespace TyniBot
                         else
                         {
                             Console.WriteLine("Using slash command builder");
-                            await Client.CreateGlobalApplicationCommandAsync(slashCommand.CreateSlashCommand());
+                            await Client.Rest.CreateGlobalCommand(slashCommand.CreateSlashCommand());
                         }
                     }
 

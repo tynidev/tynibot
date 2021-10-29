@@ -16,15 +16,16 @@ namespace TyniBot.Models
 
         public abstract bool DefaultPermissions { get; }
 
-        public virtual SlashCommandProperties CreateSlashCommand()
-        {
-            return new SlashCommandBuilder()
+        public virtual SlashCommandProperties CreateSlashCommand() =>
+            new SlashCommandBuilder()
                    .WithName(this.Name)
                    .WithDescription(this.Description)
                    .WithDefaultPermission(this.DefaultPermissions)
                    .Build();
-        }
 
         public abstract Task HandleCommandAsync(SocketSlashCommand command);
+
+        public virtual string CreateRestSlashCommandBody() =>
+            $"{{\"name\": \"{Name}\",\"type\": 1,\"description\": \"{Description}\",\"options\": []}}";
     }
 }
