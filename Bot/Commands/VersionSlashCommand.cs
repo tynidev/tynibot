@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
-using TyniBot.Models;
+using Discord.Bot;
 
 namespace TyniBot.Commands
 {

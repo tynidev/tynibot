@@ -24,4 +24,8 @@
     <ProjectReference Include="..\Discord.Bot\Discord.Bot.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="ChannelHandlers\" />
+  </ItemGroup>
+
 </Project>
