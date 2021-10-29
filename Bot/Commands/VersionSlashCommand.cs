@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
 using Discord.Bot;
+using System.Linq;
 
 namespace TyniBot.Commands
 {
@@ -21,9 +22,19 @@ namespace TyniBot.Commands
         public override async Task HandleCommandAsync(SocketSlashCommand command)
         {
             var version = FileVersionInfo.GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            await command.RespondAsync(
-                $"Version: {version.ProductVersion}\n" +
-                $"Date: {ToDate(version.ProductBuildPart, version.ProductPrivatePart)} UTC");
+
+            string msg = $"Version: {version.ProductVersion}\n" +
+                         $"Date: {ToDate(version.ProductBuildPart, version.ProductPrivatePart)} UTC";
+
+            foreach(var o in command.Data.Options.Where(o => true).ToList())
+            {
+                if(o.Name == "number_only" && (bool)o.Value)
+                {
+                    msg = $"Version: {version.ProductVersion}";
+                }
+            }
+
+            await command.RespondAsync(msg);
         }
 
         private static DateTime ToDate(int days, int seconds)
@@ -32,6 +43,14 @@ namespace TyniBot.Commands
             date = date.AddDays(days);
             date = date.AddSeconds(seconds * 2);
             return date;
+        }
+
+        public override void AddOptions(SlashCommandBuilder builder) 
+        { 
+            builder.AddOption(
+                name: "number_only",
+                type: ApplicationCommandOptionType.Boolean,
+                description: "Outputs only the version number");
         }
     }
 }

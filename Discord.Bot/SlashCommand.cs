@@ -16,13 +16,19 @@ namespace Discord.Bot
 
         public abstract bool DefaultPermissions { get; }
 
-        public virtual SlashCommandProperties CreateSlashCommand() =>
-            new SlashCommandBuilder()
-                   .WithName(this.Name)
-                   .WithDescription(this.Description)
-                   .WithDefaultPermission(this.DefaultPermissions)
-                   .Build();
+        public virtual SlashCommandProperties CreateSlashCommand()
+        {
+
+            var builder = new SlashCommandBuilder()
+                    .WithName(this.Name)
+                    .WithDescription(this.Description)
+                    .WithDefaultPermission(this.DefaultPermissions);
+            this.AddOptions(builder);
+            return builder.Build();
+        }
 
         public abstract Task HandleCommandAsync(SocketSlashCommand command);
+
+        public virtual void AddOptions(SlashCommandBuilder builder) { }
     }
 }
