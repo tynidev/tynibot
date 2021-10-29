@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using System.Collections.Immutable;
 using System.Linq;
 using Discord.Bot;
-using System.Web;
+using System;
 
 namespace TyniBot.Commands
 {
@@ -73,7 +73,7 @@ namespace TyniBot.Commands
                 newContent = splitStringSet.Aggregate((res, item) => $"{res}\n{item}").TrimStart();
             }
             
-            string trackerUri = $"https://rocketleague.tracker.network/rocket-league/profile/epic/{HttpUtility.UrlEncode(command.Data.Options.Where(o => string.Equals(o.Name, "epicid")).First().Value.ToString())}/overview";
+            string trackerUri = $"https://rocketleague.tracker.network/rocket-league/profile/epic/{Uri.EscapeUriString(command.Data.Options.Where(o => string.Equals(o.Name, "epicid")).First().Value.ToString())}/overview";
             await recruitingChannel.SendMessageAsync($"{newContent}\n{user.Nickname}: {trackerUri}");
             
             await messageToEdit.DeleteAsync();
