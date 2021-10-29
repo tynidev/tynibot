@@ -21,7 +21,9 @@ namespace TyniBot.Commands
         public override async Task HandleCommandAsync(SocketSlashCommand command)
         {
             var version = FileVersionInfo.GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            await command.RespondAsync($"{ToDate(version.ProductBuildPart, version.ProductPrivatePart)} UTC");
+            await command.RespondAsync(
+                $"Version: {version.ProductVersion}\n" +
+                $"Date: {ToDate(version.ProductBuildPart, version.ProductPrivatePart)} UTC");
         }
 
         private static DateTime ToDate(int days, int seconds)
