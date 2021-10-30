@@ -14,7 +14,7 @@ namespace TyniBot.Commands
     {
         public override string Name => "movetrackeduser";
 
-        public override string Description => "Move a tracked user to a team or off the recruiting board. Do not add a team option to remove from the recruiting board";
+        public override string Description => "Move a tracked user to a team or off the recruiting board. Add team option to move to a team";
 
         public override bool DefaultPermissions => false;
 
