@@ -86,7 +86,14 @@ namespace TyniBot.Commands
                         splitStringSet.Insert(teamIndex, $"__{options["team"].Value}__");
                     }
 
-                    if (options.ContainsKey("captain") && (bool)options["captain"].Value)
+                    bool containsCaptain = options.ContainsKey("captain");
+                    Console.WriteLine($"Contains captain option: {containsCaptain}");
+                    if (containsCaptain)
+                    {
+                        Console.WriteLine($"captain option valie: {options["captain"].Value}");
+                    }
+
+                    if ((bool)options["captain"].Value)
                     {
                         trackerString.Insert(trackerString.IndexOf(":"), "| Captain");
                     }
