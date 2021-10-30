@@ -66,17 +66,23 @@ namespace TyniBot.Commands
             var newContent = messageToEdit.Content;
             var user = command.User as SocketGuildUser;
             var nameToUse = user.Nickname ?? user.Username;
+            string trackerUri = $"https://rocketleague.tracker.network/rocket-league/profile/epic/{Uri.EscapeUriString(command.Data.Options.Where(o => string.Equals(o.Name, "epicid")).First().Value.ToString())}/overview";
+            string userAndTracker = $"{nameToUse}: {trackerUri}";
+
             if (messageToEdit.Content.Contains($"\n{nameToUse}:"))
             {
                 string[] splitString = messageToEdit.Content.Split("\n");
-                var splitStringSet = splitString.ToHashSet();
-                splitStringSet.RemoveWhere(trackerLink => trackerLink.StartsWith($"{nameToUse}:"));
+                var splitStringSet = splitString.ToList();
+                int index = splitStringSet.FindIndex(trackerLink => trackerLink.StartsWith($"{nameToUse}:"));
+                splitStringSet.Insert(index, userAndTracker);
                 newContent = splitStringSet.Aggregate((res, item) => $"{res}\n{item}").TrimStart();
             }
-            
-            string trackerUri = $"https://rocketleague.tracker.network/rocket-league/profile/epic/{Uri.EscapeUriString(command.Data.Options.Where(o => string.Equals(o.Name, "epicid")).First().Value.ToString())}/overview";
-            await recruitingChannel.SendMessageAsync($"{newContent}\n{nameToUse}: {trackerUri}");
-            
+            else
+            {
+                newContent = $"{newContent}\n{userAndTracker}";
+            }
+
+            await recruitingChannel.SendMessageAsync(newContent);
             await messageToEdit.DeleteAsync();
             await command.RespondAsync($"Your RL tracker has been added to the recruiting board in channel #{(client.GetChannel(recruitingChannelId) as SocketGuildChannel).Name}", ephemeral: true);
         }

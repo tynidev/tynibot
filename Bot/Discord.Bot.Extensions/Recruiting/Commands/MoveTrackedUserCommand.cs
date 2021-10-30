@@ -83,7 +83,7 @@ namespace TyniBot.Commands
                     {
                         teamIndex = splitStringSet.FindIndex(team => team.Contains("Free Agents", StringComparison.OrdinalIgnoreCase));
 
-                        splitStringSet.Insert(teamIndex, $"__{options["team"].Value}__");
+                        splitStringSet.Insert(teamIndex, $"\n__{options["team"].Value}__");
                     }
 
                     bool containsCaptain = options.ContainsKey("captain");
@@ -93,8 +93,9 @@ namespace TyniBot.Commands
                         Console.WriteLine($"captain option valie: {options["captain"].Value}");
                     }
 
-                    if ((bool)options["captain"].Value)
+                    if (options["captain"].Value.ToString().Equals("True", StringComparison.OrdinalIgnoreCase))
                     {
+                        Console.WriteLine("Adding captain details");
                         trackerString.Insert(trackerString.IndexOf(":"), "| Captain");
                     }
 
