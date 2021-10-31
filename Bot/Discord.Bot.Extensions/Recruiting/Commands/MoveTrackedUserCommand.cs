@@ -71,7 +71,7 @@ namespace TyniBot.Commands
             {
                 string[] splitString = messageToEdit.Content.Split("\n");
                 var splitStringSet = splitString.ToList();
-                int index = splitStringSet.FindIndex(trackerLink => trackerLink.StartsWith($"{nameToUse}:") || trackerLink.StartsWith($"{nameToUse}} |"));
+                int index = splitStringSet.FindIndex(trackerLink => trackerLink.StartsWith($"{nameToUse}:") || trackerLink.StartsWith($"{nameToUse} |"));
                 string trackerString = splitStringSet[index];
                 splitStringSet.RemoveAt(index);
 
