@@ -60,7 +60,7 @@ namespace TyniBot.Commands
 
             if (messageToEdit == null)
             {
-                messageToEdit = await recruitingChannel.SendMessageAsync("__Free Agents__");
+                messageToEdit = await recruitingChannel.SendMessageAsync("__**Free Agents**__");
             }
 
             var newContent = messageToEdit.Content;
