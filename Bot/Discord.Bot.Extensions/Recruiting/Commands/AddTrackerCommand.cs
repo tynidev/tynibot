@@ -69,11 +69,11 @@ namespace TyniBot.Commands
             string trackerUri = $"https://rocketleague.tracker.network/rocket-league/profile/epic/{Uri.EscapeUriString(command.Data.Options.Where(o => string.Equals(o.Name, "epicid")).First().Value.ToString())}/overview";
             string userAndTracker = $"{nameToUse}: {trackerUri}";
 
-            if (messageToEdit.Content.Contains($"\n{nameToUse}:"))
+            if (messageToEdit.Content.Contains($"\n{nameToUse}:") || messageToEdit.Content.Contains($"{nameToUse} |"))
             {
                 string[] splitString = messageToEdit.Content.Split("\n");
                 var splitStringSet = splitString.ToList();
-                int index = splitStringSet.FindIndex(trackerLink => trackerLink.StartsWith($"{nameToUse}:"));
+                int index = splitStringSet.FindIndex(trackerLink => trackerLink.StartsWith($"{nameToUse}:") || trackerLink.StartsWith($"{nameToUse} |"));
                 splitStringSet.RemoveAt(index);
                 splitStringSet.Insert(index, userAndTracker);
                 newContent = splitStringSet.Aggregate((res, item) => $"{res}\n{item}").TrimStart();
