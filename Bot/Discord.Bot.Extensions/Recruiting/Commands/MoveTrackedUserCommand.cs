@@ -110,7 +110,7 @@ namespace TyniBot.Commands
             }
             else
             {
-                await command.RespondAsync($"User {nameToUse} does not exist in the recruiting table");
+                await command.RespondAsync($"User {nameToUse} does not exist in the recruiting table", ephemeral: true);
             }
         }
 
