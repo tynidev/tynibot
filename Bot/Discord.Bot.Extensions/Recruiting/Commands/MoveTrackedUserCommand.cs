@@ -67,11 +67,11 @@ namespace TyniBot.Commands
             var newContent = messageToEdit.Content;
             var options = command.Data.Options.ToDictionary(o => o.Name, o => o);
             var nameToUse = options["username"].Value;
-            if (messageToEdit.Content.Contains($"\n{nameToUse}:"))
+            if (messageToEdit.Content.Contains($"\n{nameToUse}:") || messageToEdit.Content.Contains($"{nameToUse} |"))
             {
                 string[] splitString = messageToEdit.Content.Split("\n");
                 var splitStringSet = splitString.ToList();
-                int index = splitStringSet.FindIndex(trackerLink => trackerLink.StartsWith($"{nameToUse}:"));
+                int index = splitStringSet.FindIndex(trackerLink => trackerLink.StartsWith($"{nameToUse}:") || trackerLink.StartsWith($"{nameToUse}} |"));
                 string trackerString = splitStringSet[index];
                 splitStringSet.RemoveAt(index);
 
@@ -96,17 +96,17 @@ namespace TyniBot.Commands
                         if (options["captain"].Value.ToString().Equals("True", StringComparison.OrdinalIgnoreCase))
                         {
                             Console.WriteLine("Adding captain details");
-                            if (!trackerString.Contains("| Captain"))
+                            if (!trackerString.Contains(" | Captain"))
                             {
-                                trackerString = trackerString.Insert(trackerString.IndexOf(":"), "| Captain");
+                                trackerString = trackerString.Insert(trackerString.IndexOf(":"), " | Captain");
                             }
                         }
                         else
                         {
-                            var captainIndex = trackerString.IndexOf("| Captain");
+                            var captainIndex = trackerString.IndexOf(" | Captain");
                             if (captainIndex != -1)
                             {
-                                trackerString = trackerString.Remove(captainIndex, 9);
+                                trackerString = trackerString.Remove(captainIndex, 10);
                             }
                         }
                     }
