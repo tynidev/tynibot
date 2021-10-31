@@ -66,7 +66,7 @@ namespace TyniBot.Commands
             var newContent = messageToEdit.Content;
             var user = command.User as SocketGuildUser;
             var nameToUse = user.Nickname ?? user.Username;
-            string trackerUri = $"https://rocketleague.tracker.network/rocket-league/profile/{command.Data.Options.Where(o => string.Equals(o.Name, "platform")).First().Value}/{Uri.EscapeUriString(command.Data.Options.Where(o => string.Equals(o.Name, "id")).First().Value.ToString())}/overview";
+            string trackerUri = string.Equals(command.Data.Options.Where(o => string.Equals(o.Name, "platform")).First().Value.ToString(), "tracker", StringComparison.OrdinalIgnoreCase) ? command.Data.Options.Where(o => string.Equals(o.Name, "id")).First().Value.ToString() : $"https://rocketleague.tracker.network/rocket-league/profile/{command.Data.Options.Where(o => string.Equals(o.Name, "platform")).First().Value}/{Uri.EscapeUriString(command.Data.Options.Where(o => string.Equals(o.Name, "id")).First().Value.ToString())}/overview";
             string userAndTracker = $"{nameToUse}: {trackerUri}";
 
             if (messageToEdit.Content.Contains($"\n{nameToUse}:"))
@@ -93,8 +93,8 @@ namespace TyniBot.Commands
                    .WithName(this.Name)
                    .WithDescription(this.Description)
                    .WithDefaultPermission(this.DefaultPermissions)
-                   .AddOption("platform", ApplicationCommandOptionType.String, "Platorm you play on", required: true, choices: new ApplicationCommandOptionChoiceProperties[] { new ApplicationCommandOptionChoiceProperties() { Name = "epic", Value = "epic" }, new ApplicationCommandOptionChoiceProperties() { Name = "steam", Value = "steam" }, new ApplicationCommandOptionChoiceProperties() { Name = "playstation", Value = "psn" }, new ApplicationCommandOptionChoiceProperties() { Name = "xbox", Value = "xbl" } })
-                   .AddOption("id", ApplicationCommandOptionType.String, "Your username to retrieve RL tracker. For steam use your id", required: true)         
+                   .AddOption("platform", ApplicationCommandOptionType.String, "Platorm you play on", required: true, choices: new ApplicationCommandOptionChoiceProperties[] { new ApplicationCommandOptionChoiceProperties() { Name = "epic", Value = "epic" }, new ApplicationCommandOptionChoiceProperties() { Name = "steam", Value = "steam" }, new ApplicationCommandOptionChoiceProperties() { Name = "playstation", Value = "psn" }, new ApplicationCommandOptionChoiceProperties() { Name = "xbox", Value = "xbl" }, new ApplicationCommandOptionChoiceProperties() { Name = "tracker", Value = "tracker" } })
+                   .AddOption("id", ApplicationCommandOptionType.String, "For steam use your id, others use username, tracker post full tracker", required: true)         
                    .Build();
 
         private static string UpdateExistingTracker(string userAndTracker, string username, string messageToEdit, string delimeter)
