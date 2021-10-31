@@ -91,14 +91,25 @@ namespace TyniBot.Commands
                     if (containsCaptain)
                     {
                         Console.WriteLine($"captain option valie: {options["captain"].Value}");
-                    }
 
-                    if (options["captain"].Value.ToString().Equals("True", StringComparison.OrdinalIgnoreCase))
-                    {
-                        Console.WriteLine("Adding captain details");
-                        trackerString.Insert(trackerString.IndexOf(":"), "| Captain");
-                    }
 
+                        if (options["captain"].Value.ToString().Equals("True", StringComparison.OrdinalIgnoreCase))
+                        {
+                            Console.WriteLine("Adding captain details");
+                            if (!trackerString.Contains("| Captain"))
+                            {
+                                trackerString = trackerString.Insert(trackerString.IndexOf(":"), "| Captain");
+                            }
+                        }
+                        else
+                        {
+                            var captainIndex = trackerString.IndexOf("| Captain");
+                            if (captainIndex != -1)
+                            {
+                                trackerString = trackerString.Remove(captainIndex, 9);
+                            }
+                        }
+                    }
                     splitStringSet.Insert(teamIndex + 1, trackerString);
                 }
 
