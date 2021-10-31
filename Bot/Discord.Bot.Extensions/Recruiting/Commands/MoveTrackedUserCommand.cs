@@ -61,7 +61,7 @@ namespace TyniBot.Commands
 
             if (messageToEdit == null)
             {
-                messageToEdit = await recruitingChannel.SendMessageAsync("__**Free Agents**__");
+                messageToEdit = await recruitingChannel.SendMessageAsync("## __**Free Agents**__");
             }
 
             var newContent = messageToEdit.Content;
@@ -83,7 +83,7 @@ namespace TyniBot.Commands
                     {
                         teamIndex = splitStringSet.FindIndex(team => team.Contains("Free Agents", StringComparison.OrdinalIgnoreCase));
 
-                        splitStringSet.Insert(teamIndex, $"\n__**{options["team"].Value}**__");
+                        splitStringSet.Insert(teamIndex, $"\n## __**{options["team"].Value}**__");
                     }
 
                     bool containsCaptain = options.ContainsKey("captain");
