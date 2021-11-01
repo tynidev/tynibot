@@ -44,67 +44,95 @@ namespace TyniBot.Commands
                 return;
             }
 
-            IMessage messageToEdit = null;
-            int count = 0;
+
+            var user = command.User as SocketGuildUser;
+
+            // Construct new player from parameters
+            var newPlayer = new Player();
+            newPlayer.DiscordUser = user.Nickname ?? user.Username;
+            newPlayer.Platform = (Platform)Enum.Parse(typeof(Platform), command.Data.Options.Where(o => string.Equals(o.Name, "platform")).First().Value.ToString());
+            newPlayer.PlatformId = command.Data.Options.Where(o => string.Equals(o.Name, "id")).First().Value.ToString();
+
+            // Get all messages in channel
             var recruitingChannel = await client.GetChannelAsync(recruitingChannelId) as ISocketMessageChannel;
+            var messages = await GetAllChannelMessages(recruitingChannel);
 
-            var messages = await recruitingChannel.GetMessagesAsync().FlattenAsync();
-            while (messageToEdit == null && count < 10 && messages.Count() > 0)
+            // Parse messages into teams
+            var teams = ParseMessageAsync(messages);
+
+            // No Teams? -> Add Free Agent team
+            if(teams.Count() == 0)
             {
-                messageToEdit = messages.Where(m => m.Author.Id == client.CurrentUser.Id).FirstOrDefault();                
-
-                if (messageToEdit != null)
+                teams.Add(new Team()
                 {
+                    Name = "Free Agents",
+                    Captain = null,
+                    Players = new List<Player>()
+                });
+            }
+
+            // Is player just updating tracker link? -> Update link
+            bool updated = false;
+            foreach(var team in teams)
+            {
+                var exists = team.Players.Where((p) => p.DiscordUser == newPlayer.DiscordUser);
+                if (exists.Any())
+                {
+                    // Player exists on team so just update
+                    var existingPlayer = exists.First();
+                    existingPlayer.Platform = newPlayer.Platform;
+                    existingPlayer.PlatformId = newPlayer.PlatformId;
+                    updated = true;
                     break;
                 }
-                messages = await recruitingChannel.GetMessagesAsync(messages.Last(), Direction.Before).FlattenAsync();
-                count++;
             }
 
-            if (messageToEdit == null)
+            // Is player not on a team? -> Add to FreeAgents
+            if(!updated)
             {
-                messageToEdit = await recruitingChannel.SendMessageAsync("__**Free Agents**__");
+                var freeAgents = teams.Where((t) => t.Name == "Free Agents").First();
+                freeAgents.Players.Add(newPlayer);
             }
 
-            var newContent = messageToEdit.Content;
-            var user = command.User as SocketGuildUser;
-            var nameToUse = user.Nickname ?? user.Username;
-            string trackerUri = string.Equals(command.Data.Options.Where(o => string.Equals(o.Name, "platform")).First().Value.ToString(), "tracker", StringComparison.OrdinalIgnoreCase) ? command.Data.Options.Where(o => string.Equals(o.Name, "id")).First().Value.ToString() : $"https://rocketleague.tracker.network/rocket-league/profile/{command.Data.Options.Where(o => string.Equals(o.Name, "platform")).First().Value}/{Uri.EscapeUriString(command.Data.Options.Where(o => string.Equals(o.Name, "id")).First().Value.ToString())}/overview";
-            string userAndTracker = $"{nameToUse}: {trackerUri}";
+            foreach(var team in teams)
+            {
+                // Have we added this team message yet? -> Write team message and move to next team
+                if(team.MsgId == 0)
+                {
+                    await recruitingChannel.SendMessageAsync(team.ToMessage());
+                    continue;
+                }
 
-            if (messageToEdit.Content.Contains($"\n{nameToUse}:"))
-            {
-                newContent = UpdateExistingTracker(userAndTracker, nameToUse, messageToEdit.Content, ":");
-            }
-            else if (messageToEdit.Content.Contains($"{nameToUse} |"))
-            {
-                userAndTracker = $"{nameToUse} | Captain: {trackerUri}";
-                newContent = UpdateExistingTracker(userAndTracker, nameToUse, messageToEdit.Content, " |");                
-            }
-            else
-            {
-                newContent = $"{newContent}\n{userAndTracker}";
+                // This is an existing team -> Modify old team message
+                await recruitingChannel.ModifyMessageAsync(team.MsgId, (message) => message.Content = team.ToMessage());
             }
 
-            MessageProperties properties = new MessageProperties()
-            {
-                Content = newContent
-            };
-
-            await recruitingChannel.ModifyMessageAsync(messageToEdit.Id, (message) => message.Content = newContent);
             await command.RespondAsync($"Your RL tracker has been added to the recruiting board in channel <#{recruitingChannelId}>", ephemeral: true);
         }
 
-        internal async Task<List<Team>> ParseMessageAsync(ISocketMessageChannel channel)
+        internal List<Team> ParseMessageAsync(List<IMessage> messages)
         {
             var teams = new List<Team>();
 
-            foreach(var teamMsg in await channel.GetMessagesAsync().FlattenAsync())
+            foreach(var teamMsg in messages)
             {
                 teams.Add(Team.ParseTeam(teamMsg.Id, teamMsg.Content));
             }
 
             return teams;
+        }
+
+        internal async Task<List<IMessage>> GetAllChannelMessages(ISocketMessageChannel channel, int limit = 100)
+        {
+            var msgs = new List<IMessage>();
+            var messages = await channel.GetMessagesAsync().FlattenAsync();
+            while(messages.Count() > 0 && msgs.Count() < limit)
+            {
+                msgs.AddRange(messages);
+                messages = await channel.GetMessagesAsync(messages.Last(), Direction.Before).FlattenAsync();
+            }
+
+            return msgs;
         }
 
         public override SlashCommandProperties Build()
