@@ -67,7 +67,7 @@ namespace TyniBot.Commands
             var newContent = messageToEdit.Content;
             var options = command.Data.Options.ToDictionary(o => o.Name, o => o);
             var nameToUse = options["username"].Value;
-            if (messageToEdit.Content.Contains($"\n{nameToUse}:") || messageToEdit.Content.Contains($"{nameToUse} |"))
+            if (messageToEdit.Content.Contains($"\n{nameToUse}:", StringComparison.OrdinalIgnoreCase) || messageToEdit.Content.Contains($"{nameToUse} |", StringComparison.OrdinalIgnoreCase))
             {
                 string[] splitString = messageToEdit.Content.Split("\n");
                 var splitStringSet = splitString.ToList();
@@ -92,7 +92,6 @@ namespace TyniBot.Commands
                     {
                         Console.WriteLine($"captain option valie: {options["captain"].Value}");
 
-
                         if (options["captain"].Value.ToString().Equals("True", StringComparison.OrdinalIgnoreCase))
                         {
                             Console.WriteLine("Adding captain details");
@@ -114,7 +113,6 @@ namespace TyniBot.Commands
                 }
 
                 newContent = splitStringSet.Aggregate((res, item) => $"{res}\n{item}").TrimStart();
-
 
                 await recruitingChannel.ModifyMessageAsync(messageToEdit.Id, (message) => message.Content = newContent);
                 await command.RespondAsync($"You have {(options.ContainsKey("team") ? "moved" : "removed")} user {nameToUse}", ephemeral: true);
