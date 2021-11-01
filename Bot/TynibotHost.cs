@@ -102,6 +102,11 @@ namespace TyniBot
             if (user.Guild.Id == 598569589512863764) {
                 await channel.SendMessageAsync($"Welcome {user.Mention} to {channel.Guild.Name}. Check out <#549039583459934209> so you can set up your roles. The inhouse role will notify you when people are looking to play, as well as let you find people to play with in the <#552350525555867658> channel. We also play lunch games almost every day 12-1pm pt. Welcome to the discord!"); //Welcomes the new user
             }
+
+            if (user.Guild.Id == 904804698484260874)
+            {
+                await channel.SendMessageAsync($"Welcome {user.Mention} to {channel.Guild.Name}. Check out <#904804698484260877> so you can set up your roles. The inhouse role will notify you when people are looking to play, as well as let you find people to play with in the <#904804698484260877> channel. We also play lunch games almost every day 12-1pm pt. Welcome to the discord!"); //Welcomes the new user
+            }
         }
         
         #region EventHandlers
