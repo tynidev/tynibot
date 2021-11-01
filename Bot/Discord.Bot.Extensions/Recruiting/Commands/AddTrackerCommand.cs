@@ -6,6 +6,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using Discord.Bot;
 using System;
+using TyniBot.Recruiting;
 
 namespace TyniBot.Commands
 {
@@ -92,6 +93,18 @@ namespace TyniBot.Commands
 
             await recruitingChannel.ModifyMessageAsync(messageToEdit.Id, (message) => message.Content = newContent);
             await command.RespondAsync($"Your RL tracker has been added to the recruiting board in channel <#{recruitingChannelId}>", ephemeral: true);
+        }
+
+        internal async Task<List<Team>> ParseMessageAsync(ISocketMessageChannel channel)
+        {
+            var teams = new List<Team>();
+
+            foreach(var teamMsg in await channel.GetMessagesAsync().FlattenAsync())
+            {
+                teams.Add(Team.ParseTeam(teamMsg.Id, teamMsg.Content));
+            }
+
+            return teams;
         }
 
         public override SlashCommandProperties Build()
