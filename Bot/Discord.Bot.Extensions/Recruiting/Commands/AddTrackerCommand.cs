@@ -89,7 +89,7 @@ namespace TyniBot.Commands
             };
 
             await recruitingChannel.ModifyMessageAsync(messageToEdit.Id, (message) => message.Content = newContent);
-            await command.RespondAsync($"Your RL tracker has been added to the recruiting board in channel #{(client.GetChannel(recruitingChannelId) as SocketGuildChannel).Name}", ephemeral: true);
+            await command.RespondAsync($"Your RL tracker has been added to the recruiting board in channel <#{recruitingChannelId}>", ephemeral: true);
         }
 
         public override SlashCommandProperties CreateSlashCommand()
