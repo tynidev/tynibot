@@ -63,7 +63,7 @@ namespace TyniBot.Commands
             {
                 teams.Add(new Team()
                 {
-                    Name = "Free Agents",
+                    Name = "Free_Agents",
                     Captain = null,
                     Players = new List<Player>()
                 });
@@ -88,7 +88,7 @@ namespace TyniBot.Commands
             // Is player not on a team? -> Add to FreeAgents
             if(!updated)
             {
-                var freeAgents = teams.Where((t) => t.Name == "Free Agents").First();
+                var freeAgents = teams.Where((t) => t.Name == "Free_Agents").First();
                 freeAgents.Players.Add(newPlayer);
             }
 
@@ -108,7 +108,7 @@ namespace TyniBot.Commands
             await command.RespondAsync($"Your RL tracker has been added to the recruiting board in channel <#{recruitingChannelId}>", ephemeral: true);
         }
 
-        internal List<Team> ParseMessageAsync(List<IMessage> messages)
+        internal static List<Team> ParseMessageAsync(List<IMessage> messages)
         {
             var teams = new List<Team>();
 
@@ -120,7 +120,7 @@ namespace TyniBot.Commands
             return teams;
         }
 
-        internal async Task<List<IMessage>> GetAllChannelMessages(ISocketMessageChannel channel, int limit = 100)
+        internal static async Task<List<IMessage>> GetAllChannelMessages(ISocketMessageChannel channel, int limit = 100)
         {
             var msgs = new List<IMessage>();
             var messages = await channel.GetMessagesAsync().FlattenAsync();

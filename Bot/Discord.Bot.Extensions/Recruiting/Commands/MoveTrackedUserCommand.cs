@@ -6,6 +6,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using Discord.Bot;
 using System;
+using TyniBot.Recruiting;
 
 namespace TyniBot.Commands
 {
@@ -29,7 +30,8 @@ namespace TyniBot.Commands
 
         private static readonly ImmutableDictionary<ulong, ulong> recruitingChannelForGuild = new Dictionary<ulong, ulong> {
             { 902581441727197195, 903521423522398278}, //tynibot test
-            { 598569589512863764,  541894310258278400} //msft rl
+            { 598569589512863764,  541894310258278400}, //msft rl
+            { 801598108467200031,  904856579403300905} //tyni's server
         }.ToImmutableDictionary();
 
         public override async Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client)
@@ -42,84 +44,56 @@ namespace TyniBot.Commands
                 return;
             }
 
-            IMessage messageToEdit = null;
-            int count = 0;
+            // Get all messages in channel
             var recruitingChannel = await client.GetChannelAsync(recruitingChannelId) as ISocketMessageChannel;
+            var messages = await AddTrackerCommand.GetAllChannelMessages(recruitingChannel);
 
-            var messages = await recruitingChannel.GetMessagesAsync().FlattenAsync();
-            while (messageToEdit == null && count < 10 && messages.Count() > 0)
-            {
-                messageToEdit = messages.Where(m => m.Author.Id == client.CurrentUser.Id).FirstOrDefault();
+            // Parse messages into teams
+            var teams = AddTrackerCommand.ParseMessageAsync(messages);
 
-                if (messageToEdit != null)
-                {
-                    break;
-                }
-                messages = await recruitingChannel.GetMessagesAsync(messages.Last(), Direction.Before).FlattenAsync();
-                count++;
-            }
-
-            if (messageToEdit == null)
-            {
-                messageToEdit = await recruitingChannel.SendMessageAsync("__**Free Agents**__");
-            }
-
-            var newContent = messageToEdit.Content;
             var options = command.Data.Options.ToDictionary(o => o.Name, o => o);
-            var nameToUse = options["username"].Value;
-            if (messageToEdit.Content.Contains($"\n{nameToUse}:", StringComparison.OrdinalIgnoreCase) || messageToEdit.Content.Contains($"{nameToUse} |", StringComparison.OrdinalIgnoreCase))
+            var discordUser = options["username"].Value.ToString();
+
+            // Player not exist? -> respond with error
+            (var oldTeam, var player) = Team.FindPlayer(teams, discordUser);
+            if (player == null)
             {
-                string[] splitString = messageToEdit.Content.Split("\n");
-                var splitStringSet = splitString.ToList();
-                int index = splitStringSet.FindIndex(trackerLink => trackerLink.StartsWith($"{nameToUse}:") || trackerLink.StartsWith($"{nameToUse} |"));
-                string trackerString = splitStringSet[index];
-                splitStringSet.RemoveAt(index);
+                await command.RespondAsync($"User {discordUser} does not exist in the recruiting table", ephemeral: true);
+                return;
+            }
 
-                if (options.ContainsKey("team"))
+            // Team option specified? -> move player
+            if (options.ContainsKey("team"))
+            {
+                var teamName = options["team"].Value.ToString();
+
+                // Team not exist? -> respond with error
+                var newTeam = Team.FindTeam(teams, teamName);
+                if (newTeam == null)
                 {
-                    int teamIndex = splitStringSet.FindIndex(team => team.Contains(options["team"].Value.ToString(), StringComparison.OrdinalIgnoreCase));
-
-                    if (teamIndex == -1)
-                    {
-                        teamIndex = splitStringSet.FindIndex(team => team.Contains("Free Agents", StringComparison.OrdinalIgnoreCase));
-
-                        splitStringSet.Insert(teamIndex, $"\n__**{options["team"].Value}**__");
-                    }
-
-                    bool containsCaptain = options.ContainsKey("captain");
-                    Console.WriteLine($"Contains captain option: {containsCaptain}");
-                    if (containsCaptain)
-                    {
-                        Console.WriteLine($"captain option valie: {options["captain"].Value}");
-
-                        if (options["captain"].Value.ToString().Equals("True", StringComparison.OrdinalIgnoreCase))
-                        {
-                            Console.WriteLine("Adding captain details");
-                            if (!trackerString.Contains(" | Captain"))
-                            {
-                                trackerString = trackerString.Insert(trackerString.IndexOf(":"), " | Captain");
-                            }
-                        }
-                        else
-                        {
-                            var captainIndex = trackerString.IndexOf(" | Captain");
-                            if (captainIndex != -1)
-                            {
-                                trackerString = trackerString.Remove(captainIndex, 10);
-                            }
-                        }
-                    }
-                    splitStringSet.Insert(teamIndex + 1, trackerString);
+                    await command.RespondAsync($"Team {teamName} does not exist in the recruiting table", ephemeral: true);
+                    return;
                 }
 
-                newContent = splitStringSet.Aggregate((res, item) => $"{res}\n{item}").TrimStart();
+                // If player was captain of old team remove that teams captain
+                if (oldTeam.Captain?.DiscordUser == player.DiscordUser)
+                    oldTeam.Captain = null;
 
-                await recruitingChannel.ModifyMessageAsync(messageToEdit.Id, (message) => message.Content = newContent);
-                await command.RespondAsync($"You have {(options.ContainsKey("team") ? "moved" : "removed")} user {nameToUse}", ephemeral: true);
-            }
-            else
-            {
-                await command.RespondAsync($"User {nameToUse} does not exist in the recruiting table", ephemeral: true);
+                // Move Player
+                oldTeam.Players.Remove(player);
+                newTeam.Players.Add(player);
+
+                // If this is a captain make new team captain = player
+                if (options.ContainsKey("captain"))
+                {
+                    newTeam.Captain = player;
+                }
+
+                // Update team messages
+                await recruitingChannel.ModifyMessageAsync(oldTeam.MsgId, (message) => message.Content = oldTeam.ToMessage());
+                await recruitingChannel.ModifyMessageAsync(newTeam.MsgId, (message) => message.Content = newTeam.ToMessage());
+
+                await command.RespondAsync($"You have moved user {discordUser} from {oldTeam.Name} -> {newTeam.Name}", ephemeral: true);
             }
         }
 

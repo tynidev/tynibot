@@ -48,5 +48,37 @@ namespace TyniBot.Recruiting
 
             return msg;
         }
+        public Player FindPlayer(string discordUser)
+        {
+            var exists = Players.Where((p) => p.DiscordUser == discordUser);
+            if (exists.Any())
+            {
+                return exists.First();
+            }
+            return null;
+        }
+
+        public static (Team, Player) FindPlayer(IEnumerable<Team> teams, string discordUser)
+        {
+            foreach (var team in teams)
+            {
+                var player = team.FindPlayer(discordUser);
+                if (player != null)
+                {
+                    return (team, player);
+                }
+            }
+            return (null, null);
+        }
+
+        public static Team FindTeam(IEnumerable<Team> teams, string teamName)
+        {
+            foreach (var team in teams)
+            {
+                if (team.Name == teamName)
+                    return team;
+            }
+            return null;
+        }
     }
 }
