@@ -92,10 +92,18 @@ namespace TyniBot
 
         public async Task AnnounceJoinedUser(SocketGuildUser user) //Welcomes the new user
         {
-            var channel = Client.GetChannel(124366291611025417) as SocketTextChannel; // Gets the channel to send the message in
-            await channel.SendMessageAsync($"Welcome {user.Mention} to {channel.Guild.Name}. Please wait while we load the real humans. For general guidance in the meantime, check out <#549039583459934209>"); //Welcomes the new user
-        }
+            var channel = user.Guild.DefaultChannel; // Client.GetChannel(124366291611025417) as SocketTextChannel; // Gets the channel to send the message in
 
+            if (user.Guild.Id == 902581441727197195)
+            {
+                await channel.SendMessageAsync($"Welcome {user.Mention} to {channel.Guild.Name}. Check out <#904472700616073316> so you can set up your roles. The inhouse role will notify you when people are looking to play, as well as let you find people to play with in the <#904472700616073316> channel. We also play lunch games almost every day 12-1pm pt. Welcome to the discord!"); //Welcomes the new user
+            }
+
+            if (user.Guild.Id == 598569589512863764) {
+                await channel.SendMessageAsync($"Welcome {user.Mention} to {channel.Guild.Name}. Check out <#549039583459934209> so you can set up your roles. The inhouse role will notify you when people are looking to play, as well as let you find people to play with in the <#552350525555867658> channel. We also play lunch games almost every day 12-1pm pt. Welcome to the discord!"); //Welcomes the new user
+            }
+        }
+        
         #region EventHandlers
 
         private async Task ReadyAsync()
