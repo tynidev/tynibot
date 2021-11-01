@@ -71,8 +71,11 @@ namespace TyniBot.Commands
                 var newTeam = Team.FindTeam(teams, teamName);
                 if (newTeam == null)
                 {
-                    await command.RespondAsync($"Team {teamName} does not exist in the recruiting table", ephemeral: true);
-                    return;
+                    newTeam = new Team()
+                    {
+                        Name = teamName,
+                        Players = new List<Player>()
+                    };
                 }
 
                 // If player was captain of old team remove that teams captain
@@ -89,9 +92,18 @@ namespace TyniBot.Commands
                     newTeam.Captain = player;
                 }
 
-                // Update team messages
+                // Update old team message
                 await recruitingChannel.ModifyMessageAsync(oldTeam.MsgId, (message) => message.Content = oldTeam.ToMessage());
-                await recruitingChannel.ModifyMessageAsync(newTeam.MsgId, (message) => message.Content = newTeam.ToMessage());
+
+                // Update new team message
+                if(newTeam.MsgId == 0)
+                {
+                    await recruitingChannel.SendMessageAsync(newTeam.ToMessage());
+                }
+                else
+                {
+                    await recruitingChannel.ModifyMessageAsync(newTeam.MsgId, (message) => message.Content = newTeam.ToMessage());
+                }
 
                 await command.RespondAsync($"You have moved user {discordUser} from {oldTeam.Name} -> {newTeam.Name}", ephemeral: true);
             }
