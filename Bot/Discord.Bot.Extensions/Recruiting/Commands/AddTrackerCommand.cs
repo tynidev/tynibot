@@ -20,6 +20,8 @@ namespace TyniBot.Commands
 
         public override bool IsGlobal => false;
 
+        public override Dictionary<ulong, List<ApplicationCommandPermission>> GuildIdsAndPermissions => new Dictionary<ulong, List<ApplicationCommandPermission>>();
+
         private static readonly ImmutableDictionary<ulong, ulong> recruitingChannelForGuild = new Dictionary<ulong, ulong> {
             { 902581441727197195, 903521423522398278}, //tynibot test
             { 598569589512863764,  541894310258278400} //msft rl
@@ -92,7 +94,7 @@ namespace TyniBot.Commands
             await command.RespondAsync($"Your RL tracker has been added to the recruiting board in channel <#{recruitingChannelId}>", ephemeral: true);
         }
 
-        public override SlashCommandProperties CreateSlashCommand()
+        public override SlashCommandProperties Build()
             => new SlashCommandBuilder()
                    .WithName(this.Name)
                    .WithDescription(this.Description)

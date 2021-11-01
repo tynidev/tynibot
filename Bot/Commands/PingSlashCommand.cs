@@ -17,6 +17,10 @@ namespace TyniBot.Commands
 
         public override bool DefaultPermissions => true;
 
+        public override bool IsGlobal => true;
+
+        public override Dictionary<ulong, List<ApplicationCommandPermission>> GuildIdsAndPermissions => new Dictionary<ulong, List<ApplicationCommandPermission>>();
+
         public override async Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client)
         {
             await command.RespondAsync("Pong!");

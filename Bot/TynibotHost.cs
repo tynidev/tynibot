@@ -102,28 +102,21 @@ namespace TyniBot
 
         private async Task ReadyAsync()
         {
-            foreach (var slashCommand in SlashCommands.Values)
+            foreach (var SlashCommand in SlashCommands.Values)
             {
-                if (slashCommand.IsGlobal)
+                if (SlashCommand.IsGlobal)
                 {
-                    await Client.Rest.CreateGlobalCommand(slashCommand.CreateSlashCommand());
+                    await Client.Rest.CreateGlobalCommand(SlashCommand.Build());
                 }
                 else
                 {
-                    foreach ((var guildId, var permissions) in slashCommand.GuildIdsAndPermissions)
+                    foreach ((var guildId, var permissions) in SlashCommand.GuildIdsAndPermissions)
                     {
-                        try
+                        var createdCommand = await Client.Rest.CreateGuildCommand(SlashCommand.Build(), guildId);
+
+                        if (permissions.Count > 0)
                         {
-                            var createdCommand = await Client.Rest.CreateGuildCommand(slashCommand.CreateSlashCommand(), guildId);
-                        
-                            if (permissions.Count > 0)
-                            {
-                                await createdCommand.ModifyCommandPermissions(permissions.ToArray());
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            Console.Error.WriteLine(e);
+                            await createdCommand.ModifyCommandPermissions(permissions.ToArray());
                         }
                     }
                 }

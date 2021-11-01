@@ -7,6 +7,8 @@ using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
 using Discord.Bot;
+using System.Linq;
+using Discord.Rest;
 
 namespace TyniBot.Commands
 {
@@ -18,12 +20,29 @@ namespace TyniBot.Commands
 
         public override bool DefaultPermissions => true;
 
+        public override bool IsGlobal => true;
+
+        public override Dictionary<ulong, List<ApplicationCommandPermission>> GuildIdsAndPermissions => new Dictionary<ulong, List<ApplicationCommandPermission>>()
+        {
+            //{ 801598108467200031, new List<ApplicationCommandPermission>() } // tyni's server
+        };
+
         public override async Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client)
         {
             var version = FileVersionInfo.GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            await command.RespondAsync(
-                $"Version: {version.ProductVersion}\n" +
-                $"Date: {ToDate(version.ProductBuildPart, version.ProductPrivatePart)} UTC");
+
+            string msg = $"Version: {version.ProductVersion}\n" +
+                         $"Date: {ToDate(version.ProductBuildPart, version.ProductPrivatePart)} UTC";
+
+            foreach(var o in command.Data.Options.Where(o => true))
+            {
+                if(o.Name == "number_only" && (bool)o.Value)
+                {
+                    msg = $"{version.ProductVersion}";
+                }
+            }
+
+            await command.RespondAsync(msg);
         }
 
         private static DateTime ToDate(int days, int seconds)
@@ -32,6 +51,22 @@ namespace TyniBot.Commands
             date = date.AddDays(days);
             date = date.AddSeconds(seconds * 2);
             return date;
+        }
+
+        public override ApplicationCommandProperties Build()
+        {
+
+            var builder = new SlashCommandBuilder()
+                    .WithName(this.Name)
+                    .WithDescription(this.Description)
+                    .WithDefaultPermission(this.DefaultPermissions);
+
+            builder.AddOption(
+                name: "number_only",
+                type: ApplicationCommandOptionType.Boolean,
+                description: "Outputs only the version number");
+
+            return builder.Build();
         }
     }
 }
