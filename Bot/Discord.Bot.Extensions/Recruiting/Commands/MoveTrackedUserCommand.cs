@@ -114,9 +114,9 @@ namespace TyniBot.Commands
                 }
 
                 newContent = splitStringSet.Aggregate((res, item) => $"{res}\n{item}").TrimStart();
-                await recruitingChannel.SendMessageAsync(newContent);
 
-                await messageToEdit.DeleteAsync();
+
+                await recruitingChannel.ModifyMessageAsync(messageToEdit.Id, (message) => message.Content = newContent);
                 await command.RespondAsync($"You have {(options.ContainsKey("team") ? "moved" : "removed")} user {nameToUse}", ephemeral: true);
             }
             else

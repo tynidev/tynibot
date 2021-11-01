@@ -83,8 +83,12 @@ namespace TyniBot.Commands
                 newContent = $"{newContent}\n{userAndTracker}";
             }
 
-            await recruitingChannel.SendMessageAsync(newContent);
-            await messageToEdit.DeleteAsync();
+            MessageProperties properties = new MessageProperties()
+            {
+                Content = newContent
+            };
+
+            await recruitingChannel.ModifyMessageAsync(messageToEdit.Id, (message) => message.Content = newContent);
             await command.RespondAsync($"Your RL tracker has been added to the recruiting board in channel #{(client.GetChannel(recruitingChannelId) as SocketGuildChannel).Name}", ephemeral: true);
         }
 
