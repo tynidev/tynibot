@@ -21,19 +21,18 @@ namespace TyniBot.Commands
 
         public override bool IsGlobal => false;
 
-        public override Dictionary<ulong, List<ApplicationCommandPermission>> GuildIdsAndPermissions => new Dictionary<ulong, List<ApplicationCommandPermission>>();
+        public override Dictionary<ulong, List<ApplicationCommandPermission>> GuildIdsAndPermissions => new Dictionary<ulong, List<ApplicationCommandPermission>>()
+        {
+            { 902581441727197195, new List<ApplicationCommandPermission> { new ApplicationCommandPermission(903514452463325184, ApplicationCommandPermissionTarget.Role, true) } }, // tynibot test
+            //{ 124366291611025417, new List<ApplicationCommandPermission> { new ApplicationCommandPermission(598569589512863764, ApplicationCommandPermissionTarget.Role, true) } }, // msft rl
+            //{ 801598108467200031, new List<ApplicationCommandPermission>() } // tyni's server
+        };
 
         private static readonly ImmutableDictionary<ulong, ulong> recruitingChannelForGuild = new Dictionary<ulong, ulong> {
             { 902581441727197195, 903521423522398278}, //tynibot test
-            { 598569589512863764,  541894310258278400} //msft rl
+            { 598569589512863764,  541894310258278400}, //msft rl
+            { 801598108467200031,  904856579403300905} //tyni's server
         }.ToImmutableDictionary();
-
-        public AddTrackerCommand()
-            : base()
-        {
-            this.GuildIdsAndPermissions.Add(902581441727197195, new List<ApplicationCommandPermission> { new ApplicationCommandPermission(903514452463325184, ApplicationCommandPermissionTarget.Role, true) }); // tynibot test
-            //this.GuildIdsAndPermissions.Add(124366291611025417, new List<ApplicationCommandPermission> { new ApplicationCommandPermission(598569589512863764, ApplicationCommandPermissionTarget.Role, true) }); // msft rl
-        }
 
         public override async Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client)
         {
@@ -43,7 +42,6 @@ namespace TyniBot.Commands
                 await command.RespondAsync("Channel is not part of a guild that supports recruiting", ephemeral: true);
                 return;
             }
-
 
             var user = command.User as SocketGuildUser;
 
@@ -140,18 +138,17 @@ namespace TyniBot.Commands
                    .WithName(this.Name)
                    .WithDescription(this.Description)
                    .WithDefaultPermission(this.DefaultPermissions)
-                   .AddOption("platform", ApplicationCommandOptionType.String, "Platorm you play on", required: true, choices: new ApplicationCommandOptionChoiceProperties[] { new ApplicationCommandOptionChoiceProperties() { Name = "epic", Value = "epic" }, new ApplicationCommandOptionChoiceProperties() { Name = "steam", Value = "steam" }, new ApplicationCommandOptionChoiceProperties() { Name = "playstation", Value = "psn" }, new ApplicationCommandOptionChoiceProperties() { Name = "xbox", Value = "xbl" }, new ApplicationCommandOptionChoiceProperties() { Name = "tracker", Value = "tracker" } })
+                   .AddOption("platform", 
+                                ApplicationCommandOptionType.String, 
+                                "Platorm you play on", 
+                                required: true, 
+                                choices: 
+                                    new ApplicationCommandOptionChoiceProperties[] { new ApplicationCommandOptionChoiceProperties() { Name = "epic", Value = "Epic" }, 
+                                        new ApplicationCommandOptionChoiceProperties() { Name = "steam", Value = "Steam" }, 
+                                        new ApplicationCommandOptionChoiceProperties() { Name = "playstation", Value = "Playstation" }, 
+                                        new ApplicationCommandOptionChoiceProperties() { Name = "xbox", Value = "Xbox" }
+                                    })
                    .AddOption("id", ApplicationCommandOptionType.String, "For steam use your id, others use username, tracker post full tracker", required: true)         
                    .Build();
-
-        private static string UpdateExistingTracker(string userAndTracker, string username, string messageToEdit, string delimeter)
-        {
-            string[] splitString = messageToEdit.Split("\n");
-            var splitStringSet = splitString.ToList();
-            int index = splitStringSet.FindIndex(trackerLink => trackerLink.StartsWith($"{username}{delimeter}"));
-            splitStringSet.RemoveAt(index);
-            splitStringSet.Insert(index, userAndTracker);
-            return splitStringSet.Aggregate((res, item) => $"{res}\n{item}").TrimStart();
-        }
     }
 }
