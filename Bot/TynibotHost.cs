@@ -29,6 +29,7 @@ namespace TyniBot
             { "ping", new PingSlashCommand() },
             { "version", new VersionSlashCommand() },
             { "recruiting", new RecruitingCommand() },
+            { "adminrecruiting", new AdminRecruitingCommand() }
         };
 
         public async Task RunAsync(
@@ -111,11 +112,18 @@ namespace TyniBot
                 {
                     foreach ((var guildId, var permissions) in SlashCommand.GuildIdsAndPermissions)
                     {
-                        var createdCommand = await Client.Rest.CreateGuildCommand(SlashCommand.Build(), guildId);
-
-                        if (permissions.Count > 0)
+                        try
                         {
-                            await createdCommand.ModifyCommandPermissions(permissions.ToArray());
+                            var createdCommand = await Client.Rest.CreateGuildCommand(SlashCommand.Build(), guildId);
+
+                            if (permissions.Count > 0)
+                            {
+                                await createdCommand.ModifyCommandPermissions(permissions.ToArray());
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Console.Error.WriteLine($"Error creating command {SlashCommand.Name} in guilld {guildId}: {e.Message}");
                         }
                     }
                 }

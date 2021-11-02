@@ -22,9 +22,9 @@ namespace TyniBot.Commands
         public override Dictionary<ulong, List<ApplicationCommandPermission>> GuildIdsAndPermissions => new Dictionary<ulong, List<ApplicationCommandPermission>>()
         {
             { 902581441727197195, new List<ApplicationCommandPermission> { new ApplicationCommandPermission(903514452463325184, ApplicationCommandPermissionTarget.Role, true) } }, // tynibot test
-            //{ 124366291611025417, new List<ApplicationCommandPermission> { new ApplicationCommandPermission(598569589512863764, ApplicationCommandPermissionTarget.Role, true) } }, // msft rl
-            //{ 801598108467200031, new List<ApplicationCommandPermission>() } // tyni's server
-            //{ 904804698484260874, new List<ApplicationCommandPermission> { new ApplicationCommandPermission(904867602571100220, ApplicationCommandPermissionTarget.Role, true) } }, // nate server
+            { 124366291611025417, new List<ApplicationCommandPermission> { new ApplicationCommandPermission(598569589512863764, ApplicationCommandPermissionTarget.Role, true) } }, // msft rl
+            { 801598108467200031, new List<ApplicationCommandPermission>() }, // tyni's server
+            { 904804698484260874, new List<ApplicationCommandPermission> { new ApplicationCommandPermission(904867602571100220, ApplicationCommandPermissionTarget.Role, true) } }, // nate server
         };
 
         public override bool IsGlobal => false;
@@ -63,6 +63,12 @@ namespace TyniBot.Commands
                 case "move":
                     await MoveTrackedUserCommand.Run(command, client, options, recruitingChannel, messages, teams);
                     break;
+                case "remove":
+                    await RemoveTrackedUserCommand.Run(command, client, options, recruitingChannel, messages, teams);
+                    break;
+                case "deleteteam":
+                    await DeleteTeamTrackerCommand.Run(command, client, options, recruitingChannel, messages, teams);
+                    break;
                 default:
                     await command.RespondAsync($"SubCommand {subCommand} not supported", ephemeral: true);
                     return;
@@ -90,37 +96,12 @@ namespace TyniBot.Commands
                                     });
             addCmd.AddOption("id", ApplicationCommandOptionType.String, "For steam use your id, others use username, tracker post full tracker", required: true);
 
-            var moveCmd = new SlashCommandOptionBuilder()
-            {
-                Name = "move",
-                Description = "Move a tracked user to a team.",
-                Type = ApplicationCommandOptionType.SubCommand
-            };
-            moveCmd.AddOption("username", ApplicationCommandOptionType.String, "Username of user to move", required: true);
-            moveCmd.AddOption("team", ApplicationCommandOptionType.String, "Team to move user to", required: true);
-            moveCmd.AddOption("captain", ApplicationCommandOptionType.Boolean, "Is this user the captain of the team?", required: false);
-
-            var removeCmd = new SlashCommandOptionBuilder()
-            {
-                Name = "remove",
-                Description = "Remove a tracked user.",
-                Type = ApplicationCommandOptionType.SubCommand
-            };
-            removeCmd.AddOption("username", ApplicationCommandOptionType.String, "Username of user to remove", required: true);
-
-            var deleteTeamCmd = new SlashCommandOptionBuilder()
-            {
-                Name = "deleteteam",
-                Description = "Remove team.",
-                Type = ApplicationCommandOptionType.SubCommand
-            };
-            deleteTeamCmd.AddOption("team", ApplicationCommandOptionType.String, "Team to remove", required: true);
-
+           
             var builder = new SlashCommandBuilder()
                    .WithName(this.Name)
                    .WithDescription(this.Description)
                    .WithDefaultPermission(this.DefaultPermissions)
-                   .AddOptions(addCmd, moveCmd, removeCmd, deleteTeamCmd);
+                   .AddOption(addCmd);
 
             return builder.Build();
         }
@@ -131,7 +112,13 @@ namespace TyniBot.Commands
 
             foreach (var teamMsg in messages)
             {
-                teams.Add(Team.ParseTeam(teamMsg.Id, teamMsg.Content));
+                try
+                {
+                    teams.Add(Team.ParseTeam(teamMsg.Id, teamMsg.Content));
+                }
+                catch
+                {
+                }
             }
 
             return teams;

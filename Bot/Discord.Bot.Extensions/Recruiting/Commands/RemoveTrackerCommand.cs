@@ -31,8 +31,17 @@ namespace TyniBot.Commands
 
             // Move Player
             oldTeam.Players.Remove(player);
+
             // Update old team message
-            await recruitingChannel.ModifyMessageAsync(oldTeam.MsgId, (message) => message.Content = oldTeam.ToMessage());
+            if (oldTeam.Players.Count > 0)
+            {
+                await recruitingChannel.ModifyMessageAsync(oldTeam.MsgId, (message) => message.Content = oldTeam.ToMessage());
+            }
+            else
+            {
+                await recruitingChannel.DeleteMessageAsync(oldTeam.MsgId);
+            }
+
             await command.RespondAsync($"You have removed user {discordUser} from {oldTeam.Name}", ephemeral: true);
         }
     }
