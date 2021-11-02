@@ -28,8 +28,7 @@ namespace TyniBot
         {
             { "ping", new PingSlashCommand() },
             { "version", new VersionSlashCommand() },
-            { "addtracker", new AddTrackerCommand() },
-            { "movetrackeduser", new MoveTrackedUserCommand() }
+            { "recruiting", new RecruitingCommand() },
         };
 
         public async Task RunAsync(
