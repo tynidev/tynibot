@@ -61,9 +61,10 @@ namespace TyniBot.Recruiting
 
             return msg;
         }
+
         public Player FindPlayer(string discordUser)
         {
-            var exists = Players.Where((p) => p.DiscordUser == discordUser);
+            var exists = Players.Where((p) => string.Equals(p.DiscordUser, discordUser, StringComparison.OrdinalIgnoreCase));
             if (exists.Any())
             {
                 return exists.First();
@@ -88,7 +89,7 @@ namespace TyniBot.Recruiting
         {
             foreach (var team in teams)
             {
-                if (team.Name == teamName)
+                if (string.Equals(team.Name, teamName, StringComparison.OrdinalIgnoreCase))
                     return team;
             }
             return null;
