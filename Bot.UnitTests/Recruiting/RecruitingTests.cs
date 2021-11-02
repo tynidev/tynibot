@@ -9,10 +9,10 @@ using System.Threading.Tasks;
 using Discord.Bot;
 using TyniBot.Recruiting;
 
-namespace Inhouse.UnitTests
+namespace Recruiting.UnitTests
 {
     [TestClass]
-    public class InhouseTests
+    public class RecruitingTests
     {
         [TestMethod]
         public void TestTeamParseTeam()

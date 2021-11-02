@@ -15,7 +15,8 @@ namespace TyniBot.Commands
     {
         public static async Task Run(SocketSlashCommand command, DiscordSocketClient client, Dictionary<string, SocketSlashCommandDataOption> options, ISocketMessageChannel recruitingChannel, List<IMessage> messages, List<Team> teams)
         {
-            var discordUser = options["username"].Value.ToString();
+            var guildUser = (SocketGuildUser)options["username"].Value;
+            var discordUser = guildUser.Nickname ?? guildUser.Username;
 
             // Player not exist? -> respond with error
             (var oldTeam, var player) = Team.FindPlayer(teams, discordUser);

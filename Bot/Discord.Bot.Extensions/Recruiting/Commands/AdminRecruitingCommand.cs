@@ -1,4 +1,5 @@
 ﻿using Discord;
+using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace TyniBot.Commands
 {
     class AdminRecruitingCommand : RecruitingCommand
     {
-        public override string Name => "admin-recruiting";
+        public override string Name => "recruiting-admin";
 
         public override string Description => "Manage teams for CEA recruiting.";
 
@@ -29,7 +30,7 @@ namespace TyniBot.Commands
                 Description = "Move a tracked user to a team.",
                 Type = ApplicationCommandOptionType.SubCommand
             };
-            moveCmd.AddOption("username", ApplicationCommandOptionType.String, "Username of user to move", required: true);
+            moveCmd.AddOption("username", ApplicationCommandOptionType.User, "Username of user to move", required: true);
             moveCmd.AddOption("team", ApplicationCommandOptionType.String, "Team to move user to", required: true);
             moveCmd.AddOption("captain", ApplicationCommandOptionType.Boolean, "Is this user the captain of the team?", required: false);
 
@@ -39,7 +40,7 @@ namespace TyniBot.Commands
                 Description = "Remove a tracked user.",
                 Type = ApplicationCommandOptionType.SubCommand
             };
-            removeCmd.AddOption("username", ApplicationCommandOptionType.String, "Username of user to remove", required: true);
+            removeCmd.AddOption("username", ApplicationCommandOptionType.User, "Username of user to remove", required: true);
 
             var deleteTeamCmd = new SlashCommandOptionBuilder()
             {

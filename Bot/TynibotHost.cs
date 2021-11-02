@@ -29,7 +29,7 @@ namespace TyniBot
             { "ping", new PingSlashCommand() },
             { "version", new VersionSlashCommand() },
             { "recruiting", new RecruitingCommand() },
-            { "adminrecruiting", new AdminRecruitingCommand() }
+            { "recruiting-admin", new AdminRecruitingCommand() },
         };
 
         public async Task RunAsync(

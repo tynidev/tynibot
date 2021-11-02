@@ -33,7 +33,7 @@ namespace TyniBot.Recruiting
                 case Platform.Tracker: return this.PlatformId;
             }
 
-            return $"https://rocketleague.tracker.network/rocket-league/profile/{platform}/{Uri.EscapeUriString(PlatformId)}/overview";
+            return $"<https://rocketleague.tracker.network/rocket-league/profile/{platform}/{Uri.EscapeUriString(PlatformId)}/overview>";
         }
 
         public static Player ParsePlayer(string line)
@@ -43,7 +43,7 @@ namespace TyniBot.Recruiting
             player.DiscordUser = line.Substring(0, sep - 1);
             var link = line.Substring(sep + 2, line.Length - (sep + 2));
 
-            link = link.Substring(59, link.Length - 9 - 59);
+            link = link.Substring(60, link.Length - 10 - 60);
             var parts = link.Split('/');
             player.PlatformId = parts[1];
 
