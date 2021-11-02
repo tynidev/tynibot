@@ -93,7 +93,14 @@ namespace TyniBot.Commands
                 }
 
                 // Update old team message
-                await recruitingChannel.ModifyMessageAsync(oldTeam.MsgId, (message) => message.Content = oldTeam.ToMessage());
+                if (oldTeam.Players.Count > 0)
+                {
+                    await recruitingChannel.ModifyMessageAsync(oldTeam.MsgId, (message) => message.Content = oldTeam.ToMessage());
+                }
+                else
+                {
+                    await recruitingChannel.DeleteMessageAsync(oldTeam.MsgId);
+                }
 
                 // Update new team message
                 if(newTeam.MsgId == 0)
