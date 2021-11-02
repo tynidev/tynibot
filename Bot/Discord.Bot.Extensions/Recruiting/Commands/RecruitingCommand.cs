@@ -85,7 +85,8 @@ namespace TyniBot.Commands
                                     new ApplicationCommandOptionChoiceProperties[] { new ApplicationCommandOptionChoiceProperties() { Name = "epic", Value = "Epic" },
                                         new ApplicationCommandOptionChoiceProperties() { Name = "steam", Value = "Steam" },
                                         new ApplicationCommandOptionChoiceProperties() { Name = "playstation", Value = "Playstation" },
-                                        new ApplicationCommandOptionChoiceProperties() { Name = "xbox", Value = "Xbox" }
+                                        new ApplicationCommandOptionChoiceProperties() { Name = "xbox", Value = "Xbox" },
+                                        new ApplicationCommandOptionChoiceProperties() { Name = "tracker", Value = "Tracker" }
                                     });
             addCmd.AddOption("id", ApplicationCommandOptionType.String, "For steam use your id, others use username, tracker post full tracker", required: true);
 
