@@ -12,5 +12,7 @@ namespace Discord.Cea
         None = 0,
         Team = 1,
         Org = 2,
+
+        TeamsFilteringSupport = Team | Org,
     }
 }

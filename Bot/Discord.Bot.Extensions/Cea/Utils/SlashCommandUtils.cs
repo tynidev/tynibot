@@ -9,7 +9,7 @@ namespace Discord.Cea
 { 
     class SlashCommandUtils
     {
-        public static void AddCommonArguments(SlashCommandBuilder builder, SlashCommandOptions slashCommandOptions)
+        public static void AddCommonArguments(SlashCommandOptionBuilder builder, SlashCommandOptions slashCommandOptions)
         {
             if (slashCommandOptions.HasFlag(SlashCommandOptions.Team))
             {
@@ -30,17 +30,17 @@ namespace Discord.Cea
             }
         }
 
-        public static IReadOnlyDictionary<SlashCommandOptions, string> OptionsToDictionary(SocketSlashCommandData data)
+        public static IReadOnlyDictionary<SlashCommandOptions, string> OptionsToDictionary(IReadOnlyCollection<SocketSlashCommandDataOption> options)
         {
-            Dictionary<SlashCommandOptions, string> options = new();
+            Dictionary<SlashCommandOptions, string> optionsDictionary = new();
 
-            foreach(SocketSlashCommandDataOption option in data.Options)
+            foreach(SocketSlashCommandDataOption option in options)
             {
                 SlashCommandOptions optionEnum = (SlashCommandOptions) Enum.Parse(typeof(SlashCommandOptions), option.Name);
-                options[optionEnum] = (string)option.Value;
+                optionsDictionary[optionEnum] = (string)option.Value;
             }
 
-            return options;
+            return optionsDictionary;
         }
     }
 }

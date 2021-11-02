@@ -28,7 +28,7 @@ namespace TyniBot
         {
             new PingSlashCommand(),
             new VersionSlashCommand(),
-            new CeaTeamSlashCommand(),
+            new CeaSlashCommand(),
         };
 
         private readonly Dictionary<string, SlashCommand> SlashCommandDictionary;
