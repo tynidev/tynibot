@@ -24,6 +24,15 @@ namespace TyniBot.Recruiting
             strReader.ReadLine();
 
             var line = strReader.ReadLine();
+
+            if (team.Name != "Free_Agents")
+            {
+                string captainName = line.Substring("Captain:".Length).Trim();
+                team.Captain = new Player() { DiscordUser = captainName };
+
+                line = strReader.ReadLine();
+            }
+
             while (line != null)
             {
                 team.Players.Add(Player.ParsePlayer(line));
@@ -39,11 +48,15 @@ namespace TyniBot.Recruiting
         {
             string msg = $"__**{this.Name}**__\n";
 
+            if (this.Name != "Free_Agents")
+            {
+                msg += $"Captain: {(this.Captain != null ? $"{this.Captain.DiscordUser}" : " ")}\n";
+            }
             Players.Sort((p1, p2) => p1.DiscordUser.CompareTo(p2.DiscordUser));
 
             foreach (var player in Players)
             {
-                msg += $"{player.DiscordUser} : {player.TrackerLink()}\n";
+                msg += player.ToMessage();
             }
 
             return msg;

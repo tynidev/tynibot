@@ -55,5 +55,9 @@ namespace TyniBot.Recruiting
 
             return player;
         }
+
+        internal string ToMessage() =>
+         $"{this.DiscordUser} : {this.TrackerLink()}\n";
+        
     }
 }

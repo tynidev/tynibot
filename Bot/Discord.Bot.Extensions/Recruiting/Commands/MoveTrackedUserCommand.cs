@@ -11,28 +11,20 @@ using TyniBot.Recruiting;
 namespace TyniBot.Commands
 {
     // Todo: store guild Ids, role ids, and channel ids in permanent external storage to allow for servers to configure their addtracker command 
-    public class MoveTrackedUserCommand : SlashCommand
+    public class MoveTrackedUserCommand : RecruitingCommand
     {
         public override string Name => "movetrackeduser";
 
         public override string Description => "Move a tracked user to a team or off the recruiting board. Add team option to move to a team";
 
-        public override bool DefaultPermissions => false;
-
-        public override bool IsGlobal => false;
 
         public override Dictionary<ulong, List<ApplicationCommandPermission>> GuildIdsAndPermissions => new Dictionary<ulong, List<ApplicationCommandPermission>>()
         {
-            { 902581441727197195, new List<ApplicationCommandPermission> { new ApplicationCommandPermission(903514452463325184, ApplicationCommandPermissionTarget.Role, true) } }, // tynibot test
+            //{ 902581441727197195, new List<ApplicationCommandPermission> { new ApplicationCommandPermission(903514452463325184, ApplicationCommandPermissionTarget.Role, true) } }, // tynibot test
             //{ 124366291611025417, new List<ApplicationCommandPermission> { new ApplicationCommandPermission(598569589512863764, ApplicationCommandPermissionTarget.Role, true) } }, // msft rl
             //{ 801598108467200031, new List<ApplicationCommandPermission>() } // tyni's server
+            { 904804698484260874, new List<ApplicationCommandPermission> { new ApplicationCommandPermission(904867602571100220, ApplicationCommandPermissionTarget.Role, true) } }, // nate server
         };
-
-        private static readonly ImmutableDictionary<ulong, ulong> recruitingChannelForGuild = new Dictionary<ulong, ulong> {
-            { 902581441727197195, 903521423522398278}, //tynibot test
-            { 598569589512863764,  541894310258278400}, //msft rl
-            { 801598108467200031,  904856579403300905} //tyni's server
-        }.ToImmutableDictionary();
 
         public override async Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client)
         {
@@ -62,6 +54,15 @@ namespace TyniBot.Commands
                 return;
             }
 
+            // If player was captain of old team remove that teams captain
+            if (oldTeam.Captain?.DiscordUser == player.DiscordUser)
+                oldTeam.Captain = null;
+
+            // Move Player
+            oldTeam.Players.Remove(player);
+            // Update old team message
+            await recruitingChannel.ModifyMessageAsync(oldTeam.MsgId, (message) => message.Content = oldTeam.ToMessage());
+
             // Team option specified? -> move player
             if (options.ContainsKey("team"))
             {
@@ -78,22 +79,13 @@ namespace TyniBot.Commands
                     };
                 }
 
-                // If player was captain of old team remove that teams captain
-                if (oldTeam.Captain?.DiscordUser == player.DiscordUser)
-                    oldTeam.Captain = null;
-
-                // Move Player
-                oldTeam.Players.Remove(player);
                 newTeam.Players.Add(player);
 
                 // If this is a captain make new team captain = player
-                if (options.ContainsKey("captain"))
+                if (options.ContainsKey("captain") && (bool)options["captain"].Value)
                 {
                     newTeam.Captain = player;
                 }
-
-                // Update old team message
-                await recruitingChannel.ModifyMessageAsync(oldTeam.MsgId, (message) => message.Content = oldTeam.ToMessage());
 
                 // Update new team message
                 if(newTeam.MsgId == 0)
@@ -106,6 +98,10 @@ namespace TyniBot.Commands
                 }
 
                 await command.RespondAsync($"You have moved user {discordUser} from {oldTeam.Name} -> {newTeam.Name}", ephemeral: true);
+            }
+            else
+            {
+                await command.RespondAsync($"You have removed user {discordUser} from {oldTeam.Name}", ephemeral: true);
             }
         }
 

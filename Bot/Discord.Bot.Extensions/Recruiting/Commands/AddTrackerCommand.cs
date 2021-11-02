@@ -11,28 +11,19 @@ using TyniBot.Recruiting;
 namespace TyniBot.Commands
 {
     // Todo: store guild Ids, role ids, and channel ids in permanent external storage to allow for servers to configure their addtracker command 
-    public class AddTrackerCommand : SlashCommand
+    public class AddTrackerCommand : RecruitingCommand
     {
         public override string Name => "addtracker";
 
         public override string Description => "Add your RL tracker for recruiting purposes!";
 
-        public override bool DefaultPermissions => false;
-
-        public override bool IsGlobal => false;
-
         public override Dictionary<ulong, List<ApplicationCommandPermission>> GuildIdsAndPermissions => new Dictionary<ulong, List<ApplicationCommandPermission>>()
         {
-            { 902581441727197195, new List<ApplicationCommandPermission> { new ApplicationCommandPermission(903514452463325184, ApplicationCommandPermissionTarget.Role, true) } }, // tynibot test
+            //{ 902581441727197195, new List<ApplicationCommandPermission> { new ApplicationCommandPermission(903514452463325184, ApplicationCommandPermissionTarget.Role, true) } }, // tynibot test
             //{ 124366291611025417, new List<ApplicationCommandPermission> { new ApplicationCommandPermission(598569589512863764, ApplicationCommandPermissionTarget.Role, true) } }, // msft rl
             //{ 801598108467200031, new List<ApplicationCommandPermission>() } // tyni's server
+            { 904804698484260874, new List<ApplicationCommandPermission> { new ApplicationCommandPermission(904867602571100220, ApplicationCommandPermissionTarget.Role, true) } }, // nate server
         };
-
-        private static readonly ImmutableDictionary<ulong, ulong> recruitingChannelForGuild = new Dictionary<ulong, ulong> {
-            { 902581441727197195, 903521423522398278}, //tynibot test
-            { 598569589512863764,  541894310258278400}, //msft rl
-            { 801598108467200031,  904856579403300905} //tyni's server
-        }.ToImmutableDictionary();
 
         public override async Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client)
         {
@@ -114,7 +105,14 @@ namespace TyniBot.Commands
 
             foreach(var teamMsg in messages)
             {
-                teams.Add(Team.ParseTeam(teamMsg.Id, teamMsg.Content));
+                try
+                {
+                    teams.Add(Team.ParseTeam(teamMsg.Id, teamMsg.Content));
+                }
+                catch
+                {
+                    // some other bot command or user typed message is in this channel
+                }
             }
 
             return teams;
