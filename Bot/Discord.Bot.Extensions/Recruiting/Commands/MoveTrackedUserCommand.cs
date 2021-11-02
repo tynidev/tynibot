@@ -34,56 +34,48 @@ namespace TyniBot.Commands
             // Update old team message
             await recruitingChannel.ModifyMessageAsync(oldTeam.MsgId, (message) => message.Content = oldTeam.ToMessage());
 
-            // Team option specified? -> move player
-            if (options.ContainsKey("team"))
+            var teamName = options["team"].Value.ToString();
+
+            var newTeam = Team.FindTeam(teams, teamName);
+            if (newTeam == null)
             {
-                var teamName = options["team"].Value.ToString();
-
-                // Team not exist? -> respond with error
-                var newTeam = Team.FindTeam(teams, teamName);
-                if (newTeam == null)
+                newTeam = new Team()
                 {
-                    newTeam = new Team()
-                    {
-                        Name = teamName,
-                        Players = new List<Player>()
-                    };
-                }
+                    Name = teamName,
+                    Players = new List<Player>()
+                };
+            }
 
-                newTeam.Players.Add(player);
+            newTeam.Players.Add(player);
 
-                // If this is a captain make new team captain = player
-                if (options.ContainsKey("captain") && (bool)options["captain"].Value)
-                {
-                    newTeam.Captain = player;
-                }
+            // If this is a captain make new team captain = player
+            if (options.ContainsKey("captain") && (bool)options["captain"].Value)
+            {
+                newTeam.Captain = player;
+            }
 
-                // Update old team message
-                if (oldTeam.Players.Count > 0)
-                {
-                    await recruitingChannel.ModifyMessageAsync(oldTeam.MsgId, (message) => message.Content = oldTeam.ToMessage());
-                }
-                else
-                {
-                    await recruitingChannel.DeleteMessageAsync(oldTeam.MsgId);
-                }
-
-                // Update new team message
-                if(newTeam.MsgId == 0)
-                {
-                    await recruitingChannel.SendMessageAsync(newTeam.ToMessage());
-                }
-                else
-                {
-                    await recruitingChannel.ModifyMessageAsync(newTeam.MsgId, (message) => message.Content = newTeam.ToMessage());
-                }
-
-                await command.RespondAsync($"You have moved user {discordUser} from {oldTeam.Name} -> {newTeam.Name}", ephemeral: true);
+            // Update old team message
+            if (oldTeam.Players.Count > 0)
+            {
+                await recruitingChannel.ModifyMessageAsync(oldTeam.MsgId, (message) => message.Content = oldTeam.ToMessage());
             }
             else
             {
-                await command.RespondAsync($"You have removed user {discordUser} from {oldTeam.Name}", ephemeral: true);
+                await recruitingChannel.DeleteMessageAsync(oldTeam.MsgId);
             }
+
+            // Update new team message
+            if(newTeam.MsgId == 0)
+            {
+                await recruitingChannel.SendMessageAsync(newTeam.ToMessage());
+            }
+            else
+            {
+                await recruitingChannel.ModifyMessageAsync(newTeam.MsgId, (message) => message.Content = newTeam.ToMessage());
+            }
+
+            await command.RespondAsync($"You have moved user {discordUser} from {oldTeam.Name} -> {newTeam.Name}", ephemeral: true);
+            
         }
     }
 }

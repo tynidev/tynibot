@@ -93,19 +93,34 @@ namespace TyniBot.Commands
             var moveCmd = new SlashCommandOptionBuilder()
             {
                 Name = "move",
-                Description = "Move a tracked user to a team or off the recruiting board.",
+                Description = "Move a tracked user to a team.",
                 Type = ApplicationCommandOptionType.SubCommand
             };
             moveCmd.AddOption("username", ApplicationCommandOptionType.String, "Username of user to move", required: true);
-            moveCmd.AddOption("team", ApplicationCommandOptionType.String, "Team to move user to. Do not include option if the user is being removed", required: false);
+            moveCmd.AddOption("team", ApplicationCommandOptionType.String, "Team to move user to", required: true);
             moveCmd.AddOption("captain", ApplicationCommandOptionType.Boolean, "Is this user the captain of the team?", required: false);
+
+            var removeCmd = new SlashCommandOptionBuilder()
+            {
+                Name = "remove",
+                Description = "Remove a tracked user.",
+                Type = ApplicationCommandOptionType.SubCommand
+            };
+            removeCmd.AddOption("username", ApplicationCommandOptionType.String, "Username of user to remove", required: true);
+
+            var deleteTeamCmd = new SlashCommandOptionBuilder()
+            {
+                Name = "deleteteam",
+                Description = "Remove team.",
+                Type = ApplicationCommandOptionType.SubCommand
+            };
+            deleteTeamCmd.AddOption("team", ApplicationCommandOptionType.String, "Team to remove", required: true);
 
             var builder = new SlashCommandBuilder()
                    .WithName(this.Name)
                    .WithDescription(this.Description)
                    .WithDefaultPermission(this.DefaultPermissions)
-                   .AddOption(addCmd)
-                   .AddOption(moveCmd);
+                   .AddOptions(addCmd, moveCmd, removeCmd, deleteTeamCmd);
 
             return builder.Build();
         }
