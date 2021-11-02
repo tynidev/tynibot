@@ -49,17 +49,6 @@ namespace TyniBot.Commands
             // Parse messages into teams
             var teams = ParseMessageAsync(messages);
 
-            // No Teams? -> Add Free Agent team
-            if(teams.Count() == 0)
-            {
-                teams.Add(new Team()
-                {
-                    Name = "Free_Agents",
-                    Captain = null,
-                    Players = new List<Player>()
-                });
-            }
-
             // Is player just updating tracker link? -> Update link
             bool updated = false;
             foreach(var team in teams)
@@ -79,7 +68,19 @@ namespace TyniBot.Commands
             // Is player not on a team? -> Add to FreeAgents
             if(!updated)
             {
-                var freeAgents = teams.Where((t) => t.Name == "Free_Agents").First();
+                var freeAgents = Team.FindTeam(teams, "Free_Agents");
+
+                // Not found? -> Add Free Agent team
+                if (freeAgents == null)
+                {
+                    freeAgents = new Team()
+                    {
+                        Name = "Free_Agents",
+                        Players = new List<Player>()
+                    };
+                    teams.Add(freeAgents);
+                }
+
                 freeAgents.Players.Add(newPlayer);
             }
 

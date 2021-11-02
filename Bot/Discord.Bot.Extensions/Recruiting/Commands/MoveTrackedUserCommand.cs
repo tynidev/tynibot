@@ -87,6 +87,16 @@ namespace TyniBot.Commands
                     newTeam.Captain = player;
                 }
 
+                // Update old team message
+                if (oldTeam.Players.Count > 0)
+                {
+                    await recruitingChannel.ModifyMessageAsync(oldTeam.MsgId, (message) => message.Content = oldTeam.ToMessage());
+                }
+                else
+                {
+                    await recruitingChannel.DeleteMessageAsync(oldTeam.MsgId);
+                }
+
                 // Update new team message
                 if(newTeam.MsgId == 0)
                 {
