@@ -4,7 +4,6 @@ using Discord.Cea;
 using Discord.WebSocket;
 using LiteDB;
 using Microsoft.Extensions.DependencyInjection;
-using PlayCEAStats.DataModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -67,7 +66,6 @@ namespace TyniBot
                     typeof(Discord.Mafia.MafiaCommand),
                     typeof(Discord.Matches.MatchesCommand),
                     typeof(Discord.Inhouse.InhouseCommand),
-                    typeof(Discord.Cea.CeaCommand)
                 };
 
                 foreach (var type in DefaultCommands)
@@ -86,6 +84,9 @@ namespace TyniBot
                 Client.Ready += ReadyAsync;
                 await Client.LoginAsync(TokenType.Bot, this.Settings.BotToken);
                 await Client.StartAsync();
+
+                // Bootstrap the CEA Data (Otherwise first response will timeout)
+                PlayCEAStats.RequestManagement.LeagueManager.Bootstrap();
 
                 if (!stoppingToken.HasValue)
                 {
@@ -155,9 +156,6 @@ namespace TyniBot
                     }
                 }
             }
-
-            // Bootstrap the CEA Data (Otherwise first response will timeout)
-            PlayCEAStats.RequestManagement.LeagueManager.Bootstrap();
         }
 
         private async Task MessageReceived(SocketMessage msg)

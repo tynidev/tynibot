@@ -1,5 +1,6 @@
 ﻿using Discord.WebSocket;
 using PlayCEAStats.DataModel;
+using PlayCEAStats.RequestManagement;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,28 +9,24 @@ using System.Threading.Tasks;
 
 namespace Discord.Cea
 {
-    internal class CeaTeamCommand : CeaSubCommandMultiTeam
+    internal class CeaRecordCommand : CeaSubCommandMultiTeam
     {
         internal override SlashCommandOptionBuilder OptionBuilder => new SlashCommandOptionBuilder()
         {
-            Name = "team",
-            Description = "Gets information on a team or teams.",
+            Name = "record",
+            Description = "Gets information on the the stage records for a team or teams.",
             Type = ApplicationCommandOptionType.SubCommand
         };
 
         internal override Embed Run(SocketSlashCommand command, DiscordSocketClient client, IReadOnlyDictionary<SlashCommandOptions, string> options, Team team)
         {
             EmbedBuilder builder = new();
-            StringBuilder sb = new();
-            sb.AppendLine($"Current Rank: {team.Rank} [{team.Stats.MatchWins}-{team.Stats.MatchLosses}]");
-            sb.AppendLine($"Goal Differential: {team.Stats.TotalGoalDifferential}, Goals/Game: {(double)team.Stats.TotalGoals / team.Stats.TotalGames:#.000}");
-            foreach (Player p in team.Players)
+            builder.AddField($"{ team.Name}'s Total Stats:", team.Stats.ToString(true));
+            foreach (KeyValuePair<string, TeamStatistics> stats in team.StageStats)
             {
-                string captainTag = p.Captain ? "(c) " : "";
-                sb.AppendLine($"{captainTag} {p.DiscordId}");
+                builder.AddField($"{ stats.Key} Stats:", stats.Value.ToString(true));
             }
 
-            builder.AddField(team.Name, sb.ToString());
             return builder.Build();
         }
     }

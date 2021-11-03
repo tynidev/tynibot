@@ -11,11 +11,10 @@ namespace Discord.Cea
     abstract class CeaSubCommandMultiTeam : ICeaSubCommand
     {
         internal abstract SlashCommandOptionBuilder OptionBuilder { get; }
-        internal abstract SlashCommandOptions SupportedOptions { get; }
 
         SlashCommandOptionBuilder ICeaSubCommand.OptionBuilder => OptionBuilder;
 
-        SlashCommandOptions ICeaSubCommand.SupportedOptions => SupportedOptions;
+        SlashCommandOptions ICeaSubCommand.SupportedOptions => SlashCommandOptions.TeamsFilteringSupport;
 
         internal async Task Run(SocketSlashCommand command, DiscordSocketClient client, IReadOnlyDictionary<SlashCommandOptions, string> options, Lazy<List<Team>> lazyTeams) 
         {
@@ -29,18 +28,13 @@ namespace Discord.Cea
 
             foreach (Team t in lazyTeams.Value)
             {
-                EmbedBuilder embedBuilder = new EmbedBuilder()
-                {
-                    Title = t.Name
-                };
-                embedBuilder.AddField(t.Name, Run(command, client, options, t));
-                embeds.Add(embedBuilder.Build());
+                embeds.Add(Run(command, client, options, t));
             }
 
             await command.RespondAsync(embeds: embeds.ToArray(), ephemeral:true);
         }
 
-        internal abstract string Run(SocketSlashCommand command, DiscordSocketClient client, IReadOnlyDictionary<SlashCommandOptions, string> options, Team team);
+        internal abstract Embed Run(SocketSlashCommand command, DiscordSocketClient client, IReadOnlyDictionary<SlashCommandOptions, string> options, Team team);
 
         async Task ICeaSubCommand.Run(SocketSlashCommand command, DiscordSocketClient client, IReadOnlyDictionary<SlashCommandOptions, string> options, Lazy<List<Team>> lazyTeams)
         {

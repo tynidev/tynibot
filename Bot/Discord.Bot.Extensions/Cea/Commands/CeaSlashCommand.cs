@@ -23,13 +23,15 @@ namespace Discord.Cea
         {
         };
 
-        private Dictionary<string, ICeaSubCommand> subCommands;
+        private readonly Dictionary<string, ICeaSubCommand> subCommands;
 
         public CeaSlashCommand() : base()
         {
             List<ICeaSubCommand> subCommands = new()
             {
-                new CeaTeamCommand()
+                new CeaTeamCommand(),
+                new CeaNextCommand(),
+                new CeaRecordCommand(),
             };
 
             this.subCommands = subCommands.ToDictionary(c => c.OptionBuilder.Name);
