@@ -10,9 +10,9 @@ namespace Discord.Cea
     enum SlashCommandOptions
     {
         None = 0,
-        Team = 1,
-        Org = 2,
+        TeamName = 1,
+        OrgName = 2,
 
-        TeamsFilteringSupport = Team | Org,
+        TeamsFilteringSupport = TeamName | OrgName,
     }
 }

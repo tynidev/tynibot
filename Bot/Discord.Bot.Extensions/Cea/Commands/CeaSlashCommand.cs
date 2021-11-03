@@ -62,7 +62,23 @@ namespace Discord.Cea
             foreach (ICeaSubCommand subCommand in subCommands.Values)
             {
                 SlashCommandOptionBuilder optionBuilder = subCommand.OptionBuilder;
-                SlashCommandUtils.AddCommonArguments(optionBuilder, subCommand.SupportedOptions);
+
+                if (subCommand.SupportedOptions.HasFlag(SlashCommandOptions.TeamName))
+                {
+                    optionBuilder.AddOption(
+                        name: SlashCommandOptions.TeamName.ToString(),
+                        type: ApplicationCommandOptionType.String,
+                        description: "Filter command option to a specific team.");
+                }
+
+                if (subCommand.SupportedOptions.HasFlag(SlashCommandOptions.OrgName))
+                {
+                    optionBuilder.AddOption(
+                        name: SlashCommandOptions.OrgName.ToString(),
+                        type: ApplicationCommandOptionType.String,
+                        description: "Filter command option to a specific organization (company).");
+                }
+
                 builder.AddOption(optionBuilder);
             }
 

@@ -11,22 +11,20 @@ namespace Discord.Cea
     {
         public static void AddCommonArguments(SlashCommandOptionBuilder builder, SlashCommandOptions slashCommandOptions)
         {
-            if (slashCommandOptions.HasFlag(SlashCommandOptions.Team))
+            if (slashCommandOptions.HasFlag(SlashCommandOptions.TeamName))
             {
                 builder.AddOption(
-                    name: SlashCommandOptions.Team.ToString(),
+                    name: SlashCommandOptions.TeamName.ToString(),
                     type: ApplicationCommandOptionType.String,
-                    description: "Filter command option to a specific team.",
-                    required: false);
+                    description: "Filter command option to a specific team.");
             }
 
-            if (slashCommandOptions.HasFlag(SlashCommandOptions.Org))
+            if (slashCommandOptions.HasFlag(SlashCommandOptions.OrgName))
             {
                 builder.AddOption(
-                    name: SlashCommandOptions.Org.ToString(),
+                    name: SlashCommandOptions.OrgName.ToString(),
                     type: ApplicationCommandOptionType.String,
-                    description: "Filter command option to a specific organization (company).",
-                    required: false);
+                    description: "Filter command option to a specific organization (company).");
             }
         }
 
