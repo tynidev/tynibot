@@ -14,7 +14,7 @@ namespace Discord.Cea
 
         SlashCommandOptionBuilder ICeaSubCommand.OptionBuilder => OptionBuilder;
 
-        SlashCommandOptions ICeaSubCommand.SupportedOptions => SlashCommandOptions.TeamsFilteringSupport;
+        SlashCommandOptions ICeaSubCommand.SupportedOptions => SlashCommandOptions.CommonSupport;
 
         internal async Task Run(SocketSlashCommand command, DiscordSocketClient client, IReadOnlyDictionary<SlashCommandOptions, string> options, Lazy<List<Team>> lazyTeams) 
         {
