@@ -32,6 +32,9 @@ namespace Discord.Cea
                 new CeaTeamCommand(),
                 new CeaNextCommand(),
                 new CeaRecordCommand(),
+                new CeaHistoryCommand(),
+                new CeaRoundCommand(),
+                new CeaForceRefreshCommand(),
             };
 
             this.subCommands = subCommands.ToDictionary(c => c.OptionBuilder.Name);
