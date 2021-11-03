@@ -42,7 +42,7 @@ namespace TyniBot.Commands
                 }
             }
 
-            await command.RespondAsync(msg);
+            await command.RespondAsync(msg, ephemeral: true);
         }
 
         private static DateTime ToDate(int days, int seconds)

@@ -29,6 +29,8 @@ namespace TyniBot
         {
             new PingSlashCommand(),
             new VersionSlashCommand(),
+            new RecruitingCommand(),
+            new AdminRecruitingCommand(),
             new CeaSlashCommand(),
         };
 
@@ -110,7 +112,24 @@ namespace TyniBot
 
         private async Task ReadyAsync()
         {
-            foreach (var SlashCommand in SlashCommands)
+            /* //uncomment to remove all commands before reregistering
+            await Client.Rest.DeleteAllGlobalCommandsAsync();
+
+            var guilds = await Client.Rest.GetGuildsAsync();
+
+            foreach (var guild in guilds)
+            {
+                var commands = await Client.Rest.GetGuildApplicationCommands(guild.Id);
+
+                foreach (var command in commands)
+                {
+                    await command.DeleteAsync();
+                }
+            }
+
+            */
+
+            foreach (var SlashCommand in SlashCommandDictionary.Values)
             {
                 if (SlashCommand.IsGlobal)
                 {
@@ -120,11 +139,18 @@ namespace TyniBot
                 {
                     foreach ((var guildId, var permissions) in SlashCommand.GuildIdsAndPermissions)
                     {
-                        var createdCommand = await Client.Rest.CreateGuildCommand(SlashCommand.Build(), guildId);
-
-                        if (permissions.Count > 0)
+                        try
                         {
-                            await createdCommand.ModifyCommandPermissions(permissions.ToArray());
+                            var createdCommand = await Client.Rest.CreateGuildCommand(SlashCommand.Build(), guildId);
+
+                            if (permissions.Count > 0)
+                            {
+                                await createdCommand.ModifyCommandPermissions(permissions.ToArray());
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Console.Error.WriteLine($"Error creating command {SlashCommand.Name} in guilld {guildId}: {e.Message}");
                         }
                     }
                 }
