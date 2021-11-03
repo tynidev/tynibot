@@ -63,21 +63,22 @@ namespace Discord.Cea
             {
                 SlashCommandOptionBuilder optionBuilder = subCommand.OptionBuilder;
 
-                if (subCommand.SupportedOptions.HasFlag(SlashCommandOptions.TeamName))
+                if (subCommand.SupportedOptions.HasFlag(SlashCommandOptions.team))
                 {
-                    optionBuilder.AddOption(
-                        name: SlashCommandOptions.TeamName.ToString(),
-                        type: ApplicationCommandOptionType.String,
-                        description: "Filter command option to a specific team.");
+                    optionBuilder.AddOption(SlashCommandOptions.team.ToString(),
+                                ApplicationCommandOptionType.String,
+                                "Filter command option to a specific team name.");
                 }
 
-                if (subCommand.SupportedOptions.HasFlag(SlashCommandOptions.OrgName))
+                if (subCommand.SupportedOptions.HasFlag(SlashCommandOptions.org))
                 {
                     optionBuilder.AddOption(
-                        name: SlashCommandOptions.OrgName.ToString(),
+                        name: SlashCommandOptions.org.ToString(),
                         type: ApplicationCommandOptionType.String,
                         description: "Filter command option to a specific organization (company).");
                 }
+
+                
 
                 builder.AddOption(optionBuilder);
             }

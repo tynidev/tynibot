@@ -4,6 +4,7 @@ using Discord.Cea;
 using Discord.WebSocket;
 using LiteDB;
 using Microsoft.Extensions.DependencyInjection;
+using PlayCEAStats.DataModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -128,6 +129,9 @@ namespace TyniBot
                     }
                 }
             }
+
+            // Bootstrap the CEA Data (Otherwise first response will timeout)
+            League league = PlayCEAStats.RequestManagement.LeagueManager.League;
         }
 
         private async Task MessageReceived(SocketMessage msg)

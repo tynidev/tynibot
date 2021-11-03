@@ -30,7 +30,7 @@ namespace Discord.Cea
         {
             League league = LeagueManager.League;
             List<Team> teams = new();
-            if (!options.ContainsKey(SlashCommandOptions.TeamName) && !options.ContainsKey(SlashCommandOptions.OrgName))
+            if (!options.ContainsKey(SlashCommandOptions.team) && !options.ContainsKey(SlashCommandOptions.org))
             {
                 string discordId = $"{user.Username}#{user.Discriminator}";
                 teams.Add(league.PlayerDiscordLookup[discordId]);
@@ -47,14 +47,14 @@ namespace Discord.Cea
         {
             bool match = true;
 
-            if (options.ContainsKey(SlashCommandOptions.OrgName) && options[SlashCommandOptions.OrgName] != null)
+            if (options.ContainsKey(SlashCommandOptions.org) && options[SlashCommandOptions.org] != null)
             {
-                match &= team.Org.Contains(options[SlashCommandOptions.OrgName], StringComparison.OrdinalIgnoreCase);
+                match &= team.Org.Contains(options[SlashCommandOptions.org], StringComparison.OrdinalIgnoreCase);
             }
 
-            if (options.ContainsKey(SlashCommandOptions.TeamName) && options[SlashCommandOptions.TeamName] != null)
+            if (options.ContainsKey(SlashCommandOptions.team) && options[SlashCommandOptions.team] != null)
             {
-                match &= team.Name.Contains(options[SlashCommandOptions.TeamName], StringComparison.OrdinalIgnoreCase);
+                match &= team.Name.Contains(options[SlashCommandOptions.team], StringComparison.OrdinalIgnoreCase);
             }
 
             return match; 

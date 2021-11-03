@@ -10,7 +10,7 @@ namespace Discord.Cea
 {
     internal class CeaTeamCommand : ICeaSubCommand
     {
-        SlashCommandOptions ICeaSubCommand.SupportedOptions => SlashCommandOptions.None;
+        SlashCommandOptions ICeaSubCommand.SupportedOptions => SlashCommandOptions.TeamsFilteringSupport;
 
         SlashCommandOptionBuilder ICeaSubCommand.OptionBuilder => new SlashCommandOptionBuilder()
         {

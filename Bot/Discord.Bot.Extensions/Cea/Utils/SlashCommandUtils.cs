@@ -11,18 +11,18 @@ namespace Discord.Cea
     {
         public static void AddCommonArguments(SlashCommandOptionBuilder builder, SlashCommandOptions slashCommandOptions)
         {
-            if (slashCommandOptions.HasFlag(SlashCommandOptions.TeamName))
+            if (slashCommandOptions.HasFlag(SlashCommandOptions.team))
             {
                 builder.AddOption(
-                    name: SlashCommandOptions.TeamName.ToString(),
+                    name: SlashCommandOptions.team.ToString(),
                     type: ApplicationCommandOptionType.String,
                     description: "Filter command option to a specific team.");
             }
 
-            if (slashCommandOptions.HasFlag(SlashCommandOptions.OrgName))
+            if (slashCommandOptions.HasFlag(SlashCommandOptions.org))
             {
                 builder.AddOption(
-                    name: SlashCommandOptions.OrgName.ToString(),
+                    name: SlashCommandOptions.org.ToString(),
                     type: ApplicationCommandOptionType.String,
                     description: "Filter command option to a specific organization (company).");
             }

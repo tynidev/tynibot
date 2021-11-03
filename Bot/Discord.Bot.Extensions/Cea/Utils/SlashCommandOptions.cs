@@ -9,10 +9,10 @@ namespace Discord.Cea
     [Flags]
     enum SlashCommandOptions
     {
-        None = 0,
-        TeamName = 1,
-        OrgName = 2,
+        none = 0,
+        team = 1,
+        org = 2,
 
-        TeamsFilteringSupport = TeamName | OrgName,
+        TeamsFilteringSupport = team | org,
     }
 }
