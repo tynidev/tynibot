@@ -1,16 +1,16 @@
 ﻿using Discord;
+using Discord.Bot;
+using Discord.Cea;
 using Discord.WebSocket;
 using LiteDB;
 using Microsoft.Extensions.DependencyInjection;
+using PlayCEAStats.DataModel;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Discord.Bot;
 using TyniBot.Commands;
-using System.Net.Http;
-using System.Text;
-using System.Linq;
 
 namespace TyniBot
 {
@@ -24,13 +24,22 @@ namespace TyniBot
 
         private DefaultHandler DefaultHandler = null;
         private readonly Dictionary<string, IChannelHandler> ChannelHandlers = new Dictionary<string, IChannelHandler>();
-        private readonly Dictionary<string, SlashCommand> SlashCommands = new Dictionary<string, SlashCommand>()
+
+        private readonly List<SlashCommand> SlashCommands = new List<SlashCommand>()
         {
-            { "ping", new PingSlashCommand() },
-            { "version", new VersionSlashCommand() },
-            { "recruiting", new RecruitingCommand() },
-            { "recruiting-admin", new AdminRecruitingCommand() },
+            new PingSlashCommand(),
+            new VersionSlashCommand(),
+            new RecruitingCommand(),
+            new AdminRecruitingCommand(),
+            new CeaSlashCommand(),
         };
+
+        private readonly Dictionary<string, SlashCommand> SlashCommandDictionary;
+
+        public TynibotHost()
+        {
+            SlashCommandDictionary = SlashCommands.ToDictionary(s => s.Name);
+        }
 
         public async Task RunAsync(
             BotSettings settings,
@@ -120,7 +129,7 @@ namespace TyniBot
 
             */
 
-            foreach (var SlashCommand in SlashCommands.Values)
+            foreach (var SlashCommand in SlashCommandDictionary.Values)
             {
                 if (SlashCommand.IsGlobal)
                 {
@@ -145,7 +154,10 @@ namespace TyniBot
                         }
                     }
                 }
-            }            
+            }
+
+            // Bootstrap the CEA Data (Otherwise first response will timeout)
+            PlayCEAStats.RequestManagement.LeagueManager.Bootstrap();
         }
 
         private async Task MessageReceived(SocketMessage msg)
@@ -198,7 +210,7 @@ namespace TyniBot
 
         private async Task SlashCommandTriggeredAsync(SocketSlashCommand command)
         {
-            if (SlashCommands.TryGetValue(command.Data.Name, out SlashCommand slashCommand))
+            if (SlashCommandDictionary.TryGetValue(command.Data.Name, out SlashCommand slashCommand))
             {
                 await slashCommand.HandleCommandAsync(command, Client);
             }
