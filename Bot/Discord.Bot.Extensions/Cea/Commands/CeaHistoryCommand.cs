@@ -1,5 +1,6 @@
 ﻿using Discord.WebSocket;
 using PlayCEAStats.DataModel;
+using PlayCEAStats.RequestManagement;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,12 +9,12 @@ using System.Threading.Tasks;
 
 namespace Discord.Cea
 {
-    internal class CeaTeamCommand : CeaSubCommandMultiTeam
+    internal class CeaHistoryCommand : CeaSubCommandMultiTeam
     {
         internal override SlashCommandOptionBuilder OptionBuilder => new SlashCommandOptionBuilder()
         {
-            Name = "team",
-            Description = "Gets information on a team or teams.",
+            Name = "history",
+            Description = "Gets all match history for a team or teams.",
             Type = ApplicationCommandOptionType.SubCommand
         };
 
@@ -21,12 +22,16 @@ namespace Discord.Cea
         {
             EmbedBuilder builder = new();
             StringBuilder sb = new();
-            sb.AppendLine($"Current Rank: {team.Rank} [{team.Stats.MatchWins}-{team.Stats.MatchLosses}]");
-            sb.AppendLine($"Goal Differential: {team.Stats.TotalGoalDifferential}, Goals/Game: {(double)team.Stats.TotalGoals / team.Stats.TotalGames:#.000}");
-            foreach (Player p in team.Players)
+            League league = LeagueManager.League;
+            foreach (BracketRound round in league.Bracket.Rounds)
             {
-                string captainTag = p.Captain ? "(c) " : "";
-                sb.AppendLine($"{captainTag} {p.DiscordId}");
+                foreach (MatchResult result in round.Matches)
+                {
+                    if (result.HomeTeam == team || result.AwayTeam == team)
+                    {
+                        sb.AppendLine($"[{result.HomeGamesWon}-{result.AwayGamesWon}] {result.HomeTeam} vs {result.AwayTeam}");
+                    }
+                }
             }
 
             builder.AddField(team.Name, sb.ToString());

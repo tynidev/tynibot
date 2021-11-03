@@ -23,13 +23,18 @@ namespace Discord.Cea
         {
         };
 
-        private Dictionary<string, ICeaSubCommand> subCommands;
+        private readonly Dictionary<string, ICeaSubCommand> subCommands;
 
         public CeaSlashCommand() : base()
         {
             List<ICeaSubCommand> subCommands = new()
             {
-                new CeaTeamCommand()
+                new CeaTeamCommand(),
+                new CeaNextCommand(),
+                new CeaRecordCommand(),
+                new CeaHistoryCommand(),
+                new CeaRoundCommand(),
+                new CeaForceRefreshCommand(),
             };
 
             this.subCommands = subCommands.ToDictionary(c => c.OptionBuilder.Name);
@@ -63,22 +68,7 @@ namespace Discord.Cea
             {
                 SlashCommandOptionBuilder optionBuilder = subCommand.OptionBuilder;
 
-                if (subCommand.SupportedOptions.HasFlag(SlashCommandOptions.team))
-                {
-                    optionBuilder.AddOption(SlashCommandOptions.team.ToString(),
-                                ApplicationCommandOptionType.String,
-                                "Filter command option to a specific team name.");
-                }
-
-                if (subCommand.SupportedOptions.HasFlag(SlashCommandOptions.org))
-                {
-                    optionBuilder.AddOption(
-                        name: SlashCommandOptions.org.ToString(),
-                        type: ApplicationCommandOptionType.String,
-                        description: "Filter command option to a specific organization (company).");
-                }
-
-                
+                SlashCommandUtils.AddCommonOptionProperties(optionBuilder, subCommand.SupportedOptions);
 
                 builder.AddOption(optionBuilder);
             }
