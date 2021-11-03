@@ -131,7 +131,7 @@ namespace TyniBot
             }
 
             // Bootstrap the CEA Data (Otherwise first response will timeout)
-            League league = PlayCEAStats.RequestManagement.LeagueManager.League;
+            PlayCEAStats.RequestManagement.LeagueManager.Bootstrap();
         }
 
         private async Task MessageReceived(SocketMessage msg)
