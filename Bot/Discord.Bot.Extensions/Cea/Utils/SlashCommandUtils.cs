@@ -23,7 +23,7 @@ namespace Discord.Cea
                 } 
                 else
                 {
-                    optionsDictionary[optionEnum] = (string)option.Value;
+                    optionsDictionary[optionEnum] = option.Value.ToString();
                 }
             }
 
@@ -53,6 +53,14 @@ namespace Discord.Cea
                     name: SlashCommandOptions.player.ToString(),
                     type: ApplicationCommandOptionType.String,
                     description: "Filter command option to a specific player.");
+            }
+
+            if (supportedOptions.HasFlag(SlashCommandOptions.post))
+            {
+                optionBuilder.AddOption(
+                    name: SlashCommandOptions.post.ToString(),
+                    type: ApplicationCommandOptionType.Boolean,
+                    description: "Respond publicly instead of ephemerally.");
             }
         }
     }

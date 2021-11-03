@@ -17,7 +17,7 @@ namespace Discord.Cea
             Type = ApplicationCommandOptionType.SubCommand
         };
 
-        SlashCommandOptions ICeaSubCommand.SupportedOptions => SlashCommandOptions.none;
+        SlashCommandOptions ICeaSubCommand.SupportedOptions => SlashCommandOptions.post;
 
         async Task ICeaSubCommand.Run(SocketSlashCommand command, DiscordSocketClient client, IReadOnlyDictionary<SlashCommandOptions, string> options, Lazy<List<Team>> lazyTeams)
         {
@@ -34,7 +34,8 @@ namespace Discord.Cea
             EmbedBuilder builder = new();
             builder.AddField(r.RoundName, sb.ToString());
 
-            await command.RespondAsync(embed: builder.Build(), ephemeral: true);
+            bool ephemeral = !options.ContainsKey(SlashCommandOptions.post) || !options[SlashCommandOptions.post].Equals("True");
+            await command.RespondAsync(embed: builder.Build(), ephemeral: ephemeral);
         }
     }
 }

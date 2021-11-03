@@ -18,11 +18,13 @@ namespace Discord.Cea
 
         internal async Task Run(SocketSlashCommand command, DiscordSocketClient client, IReadOnlyDictionary<SlashCommandOptions, string> options, Lazy<List<Team>> lazyTeams) 
         {
+            bool ephemeral = !options.ContainsKey(SlashCommandOptions.post) || !options[SlashCommandOptions.post].Equals("True");
+
             List<Embed> embeds = new();
 
             if (lazyTeams.Value.Count == 0)
             {
-                await command.RespondAsync("No teams matched the given criteria.", ephemeral:true);
+                await command.RespondAsync("No teams matched the given criteria.", ephemeral:ephemeral);
                 return;
             }
 
@@ -31,7 +33,7 @@ namespace Discord.Cea
                 embeds.Add(Run(command, client, options, t));
             }
 
-            await command.RespondAsync(embeds: embeds.ToArray(), ephemeral:true);
+            await command.RespondAsync(embeds: embeds.ToArray(), ephemeral:ephemeral);
         }
 
         internal abstract Embed Run(SocketSlashCommand command, DiscordSocketClient client, IReadOnlyDictionary<SlashCommandOptions, string> options, Team team);
