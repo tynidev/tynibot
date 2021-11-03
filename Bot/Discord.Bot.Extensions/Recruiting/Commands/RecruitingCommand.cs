@@ -31,7 +31,7 @@ namespace TyniBot.Commands
 
         protected static readonly ImmutableDictionary<ulong, ulong> recruitingChannelForGuild = new Dictionary<ulong, ulong> {
             { 902581441727197195, 903521423522398278}, //tynibot test
-            { 598569589512863764,  541894310258278400}, //msft rl
+            { 124366291611025417,  541894310258278400}, //msft rl
             { 801598108467200031,  904856579403300905}, //tyni's server
             { 904804698484260874, 904867794376618005 } // nates server
         }.ToImmutableDictionary();
