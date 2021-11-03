@@ -30,14 +30,14 @@ namespace Discord.Cea
         {
             League league = LeagueManager.League;
             List<Team> teams = new();
-            if (!options.ContainsKey(SlashCommandOptions.team) && !options.ContainsKey(SlashCommandOptions.org))
+            if (options.Keys.Where(o => (o & SlashCommandOptions.TeamsFilteringSupport) != SlashCommandOptions.none).Any())
             {
-                string discordId = $"{user.Username}#{user.Discriminator}";
-                teams.Add(league.PlayerDiscordLookup[discordId]);
+                teams.AddRange(league.Bracket.Teams.Where(t => Matches(t, options)));
             }
             else
             {
-                teams.AddRange(league.Bracket.Teams.Where(t => Matches(t, options)));
+                string discordId = $"{user.Username}#{user.Discriminator}";
+                teams.Add(league.PlayerDiscordLookup[discordId]);
             }
 
             return teams;
@@ -55,6 +55,11 @@ namespace Discord.Cea
             if (options.ContainsKey(SlashCommandOptions.team) && options[SlashCommandOptions.team] != null)
             {
                 match &= team.Name.Contains(options[SlashCommandOptions.team], StringComparison.OrdinalIgnoreCase);
+            }
+
+            if (options.ContainsKey(SlashCommandOptions.player) && options[SlashCommandOptions.player] != null)
+            {
+                match &= team.Players.Where(p => p.DiscordId.Contains(options[SlashCommandOptions.player], StringComparison.OrdinalIgnoreCase)).Any();
             }
 
             return match; 

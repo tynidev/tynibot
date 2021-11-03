@@ -8,33 +8,29 @@ using System.Threading.Tasks;
 
 namespace Discord.Cea
 {
-    internal class CeaTeamCommand : ICeaSubCommand
+    internal class CeaTeamCommand : CeaSubCommandMultiTeam
     {
-        SlashCommandOptions ICeaSubCommand.SupportedOptions => SlashCommandOptions.TeamsFilteringSupport;
-
-        SlashCommandOptionBuilder ICeaSubCommand.OptionBuilder => new SlashCommandOptionBuilder()
+        internal override SlashCommandOptionBuilder OptionBuilder => new SlashCommandOptionBuilder()
         {
             Name = "team",
             Description = "Gets information on a team or teams.",
             Type = ApplicationCommandOptionType.SubCommand
         };
 
-        async Task ICeaSubCommand.Run(SocketSlashCommand command, DiscordSocketClient client, IReadOnlyDictionary<SlashCommandOptions, string> options, Lazy<List<Team>> lazyTeams)
+        internal override SlashCommandOptions SupportedOptions => SlashCommandOptions.TeamsFilteringSupport;
+
+        internal override string Run(SocketSlashCommand command, DiscordSocketClient client, IReadOnlyDictionary<SlashCommandOptions, string> options, Team team)
         {
             StringBuilder sb = new();
-
-            foreach (Team t in lazyTeams.Value)
+            sb.AppendLine($"Current Rank: {team.Rank} [{team.Stats.MatchWins}-{team.Stats.MatchLosses}]");
+            sb.AppendLine($"Goal Differential: {team.Stats.TotalGoalDifferential}, Goals/Game: {(double)team.Stats.TotalGoals / team.Stats.TotalGames:#.000}");
+            foreach (Player p in team.Players)
             {
-                sb.AppendLine($"Team: {t.Name}, Current Rank: {t.Rank} [{t.Stats.MatchWins}-{t.Stats.MatchLosses}]");
-                sb.AppendLine($"Goal Differential: {t.Stats.TotalGoalDifferential}, Goals/Game: {(double)t.Stats.TotalGoals / t.Stats.TotalGames}");
-                foreach (Player p in t.Players)
-                {
-                    string captainTag = p.Captain ? "(c) " : "";
-                    sb.AppendLine($"{captainTag} {p.DiscordId}");
-                }
+                string captainTag = p.Captain ? "(c) " : "";
+                sb.AppendLine($"{captainTag} {p.DiscordId}");
             }
 
-            await command.RespondAsync(sb.ToString());
+            return sb.ToString();
         }
     }
 }
