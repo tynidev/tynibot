@@ -19,17 +19,20 @@ namespace Discord.Cea
 
         internal override Embed Run(SocketSlashCommand command, DiscordSocketClient client, IReadOnlyDictionary<SlashCommandOptions, string> options, Team team)
         {
-            EmbedBuilder builder = new();
+            EmbedBuilder builder = new EmbedBuilder().WithThumbnailUrl(team.ImageURL);
             StringBuilder sb = new();
             sb.AppendLine($"Current Rank: {team.Rank} [{team.Stats.MatchWins}-{team.Stats.MatchLosses}]");
             sb.AppendLine($"Goal Differential: {team.Stats.TotalGoalDifferential}, Goals/Game: {(double)team.Stats.TotalGoals / team.Stats.TotalGames:#.000}");
+            builder.AddField(team.Name, sb.ToString());
+
+            sb = new();
             foreach (Player p in team.Players)
             {
                 string captainTag = p.Captain ? "(c) " : "";
                 sb.AppendLine($"{captainTag} {p.DiscordId}");
             }
+            builder.AddField("Roster", sb.ToString());
 
-            builder.AddField(team.Name, sb.ToString());
             return builder.Build();
         }
     }
