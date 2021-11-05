@@ -28,7 +28,7 @@ namespace Discord.Cea
             StringBuilder sb = new();
             foreach (MatchResult match in r.Matches)
             {
-                sb.AppendLine($"[{match.HomeGamesWon}-{match.AwayGamesWon}] (**{match.HomeTeam.Rank}**){match.HomeTeam} vs (**{match.AwayTeam.Rank}**){match.AwayTeam}");
+                sb.AppendLine($"[{match.HomeGamesWon}-{match.AwayGamesWon}] (**{match.HomeTeam.RoundRanking[r]}**){match.HomeTeam} vs (**{match.AwayTeam.RoundRanking[r]}**){match.AwayTeam}");
             }
 
             EmbedBuilder builder = new();
