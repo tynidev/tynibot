@@ -30,8 +30,6 @@ namespace Discord.Cea
             builder.AddField(team.Name, message);
 
             
-            builder.WithImageUrl();
-            
             return builder.Build();
         }
     }

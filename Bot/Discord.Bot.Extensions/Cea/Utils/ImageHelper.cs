@@ -5,7 +5,7 @@ namespace Discord.Cea
 {
     public static class ImageHelper
     {
-        static Dictionary<string, System.Drawing.Image> imageCache = new();
+        static readonly Dictionary<string, System.Drawing.Image> imageCache = new();
 
         public static System.Drawing.Image GetImage(string imageUrl)
         {
@@ -40,7 +40,7 @@ namespace Discord.Cea
                 
                 webResponse.Close();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return null;
             }

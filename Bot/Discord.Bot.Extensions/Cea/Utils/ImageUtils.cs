@@ -47,12 +47,12 @@ namespace Discord.Cea
 
                 return finalImage;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 if (finalImage != null)
                     finalImage.Dispose();
 
-                throw ex;
+                throw;
             }
             finally
             {
