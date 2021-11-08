@@ -33,7 +33,9 @@ namespace Discord.Cea
                 embeds.Add(Run(command, client, options, t));
             }
 
-            await command.RespondAsync(embeds: embeds.Take(10).ToArray(), ephemeral:ephemeral);
+            Embed[] embedArray = embeds.Where(e => e != null).Take(10).ToArray();
+
+            await command.RespondAsync(embeds: embedArray, ephemeral:ephemeral);
         }
 
         internal abstract Embed Run(SocketSlashCommand command, DiscordSocketClient client, IReadOnlyDictionary<SlashCommandOptions, string> options, Team team);
