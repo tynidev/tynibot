@@ -32,7 +32,7 @@ namespace TyniBot.Commands
             var version = FileVersionInfo.GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location);
 
             string msg = $"Version: {version.ProductVersion}\n" +
-                         $"Date: {ToDate(version.ProductBuildPart, version.ProductPrivatePart)} UTC";
+                         $"Date: {ToDate(version.FileMinorPart ,version.ProductBuildPart, version.ProductPrivatePart)} UTC";
 
             foreach(var o in command.Data.Options.Where(o => true))
             {
@@ -45,11 +45,11 @@ namespace TyniBot.Commands
             await command.RespondAsync(msg, ephemeral: true);
         }
 
-        private static DateTime ToDate(int days, int seconds)
+        private static DateTime ToDate(int yyyy, int mmdd, int hhmm)
         {
-            var date = new DateTime(2000, 1, 1);
-            date = date.AddDays(days);
-            date = date.AddSeconds(seconds * 2);
+            var date = new DateTime(yyyy, mmdd / 100, mmdd % 100);
+            date = date.AddHours(hhmm / 100);
+            date = date.AddSeconds(hhmm % 100);
             return date;
         }
 

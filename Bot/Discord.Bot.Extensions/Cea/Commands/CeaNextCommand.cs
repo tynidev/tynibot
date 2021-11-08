@@ -28,6 +28,9 @@ namespace Discord.Cea
                 team, match.HomeTeam, match.AwayTeam, match.Completed ? $" (Completed) [{match.HomeGamesWon}-{match.AwayGamesWon}]" : "", match.HomeTeam.RoundRanking[round], match.AwayTeam.RoundRanking[round]);
 
             builder.AddField(team.Name, message);
+
+            
+            builder.WithImageUrl();
             
             return builder.Build();
         }
