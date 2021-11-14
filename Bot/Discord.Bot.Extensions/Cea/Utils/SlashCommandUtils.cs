@@ -27,6 +27,8 @@ namespace Discord.Cea
                 }
             }
 
+            PostProcessOptions(optionsDictionary);
+
             return optionsDictionary;
         }
 
@@ -69,6 +71,15 @@ namespace Discord.Cea
                     name: SlashCommandOptions.post.ToString(),
                     type: ApplicationCommandOptionType.Boolean,
                     description: "Respond publicly instead of ephemerally.");
+            }
+        }
+
+        private static void PostProcessOptions(Dictionary<SlashCommandOptions, string> options)
+        {
+            // Adjust the week number to be 0 indexed.
+            if (options.ContainsKey(SlashCommandOptions.week))
+            {
+                options[SlashCommandOptions.week] = (int.Parse(options[SlashCommandOptions.week]) - 1).ToString();
             }
         }
     }
