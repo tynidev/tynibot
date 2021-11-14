@@ -26,4 +26,10 @@
     <ProjectReference Include="..\Discord.Bot\Discord.Bot.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Resources\configuration.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
