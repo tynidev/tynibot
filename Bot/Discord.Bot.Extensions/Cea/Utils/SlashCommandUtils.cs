@@ -55,6 +55,14 @@ namespace Discord.Cea
                     description: "Filter command option to a specific player.");
             }
 
+            if (supportedOptions.HasFlag(SlashCommandOptions.week))
+            {
+                optionBuilder.AddOption(
+                    name: SlashCommandOptions.week.ToString(),
+                    type: ApplicationCommandOptionType.Integer,
+                    description: "Display information for a specific week of the bracket.");
+            }
+
             if (supportedOptions.HasFlag(SlashCommandOptions.post))
             {
                 optionBuilder.AddOption(
