@@ -2,10 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
-  <Minor>$([System.DateTime]::UtcNow.ToString(yyyy))</Minor>
-	<Build>$([System.DateTime]::UtcNow.ToString(MMdd))</Build>
-	<Revision>$([System.DateTime]::UtcNow.ToString(HHmm))</Revision>
-	<Version>1.$(Minor).$(Build).$(Revision)</Version>
+    <Minor>$([System.DateTime]::UtcNow.ToString(yyyy))</Minor>
+	  <Build>$([System.DateTime]::UtcNow.ToString(MMdd))</Build>
+	  <Revision>$([System.DateTime]::UtcNow.ToString(HHmm))</Revision>
+	  <Version>1.$(Minor).$(Build).$(Revision)</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

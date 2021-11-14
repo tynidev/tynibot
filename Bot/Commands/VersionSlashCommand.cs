@@ -49,7 +49,7 @@ namespace TyniBot.Commands
         {
             var date = new DateTime(yyyy, mmdd / 100, mmdd % 100);
             date = date.AddHours(hhmm / 100);
-            date = date.AddSeconds(hhmm % 100);
+            date = date.AddMinutes(hhmm % 100);
             return date;
         }
 
