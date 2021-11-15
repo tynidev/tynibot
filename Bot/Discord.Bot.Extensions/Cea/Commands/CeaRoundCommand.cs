@@ -17,12 +17,12 @@ namespace Discord.Cea
             Type = ApplicationCommandOptionType.SubCommand
         };
 
-        SlashCommandOptions ICeaSubCommand.SupportedOptions => SlashCommandOptions.post;
+        SlashCommandOptions ICeaSubCommand.SupportedOptions => SlashCommandOptions.post | SlashCommandOptions.week;
 
         async Task ICeaSubCommand.Run(SocketSlashCommand command, DiscordSocketClient client, IReadOnlyDictionary<SlashCommandOptions, string> options, Lazy<List<Team>> lazyTeams)
         {
             List<BracketRound> rounds = LeagueManager.League.Bracket.Rounds;
-            int roundIndex = rounds.Count - 1;
+            int roundIndex = !options.ContainsKey(SlashCommandOptions.week) ? rounds.Count - 1 : int.Parse(options[SlashCommandOptions.week]);
             BracketRound r = rounds[roundIndex];
 
             StringBuilder sb = new();

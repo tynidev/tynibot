@@ -27,6 +27,8 @@ namespace Discord.Cea
                 }
             }
 
+            PostProcessOptions(optionsDictionary);
+
             return optionsDictionary;
         }
 
@@ -55,12 +57,29 @@ namespace Discord.Cea
                     description: "Filter command option to a specific player.");
             }
 
+            if (supportedOptions.HasFlag(SlashCommandOptions.week))
+            {
+                optionBuilder.AddOption(
+                    name: SlashCommandOptions.week.ToString(),
+                    type: ApplicationCommandOptionType.Integer,
+                    description: "Display information for a specific week of the bracket.");
+            }
+
             if (supportedOptions.HasFlag(SlashCommandOptions.post))
             {
                 optionBuilder.AddOption(
                     name: SlashCommandOptions.post.ToString(),
                     type: ApplicationCommandOptionType.Boolean,
                     description: "Respond publicly instead of ephemerally.");
+            }
+        }
+
+        private static void PostProcessOptions(Dictionary<SlashCommandOptions, string> options)
+        {
+            // Adjust the week number to be 0 indexed.
+            if (options.ContainsKey(SlashCommandOptions.week))
+            {
+                options[SlashCommandOptions.week] = (int.Parse(options[SlashCommandOptions.week]) - 1).ToString();
             }
         }
     }
