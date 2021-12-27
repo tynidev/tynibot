@@ -60,6 +60,9 @@ namespace TyniBot.Commands
                 case "add":
                     await AddTrackerCommand.Run(command, client, options, recruitingChannel, messages, teams);
                     break;
+                case "adminadd":
+                    await AdminAddTrackerCommand.Run(command, client, options, recruitingChannel, messages, teams);
+                    break;
                 case "move":
                     await MoveTrackedUserCommand.Run(command, client, options, recruitingChannel, messages, teams);
                     break;

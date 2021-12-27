@@ -23,7 +23,29 @@ namespace TyniBot.Commands
         };
 
         public override SlashCommandProperties Build()
-        {           
+        {
+            // TODO: Add directly to a team
+            var addCmd = new SlashCommandOptionBuilder()
+            {
+                Name = "adminadd",
+                Description = "Add a user to the recruiting board",
+                Type = ApplicationCommandOptionType.SubCommand
+            };
+
+            addCmd.AddOption("username", ApplicationCommandOptionType.User, "Username of user to move", required: true); 
+            addCmd.AddOption("platform",
+                                 ApplicationCommandOptionType.String,
+                                 "Platorm you play on",
+                                 required: true,
+                                 choices:
+                                     new ApplicationCommandOptionChoiceProperties[] { new ApplicationCommandOptionChoiceProperties() { Name = "epic", Value = "Epic" },
+                                        new ApplicationCommandOptionChoiceProperties() { Name = "steam", Value = "Steam" },
+                                        new ApplicationCommandOptionChoiceProperties() { Name = "playstation", Value = "Playstation" },
+                                        new ApplicationCommandOptionChoiceProperties() { Name = "xbox", Value = "Xbox" },
+                                        new ApplicationCommandOptionChoiceProperties() { Name = "tracker", Value = "Tracker" }
+                                     });
+            addCmd.AddOption("id", ApplicationCommandOptionType.String, "For steam use your id, others use username, tracker post full tracker", required: true);
+
             var moveCmd = new SlashCommandOptionBuilder()
             {
                 Name = "move",
@@ -54,7 +76,7 @@ namespace TyniBot.Commands
                    .WithName(this.Name)
                    .WithDescription(this.Description)
                    .WithDefaultPermission(this.DefaultPermissions)
-                   .AddOptions(moveCmd, removeCmd, deleteTeamCmd);
+                   .AddOptions(addCmd, moveCmd, removeCmd, deleteTeamCmd);
 
             return builder.Build();
         }
