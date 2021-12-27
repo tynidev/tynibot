@@ -11,6 +11,7 @@ using TyniBot.Recruiting;
 namespace TyniBot.Commands
 {
     // Todo: store guild Ids, role ids, and channel ids in permanent external storage to allow for servers to configure their addtracker command 
+    // Todo: create and assign and delete roles for the teams, create/delete team channels as well.
     public class MoveTrackedUserCommand
     {
         public static async Task Run(SocketSlashCommand command, DiscordSocketClient client, Dictionary<string, SocketSlashCommandDataOption> options, ISocketMessageChannel recruitingChannel, List<IMessage> messages, List<Team> teams)
