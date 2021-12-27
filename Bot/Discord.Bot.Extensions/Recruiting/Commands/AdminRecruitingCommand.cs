@@ -27,7 +27,7 @@ namespace TyniBot.Commands
             // TODO: Add directly to a team
             var addCmd = new SlashCommandOptionBuilder()
             {
-                Name = "add",
+                Name = "adminadd",
                 Description = "Add a user to the recruiting board",
                 Type = ApplicationCommandOptionType.SubCommand
             };
