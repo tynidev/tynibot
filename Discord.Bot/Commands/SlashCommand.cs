@@ -21,6 +21,6 @@ namespace Discord.Bot
             return builder.Build();
         }
 
-        public abstract Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client);
+        public abstract Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client, StorageClient storageClient);
     }
 }

@@ -20,10 +20,12 @@ namespace DockerService
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             string token = Environment.GetEnvironmentVariable("discordToken");
+            string connectionString = Environment.GetEnvironmentVariable("storageConnectionString");
 
             BotSettings settings = new BotSettings
             {
-                BotToken = token
+                BotToken = token,
+                StorageConnectionString = connectionString
             };
 
             TynibotHost botHost = new TynibotHost();

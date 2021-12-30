@@ -36,18 +36,35 @@ namespace TyniBot.Commands
             { 904804698484260874, 904867794376618005 } // nates server
         }.ToImmutableDictionary();
 
-        public override async Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client)
+        public override async Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client, StorageClient storageClient)
         {
             var channel = command.Channel as SocketGuildChannel;
+            var guild = await storageClient.GetTableRow<Guild>(Guild.TableName, channel.Guild.Id.ToString(), Guild.PartitionKeyConst);
 
-            if (!recruitingChannelForGuild.TryGetValue(channel.Guild.Id, out var recruitingChannelId))
+            if (guild == null)
             {
-                await command.RespondAsync("Channel is not part of a guild that supports recruiting", ephemeral: true);
-                return;
+                if (!recruitingChannelForGuild.TryGetValue(channel.Guild.Id, out var recruitingChannelId))
+                {
+                    await command.RespondAsync("Channel is not part of a guild that supports recruiting", ephemeral: true);
+                    return;
+                }
+
+                guild = new Guild
+                {
+                    ChannelId = recruitingChannelId,
+                    RowKey = channel.Guild.Id.ToString(),
+                    PartitionKey = Guild.PartitionKeyConst
+                };
+
+                await storageClient.AddTableRow<Guild>(Guild.TableName, guild);
+            }
+            else
+            {
+                // cache these values eventually
             }
 
             // Get all messages in channel
-            var recruitingChannel = await client.GetChannelAsync(recruitingChannelId) as ISocketMessageChannel;
+            var recruitingChannel = await client.GetChannelAsync(guild.ChannelId) as ISocketMessageChannel;
             var messages = await GetAllChannelMessages(recruitingChannel);
 
             // Parse messages into teams

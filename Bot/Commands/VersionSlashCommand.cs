@@ -27,7 +27,7 @@ namespace TyniBot.Commands
             //{ 801598108467200031, new List<ApplicationCommandPermission>() } // tyni's server
         };
 
-        public override async Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client)
+        public override async Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client, StorageClient storageClient)
         {
             var version = FileVersionInfo.GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location);
 

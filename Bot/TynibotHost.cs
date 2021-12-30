@@ -19,6 +19,7 @@ namespace TyniBot
         private ServiceProvider Services;
         private BotSettings Settings = null;
         private LiteDatabase Database;
+        private StorageClient StorageClient;
         private BotContext Context = null;
 
         private DefaultHandler DefaultHandler = null;
@@ -51,6 +52,7 @@ namespace TyniBot
             {
                 LogLevel = LogSeverity.Debug
             });
+            StorageClient = new StorageClient(this.Settings.StorageConnectionString);
 
             Services = new ServiceCollection().BuildServiceProvider();
 
@@ -210,7 +212,7 @@ namespace TyniBot
         {
             if (SlashCommandDictionary.TryGetValue(command.Data.Name, out SlashCommand slashCommand))
             {
-                await slashCommand.HandleCommandAsync(command, Client);
+                await slashCommand.HandleCommandAsync(command, Client, StorageClient);
             }
             else
             {

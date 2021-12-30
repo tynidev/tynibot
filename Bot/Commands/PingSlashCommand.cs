@@ -21,7 +21,7 @@ namespace TyniBot.Commands
 
         public override Dictionary<ulong, List<ApplicationCommandPermission>> GuildIdsAndPermissions => new Dictionary<ulong, List<ApplicationCommandPermission>>();
 
-        public override async Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client)
+        public override async Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client, StorageClient storageClient)
         {
             await command.RespondAsync("Pong!");
         }

@@ -40,7 +40,7 @@ namespace Discord.Cea
             this.subCommands = subCommands.ToDictionary(c => c.OptionBuilder.Name);
         }
 
-        public override async Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client)
+        public override async Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client, StorageClient storageClient)
         {
             var subCommand = command.Data.Options.Where(o => o.Type.Equals(ApplicationCommandOptionType.SubCommand)).First();
             IReadOnlyDictionary<SlashCommandOptions, string> options = SlashCommandUtils.OptionsToDictionary(subCommand.Options);
