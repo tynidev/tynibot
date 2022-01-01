@@ -51,12 +51,11 @@ namespace TyniBot.Commands
 
                 guild = new Guild
                 {
-                    ChannelId = recruitingChannelId,
-                    RowKey = channel.Guild.Id.ToString(),
-                    PartitionKey = Guild.PartitionKeyConst
+                    Id = channel.Guild.Id.ToString(),
+                    ChannelId = recruitingChannelId
                 };
 
-                await storageClient.AddTableRow<Guild>(Guild.TableName, guild);
+                await storageClient.SaveTableRow<Guild>(Guild.TableName, guild.Id, Guild.PartitionKeyConst, guild);
             }
             else
             {
@@ -72,22 +71,23 @@ namespace TyniBot.Commands
 
             var subCommand = command.Data.Options.First();
             var options = subCommand.Options.ToDictionary(o => o.Name, o => o);
+
             switch (subCommand.Name)
             {
                 case "add":
-                    await AddTrackerCommand.Run(command, client, options, recruitingChannel, messages, teams);
+                    await AddTrackerCommand.Run(command, client, storageClient, options, guild.Id, recruitingChannel, messages, teams);
                     break;
                 case "adminadd":
-                    await AdminAddTrackerCommand.Run(command, client, options, recruitingChannel, messages, teams);
+                    await AdminAddTrackerCommand.Run(command, client, storageClient, options, guild.Id, recruitingChannel, messages, teams);
                     break;
                 case "move":
-                    await MoveTrackedUserCommand.Run(command, client, options, recruitingChannel, messages, teams);
+                    await MoveTrackedUserCommand.Run(command, client, storageClient, options, guild.Id, recruitingChannel, messages, teams);
                     break;
                 case "remove":
-                    await RemoveTrackedUserCommand.Run(command, client, options, recruitingChannel, messages, teams);
+                    await RemoveTrackedUserCommand.Run(command, client, storageClient, options, guild.Id, recruitingChannel, messages, teams);
                     break;
                 case "deleteteam":
-                    await DeleteTeamTrackerCommand.Run(command, client, options, recruitingChannel, messages, teams);
+                    await DeleteTeamTrackerCommand.Run(command, client, storageClient, options, guild.Id, recruitingChannel, messages, teams);
                     break;
                 default:
                     await command.RespondAsync($"SubCommand {subCommand} not supported", ephemeral: true);

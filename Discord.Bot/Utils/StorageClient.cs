@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
+using Newtonsoft.Json;
 
 namespace Discord.Bot
 {
@@ -23,29 +24,84 @@ namespace Discord.Bot
         {
         }
 
-        public async Task<T> GetTableRow<T>(string tableName, string rowKey, string paritionKey = "default")
-            where T : class, ITableEntity, new()
+        public async Task<T> GetTableRow<T>(string tableName, string rowKey, string partitionKey = "default")
         {
             TableClient tableClient = await this.GetTableClient(tableName);
 
             try
             {
-                var res = await tableClient.GetEntityAsync<T>(paritionKey, rowKey);
-
-                return res.Value;
+                var res = await tableClient.GetEntityAsync<ContentDataEntity>(partitionKey, rowKey);
+                
+                return JsonConvert.DeserializeObject<T>(res.Value.Content);
             }
             catch(RequestFailedException e)
+            {
+                return default(T);
+            }
+        }
+
+        public async Task<List<T>> GetAllRowsAsync<T>(string tableName, string partitionKey)
+        {
+            TableClient tableClient = await this.GetTableClient(tableName);
+
+            try
+            {
+                var res = await tableClient.QueryAsync<ContentDataEntity>((item) => string.Equals(item.PartitionKey, partitionKey)).ToListAsync();
+
+                return res.ConvertAll<T>(item => JsonConvert.DeserializeObject<T>(item.Content));
+            }
+            catch (RequestFailedException e)
             {
                 return null;
             }
         }
 
-        public async Task AddTableRow<T>(string tableName, T entity)
-        where T : class, ITableEntity, new()
+
+        public async Task SaveTableRow<T>(string tableName, string rowKey, string partitionKey, T entity)
         {
             TableClient tableClient = await this.GetTableClient(tableName);
 
-            await tableClient.UpsertEntityAsync<T>(entity);
+            ContentDataEntity entry = new ContentDataEntity
+            {
+                RowKey = rowKey,
+                PartitionKey = partitionKey,
+                Content = JsonConvert.SerializeObject(entity)
+            };
+
+            await tableClient.UpsertEntityAsync(entry);
+        }
+
+        public async Task SaveTableRows<T>(string tableName, IEnumerable<(string, T)> entitiesAndRowKey, string partitionKey)
+        {
+            TableClient tableClient = await this.GetTableClient(tableName);
+            List<TableTransactionAction> actions = new List<TableTransactionAction>();
+            
+            foreach ((string rowKey, T entity) in entitiesAndRowKey)
+            {
+                ContentDataEntity entry = new ContentDataEntity
+                {
+                    RowKey = rowKey,
+                    PartitionKey = partitionKey,
+                    Content = JsonConvert.SerializeObject(entity)
+                };
+
+                actions.Add(new TableTransactionAction(TableTransactionActionType.UpsertMerge, entry));
+            }
+
+            await tableClient.SubmitTransactionAsync(actions);
+        }
+
+        public async Task DeleteTableRow(string tableName, string rowKey, string partitionKey = "default")
+        {
+            TableClient tableClient = await this.GetTableClient(tableName);
+
+            try
+            {
+                await tableClient.DeleteEntityAsync(partitionKey, rowKey);
+            }
+            catch (RequestFailedException e)
+            {
+            }
         }
 
         private async Task<TableClient> GetTableClient(string tableName)

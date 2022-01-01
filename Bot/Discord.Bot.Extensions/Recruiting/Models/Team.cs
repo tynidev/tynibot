@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Azure;
+using Azure.Data.Tables;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,6 +11,8 @@ namespace TyniBot.Recruiting
 {
     public class Team
     {
+        public static string TableName = "teams";
+
         public ulong MsgId { get; set; } = 0;
         public string Name { get; set; } = null;
         public Player Captain = null;
