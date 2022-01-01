@@ -65,7 +65,7 @@ namespace TyniBot.Commands
                 // Have we added this team message yet? -> Write team message and move to next team
                 if (team.MsgId == 0)
                 {
-                    await recruitingChannel.SendMessageAsync(team.ToMessage());
+                    team.MsgId = (await recruitingChannel.SendMessageAsync(team.ToMessage())).Id;
                     continue;
                 }
 

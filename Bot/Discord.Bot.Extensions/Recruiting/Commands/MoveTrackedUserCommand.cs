@@ -69,7 +69,7 @@ namespace TyniBot.Commands
             // Update new team message
             if(newTeam.MsgId == 0)
             {
-                await recruitingChannel.SendMessageAsync(newTeam.ToMessage());
+                newTeam.MsgId = (await recruitingChannel.SendMessageAsync(newTeam.ToMessage())).Id;
             }
             else
             {
