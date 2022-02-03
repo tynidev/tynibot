@@ -24,7 +24,7 @@ namespace TyniBot.Commands
             newPlayer.PlatformId = options["id"].Value.ToString();
 
             // Is player just updating tracker link? -> Update link
-            bool updated = false;
+            Team updatedTeam = null;
             foreach (var team in teams)
             {
                 var exists = team.Players.Where((p) => p.DiscordUser == newPlayer.DiscordUser);
@@ -34,13 +34,13 @@ namespace TyniBot.Commands
                     var existingPlayer = exists.First();
                     existingPlayer.Platform = newPlayer.Platform;
                     existingPlayer.PlatformId = newPlayer.PlatformId;
-                    updated = true;
+                    updatedTeam = team;
                     break;
                 }
             }
 
             // Is player not on a team? -> Add to FreeAgents
-            if (!updated)
+            if (updatedTeam == null)
             {
                 var freeAgents = Team.FindTeam(teams, "Free_Agents");
 
@@ -56,20 +56,19 @@ namespace TyniBot.Commands
                 }
 
                 freeAgents.Players.Add(newPlayer);
+                updatedTeam = freeAgents;
             }
 
-            foreach (var team in teams)
+            // Have we added this team message yet? -> Write team message and move to next team
+            if (updatedTeam.MsgId == 0)
             {
-                // Have we added this team message yet? -> Write team message and move to next team
-                if (team.MsgId == 0)
-                {
-                    await recruitingChannel.SendMessageAsync(team.ToMessage());
-                    continue;
-                }
-
-                // This is an existing team -> Modify old team message
-                await recruitingChannel.ModifyMessageAsync(team.MsgId, (message) => message.Content = team.ToMessage());
+                await recruitingChannel.SendMessageAsync(updatedTeam.ToMessage());
             }
+            else
+            {
+                // This is an existing team -> Modify old team message
+                await recruitingChannel.ModifyMessageAsync(updatedTeam.MsgId, (message) => message.Content = updatedTeam.ToMessage());
+            }            
 
             await command.RespondAsync($"{newPlayer.DiscordUser}'s RL tracker has been added to the recruiting board in channel <#{recruitingChannel.Id}>", ephemeral: true);
         }
