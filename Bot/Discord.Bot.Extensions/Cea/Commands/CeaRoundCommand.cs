@@ -26,9 +26,14 @@ namespace Discord.Cea
             BracketRound r = rounds[roundIndex];
 
             StringBuilder sb = new();
-            foreach (MatchResult match in r.Matches)
+            foreach (MatchResult match in r.NonByeMatches)
             {
                 sb.AppendLine($"[{match.HomeGamesWon}-{match.AwayGamesWon}] (**{match.HomeTeam.RoundRanking[r]}**){match.HomeTeam} vs (**{match.AwayTeam.RoundRanking[r]}**){match.AwayTeam}");
+            }
+            
+            foreach (MatchResult match in r.ByeMatches)
+            {
+                sb.AppendLine($"[BYE] (**{match.HomeTeam.RoundRanking[r]}**){match.HomeTeam} vs *BYE*");
             }
 
             EmbedBuilder builder = new();
