@@ -26,16 +26,28 @@ namespace Discord.Cea
             BracketRound r = rounds[roundIndex];
 
             StringBuilder sb = new();
-            foreach (MatchResult match in r.Matches)
+            foreach (MatchResult match in r.NonByeMatches)
             {
                 sb.AppendLine($"[{match.HomeGamesWon}-{match.AwayGamesWon}] (**{match.HomeTeam.RoundRanking[r]}**){match.HomeTeam} vs (**{match.AwayTeam.RoundRanking[r]}**){match.AwayTeam}");
             }
-
-            EmbedBuilder builder = new();
-            builder.AddField(r.RoundName, sb.ToString());
-
+            
+            foreach (MatchResult match in r.ByeMatches)
+            {
+                sb.AppendLine($"[BYE] (**{match.HomeTeam.RoundRanking[r]}**){match.HomeTeam} vs *BYE*");
+            }
+            
             bool ephemeral = !options.ContainsKey(SlashCommandOptions.post) || !options[SlashCommandOptions.post].Equals("True");
-            await command.RespondAsync(embed: builder.Build(), ephemeral: ephemeral);
+
+
+            if (sb.ToString().Length < 1024) 
+            {
+                EmbedBuilder builder = new();
+                builder.AddField(r.RoundName, sb.ToString());
+                await command.RespondAsync(embed: builder.Build(), ephemeral: ephemeral);
+            } else {
+                string text = $"{r.RoundName}\n{sb.ToString()}";
+                await command.RespondAsync(text: text, ephemeral: ephemeral);
+            }            
         }
     }
 }
