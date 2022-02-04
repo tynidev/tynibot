@@ -30,9 +30,16 @@ namespace Discord.Cea
             MatchResult match = league.NextMatchLookup[team];
             BracketRound round = league.Bracket.Rounds.Last();
 
-            string message = string.Format("{0}'s next match is , {1} ({4}) vs {2} ({5}).{3}",
-                team, match.HomeTeam, match.AwayTeam, match.Completed ? $" (Completed) [{match.HomeGamesWon}-{match.AwayGamesWon}]" : "", match.HomeTeam.RoundRanking[round], match.AwayTeam.RoundRanking[round]);
-
+            string message;
+            
+            if (match.Bye) {
+                message = string.Format("{0}'s next match is a *BYE*.",
+                    team);
+            } else {
+                message = string.Format("{0}'s next match is , {1} ({4}) vs {2} ({5}).{3}",
+                    team, match.HomeTeam, match.AwayTeam, match.Completed ? $" (Completed) [{match.HomeGamesWon}-{match.AwayGamesWon}]" : "", match.HomeTeam.RoundRanking[round], match.AwayTeam.RoundRanking[round]);
+            }
+            
             builder.AddField(team.Name, message);
             
             return builder.Build();
