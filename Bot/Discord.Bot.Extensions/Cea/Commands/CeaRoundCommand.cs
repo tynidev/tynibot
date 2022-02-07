@@ -22,35 +22,52 @@ namespace Discord.Cea
 
         async Task ICeaSubCommand.Run(SocketSlashCommand command, DiscordSocketClient client, IReadOnlyDictionary<SlashCommandOptions, string> options, Lazy<List<Team>> lazyTeams)
         {
-            List<List<BracketRound>> rounds = LeagueManager.League.Bracket.Rounds;
-            int roundIndex = !options.ContainsKey(SlashCommandOptions.week) ? rounds.Count - 1 : int.Parse(options[SlashCommandOptions.week]);
-            List<BracketRound> round = rounds[roundIndex];
+            BracketSet currentBrackets = LeagueManager.League.Bracket;
+            List<Tuple<string, string, string>> bracketResults = new();
 
-            StringBuilder sb = new();
-
-            foreach (BracketRound r in round)
+            foreach (Bracket bracket in currentBrackets.Brackets)
             {
-                foreach (MatchResult match in r.NonByeMatches)
+                List<BracketRound> rounds = bracket.Rounds;
+                int roundIndex = !options.ContainsKey(SlashCommandOptions.week) ? rounds.Count - 1 : int.Parse(options[SlashCommandOptions.week]);
+                BracketRound round = rounds[roundIndex];
+                StringBuilder sb = new();
+                foreach (MatchResult match in round.NonByeMatches)
                 {
-                    sb.AppendLine($"[{match.HomeGamesWon}-{match.AwayGamesWon}] (**{match.HomeTeam.RoundRanking[r]}**){match.HomeTeam} vs (**{match.AwayTeam.RoundRanking[r]}**){match.AwayTeam}");
+                    sb.AppendLine($"[{match.HomeGamesWon}-{match.AwayGamesWon}] (**{match.HomeTeam.RoundRanking[round]}**){match.HomeTeam} vs (**{match.AwayTeam.RoundRanking[round]}**){match.AwayTeam}");
                 }
 
-                foreach (MatchResult match in r.ByeMatches)
+                foreach (MatchResult match in round.ByeMatches)
                 {
-                    sb.AppendLine($"[BYE] (**{match.HomeTeam.RoundRanking[r]}**){match.HomeTeam} vs *BYE*");
+                    sb.AppendLine($"[BYE] (**{match.HomeTeam.RoundRanking[round]}**){match.HomeTeam} vs *BYE*");
                 }
+
+                bracketResults.Add(new Tuple<string, string, string>(bracket.Name, round.RoundName, sb.ToString()));
             }
             
             bool ephemeral = !options.ContainsKey(SlashCommandOptions.post) || !options[SlashCommandOptions.post].Equals("True");
 
-            if (sb.ToString().Length < 1024) 
+            if (bracketResults.All(s => s.Item3.Length < 1024)) 
             {
-                EmbedBuilder builder = new();
-                builder.AddField(round.First().RoundName, sb.ToString());
-                await command.RespondAsync(embed: builder.Build(), ephemeral: ephemeral);
+                List<Embed> embeds = new();
+                foreach (Tuple<string, string, string> bracketResult in bracketResults)
+                {
+                    EmbedBuilder builder = new();
+                    builder.Title = bracketResult.Item1;
+                    builder.AddField(bracketResult.Item2, bracketResult.Item3);
+                    embeds.Add(builder.Build());
+                }
+
+                await command.RespondAsync(embeds: embeds.ToArray(), ephemeral: ephemeral);
             } else {
-                string text = $"{round.First().RoundName}\n{sb}";
-                await command.RespondAsync(text: text, ephemeral: ephemeral);
+                StringBuilder result = new StringBuilder();
+                foreach (Tuple<string, string, string> bracketResult in bracketResults)
+                {
+                    result.AppendLine(bracketResult.Item1);
+                    result.AppendLine(bracketResult.Item2);
+                    result.AppendLine(bracketResult.Item3);
+                }
+
+                await command.RespondAsync(text: result.ToString(), ephemeral: ephemeral);
             }            
         }
     }
