@@ -2,6 +2,7 @@
 using Discord.WebSocket;
 using PlayCEA_RL.Configuration;
 using PlayCEAStats.DataModel;
+using PlayCEAStats.RequestManagement;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,8 +40,9 @@ namespace Discord.Cea
             try
             {
                 BracketConfiguration newConfiguration = JsonSerializer.Deserialize<BracketConfiguration>(configuration);
-                ConfigurationManager.WriteConfiguration(newConfiguration);
-                await command.RespondAsync($"New Configuration Saved.\n{configuration}", ephemeral: true);
+                ConfigurationManager.UpdateInMemoryConfiguration(newConfiguration);
+                await command.RespondAsync($"New Configuration Set.\n{configuration}", ephemeral: true);
+                LeagueManager.ForceUpdate();
             } 
             catch (JsonException)
             {
