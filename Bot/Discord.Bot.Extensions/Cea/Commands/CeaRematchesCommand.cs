@@ -22,7 +22,7 @@ namespace Discord.Cea
 
         async Task ICeaSubCommand.Run(SocketSlashCommand command, DiscordSocketClient client, IReadOnlyDictionary<SlashCommandOptions, string> options, Lazy<List<Team>> lazyTeams)
         {
-            Bracket bracket = LeagueManager.League.Bracket;
+            Bracket bracket = LeagueManager.League.Bracket.Brackets.First();
             string stage = StageMatcher.Lookup(bracket.Rounds.Last().RoundName);
             string rematches = StageRematchFinder.FindRematches(bracket, stage);
 
