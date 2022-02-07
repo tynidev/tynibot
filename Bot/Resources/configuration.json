@@ -1,4 +1,50 @@
 {
-  "seasonBracketId": "e9BDcD_Jb0",
-  "playoffBracketId": ""
+  "bracketSets": [
+    [ "e9BDcD_Jb0" ],
+    [ "vsrMjnFDMc", "WZaqjbfPLL" ]
+  ],
+  "stageConfiguration": {
+    "preseason 1": "Preseason",
+    "Stage1-4wks-swiss 1": "Stage 1",
+    "Stage1-4wks-swiss 2": "Stage 1",
+    "Stage1-4wks-swiss 3": "Stage 1",
+    "Stage1-4wks-swiss 4": "Stage 1"
+  },
+  "stageGroups": [
+    {
+      "Stage": "Preseason",
+      "StartingRank": 1,
+      "TeamIds": [ "RffqWCFRFX", "IAn9WN9_ib", "JRHmJWqqmy", "OWs4NbadUU", "WRo73i2EHl", "u8zDeafYsZ", "bxGWuL5O6w", "A5vxppXdIE", "tsM6u9VaSB", "quTzSlM_So", "6J8ky4zsrG", "NZahTtd57C", "VckKY2prsT", "oWCQtCYliC", "DlK9AuHk6t", "O-ccsUTq7F", "qO5R3VJFsd", "hbiokRzMoo", "h2sZnIvJ6L", "Rl2XkHPzUn", "xgIw44XSOl", "za4IX1sT2e", "NeiSNX068Z", "YFAMtsLkqX", "L2S6qVfDpW", "AM332bh8eg", "LMcsxk54iV", "r9ljiGlwJp", "-PRIWHKsml", "BYwae94YHs", "JAIKFJxa53", "CIPBKTb6XN", "9DpS09s7Tj", "BsIQtGI8MM", "DTyIMNzVM-", "1Yy4c73McM", "_bS47viO6e", "rrd84n9U-3", "XdWUuCfWMH", "Q4dn8A48ZT", "CAJdA_5qoF", "zZESgfOu0e", "i2HmRvkIrh", "LDeThHv0s9", "-xaZrd_5rH", "t4-toFJV9e", "JdPmCBB5x6", "tRZwpDprz4", "burI03-5uC" ]
+    },
+    {
+      "Stage": "Stage 1",
+      "StartingRank": 1,
+      "TeamIds": [ "RffqWCFRFX", "WRo73i2EHl", "VckKY2prsT", "O-ccsUTq7F", "Rl2XkHPzUn", "za4IX1sT2e", "YFAMtsLkqX", "AM332bh8eg", "LMcsxk54iV", "CIPBKTb6XN", "9DpS09s7Tj", "Q4dn8A48ZT", "CAJdA_5qoF", "i2HmRvkIrh", "LDeThHv0s9" ]
+    },
+    {
+      "Stage": "Stage 1",
+      "StartingRank": 1,
+      "TeamIds": [ "IAn9WN9_ib", "JRHmJWqqmy", "OWs4NbadUU", "u8zDeafYsZ", "bxGWuL5O6w", "A5vxppXdIE", "tsM6u9VaSB", "quTzSlM_So", "6J8ky4zsrG", "NZahTtd57C", "oWCQtCYliC", "DlK9AuHk6t", "qO5R3VJFsd", "hbiokRzMoo", "h2sZnIvJ6L", "xgIw44XSOl", "NeiSNX068Z", "L2S6qVfDpW", "r9ljiGlwJp", "-PRIWHKsml", "BYwae94YHs", "JAIKFJxa53", "BsIQtGI8MM", "DTyIMNzVM-", "1Yy4c73McM", "_bS47viO6e", "rrd84n9U-3", "XdWUuCfWMH", "zZESgfOu0e", "-xaZrd_5rH", "t4-toFJV9e", "JdPmCBB5x6", "tRZwpDprz4", "burI03-5uC" ]
+    },
+    {
+      "Stage": "Stage 2",
+      "StartingRank": 1,
+      "TeamIds": []
+    },
+    {
+      "Stage": "Stage 2",
+      "StartingRank": 9,
+      "TeamIds": []
+    },
+    {
+      "Stage": "Stage 2",
+      "StartingRank": 33,
+      "TeamIds": []
+    },
+    {
+      "Stage": "Playoffs",
+      "StartingRank": 1,
+      "TeamIds": []
+    }
+  ]
 }

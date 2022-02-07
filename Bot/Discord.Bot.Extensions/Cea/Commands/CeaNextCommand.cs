@@ -28,7 +28,8 @@ namespace Discord.Cea
 
             EmbedBuilder builder = new();
             MatchResult match = league.NextMatchLookup[team];
-            BracketRound round = league.Bracket.Rounds.Last();
+            List<BracketRound> rounds = league.Bracket.Rounds.Last();
+            BracketRound round = rounds.Where(r => r.Matches.SelectMany(m => new List<Team>() { m.HomeTeam, m.AwayTeam }).Contains(team)).First();
 
             string message;
             
