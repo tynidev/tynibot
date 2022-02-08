@@ -42,7 +42,7 @@ namespace TyniBot.Commands
             var subCommand = command.Data.Options.First();
             var options = subCommand.Options.ToDictionary(o => o.Name, o => o);
 
-            await command.RespondAsync($"Starting Command {command.CommandName} {subCommand}", ephemeral: true);
+            await command.RespondAsync($"Starting Command {command.CommandName} {subCommand.Name}", ephemeral: true);
 
             var guild = await storageClient.GetTableRow<Guild>(Guild.TableName, channel.Guild.Id.ToString(), Guild.PartitionKeyConst);
 
