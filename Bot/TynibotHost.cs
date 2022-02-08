@@ -32,6 +32,7 @@ namespace TyniBot
             new RecruitingCommand(),
             new AdminRecruitingCommand(),
             new CeaSlashCommand(),
+            new AdminCeaSlashCommand()
         };
 
         private readonly Dictionary<string, SlashCommand> SlashCommandDictionary;

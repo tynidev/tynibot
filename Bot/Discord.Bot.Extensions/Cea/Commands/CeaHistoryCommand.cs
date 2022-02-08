@@ -23,7 +23,7 @@ namespace Discord.Cea
             EmbedBuilder builder = new();
             StringBuilder sb = new();
             League league = LeagueManager.League;
-            foreach (BracketRound round in league.Bracket.Rounds)
+            foreach (BracketRound round in league.Bracket.Rounds.SelectMany(r => r))
             {
                 foreach (MatchResult result in round.Matches)
                 {
