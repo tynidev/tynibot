@@ -14,7 +14,7 @@ namespace TyniBot.Commands
     // Todo: create and assign and delete roles for the teams, create/delete team channels as well.
     public class MoveTrackedUserCommand
     {
-        public static async Task Run(SocketSlashCommand command, DiscordSocketClient client, StorageClient storageClient, Dictionary<string, SocketSlashCommandDataOption> options, string guildId, ISocketMessageChannel recruitingChannel, List<IMessage> messages, List<Team> teams)
+        public static async Task Run(SocketSlashCommand command, DiscordSocketClient client, StorageClient storageClient, Dictionary<string, SocketSlashCommandDataOption> options, string guildId, ISocketMessageChannel recruitingChannel, List<Team> teams)
         {
             var guildUser = (SocketGuildUser)options["username"].Value;
             var discordUser = guildUser.Nickname ?? guildUser.Username;

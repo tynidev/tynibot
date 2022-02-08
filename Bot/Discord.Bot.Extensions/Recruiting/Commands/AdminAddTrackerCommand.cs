@@ -13,7 +13,7 @@ namespace TyniBot.Commands
     // Todo: store guild Ids, role ids, and channel ids in permanent external storage to allow for servers to configure their addtracker command 
     public class AdminAddTrackerCommand
     {
-        public static async Task Run(SocketSlashCommand command, DiscordSocketClient client, StorageClient storageClient, Dictionary<string, SocketSlashCommandDataOption> options, string guildId, ISocketMessageChannel recruitingChannel, List<IMessage> messages, List<Team> teams)
+        public static async Task Run(SocketSlashCommand command, DiscordSocketClient client, StorageClient storageClient, Dictionary<string, SocketSlashCommandDataOption> options, string guildId, ISocketMessageChannel recruitingChannel, List<Team> teams)
         {
             var guildUser = (SocketGuildUser)options["username"].Value;
 
@@ -62,7 +62,7 @@ namespace TyniBot.Commands
             // Have we added this team message yet? -> Write team message and move to next team
             if (updatedTeam.MsgId == 0)
             {
-                updatedTeam.MsdId = (await recruitingChannel.SendMessageAsync(updatedTeam.ToMessage())).Id;
+                updatedTeam.MsgId = (await recruitingChannel.SendMessageAsync(updatedTeam.ToMessage())).Id;
             }
             else
             {
