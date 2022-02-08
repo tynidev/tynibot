@@ -22,7 +22,7 @@ namespace TyniBot.Commands
             (var oldTeam, var player) = Team.FindPlayer(teams, discordUser);
             if (player == null)
             {
-                await command.RespondAsync($"User {discordUser} does not exist in the recruiting table", ephemeral: true);
+                await command.FollowupAsync($"User {discordUser} does not exist in the recruiting table", ephemeral: true);
                 return;
             }
 
@@ -45,7 +45,7 @@ namespace TyniBot.Commands
                 await storageClient.DeleteTableRow(Team.TableName, oldTeam.Name, guildId);
             }
 
-            await command.RespondAsync($"You have removed user {discordUser} from {oldTeam.Name}", ephemeral: true);
+            await command.FollowupAsync($"You have removed user {discordUser} from {oldTeam.Name}", ephemeral: true);
         }
     }
 }

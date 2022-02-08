@@ -21,13 +21,13 @@ namespace TyniBot.Commands
             var team = Team.FindTeam(teams, teamName);
             if (team == null)
             {
-                await command.RespondAsync($"Team {teamName} does not exist in the recruiting table", ephemeral: true);
+                await command.FollowupAsync($"Team {teamName} does not exist in the recruiting table", ephemeral: true);
                 return;
             }
 
             // Remove old team message
             await recruitingChannel.DeleteMessageAsync(team.MsgId);
-            await command.RespondAsync($"You have removed team {teamName}", ephemeral: true);
+            await command.FollowupAsync($"You have removed team {teamName}", ephemeral: true);
             await storageClient.DeleteTableRow(Team.TableName, team.Name, guildId);
         }
     }

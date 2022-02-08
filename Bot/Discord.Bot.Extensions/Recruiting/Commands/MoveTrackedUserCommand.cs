@@ -23,7 +23,7 @@ namespace TyniBot.Commands
             (var oldTeam, var player) = Team.FindPlayer(teams, discordUser);
             if (player == null)
             {
-                await command.RespondAsync($"User {discordUser} does not exist in the recruiting table", ephemeral: true);
+                await command.FollowupAsync($"User {discordUser} does not exist in the recruiting table", ephemeral: true);
                 return;
             }
 
@@ -76,7 +76,7 @@ namespace TyniBot.Commands
                 await recruitingChannel.ModifyMessageAsync(newTeam.MsgId, (message) => message.Content = newTeam.ToMessage());
             }
 
-            await command.RespondAsync($"You have moved user {discordUser} from {oldTeam.Name} -> {newTeam.Name}", ephemeral: true);
+            await command.FollowupAsync($"You have moved user {discordUser} from {oldTeam.Name} -> {newTeam.Name}", ephemeral: true);
 
             await storageClient.SaveTableRow(Team.TableName, newTeam.Name, guildId, newTeam);
 

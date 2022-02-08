@@ -39,6 +39,11 @@ namespace TyniBot.Commands
         public override async Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client, StorageClient storageClient)
         {
             var channel = command.Channel as SocketGuildChannel;
+            var subCommand = command.Data.Options.First();
+            var options = subCommand.Options.ToDictionary(o => o.Name, o => o);
+
+            await command.RespondAsync($"Starting Command {command.CommandName} {subCommand}", ephemeral: true);
+
             var guild = await storageClient.GetTableRow<Guild>(Guild.TableName, channel.Guild.Id.ToString(), Guild.PartitionKeyConst);
 
             if (guild == null)
@@ -80,9 +85,6 @@ namespace TyniBot.Commands
                     await ConvertMessageTeamsToStorage(teams, guild.Id, storageClient);
                 }
             }
-
-            var subCommand = command.Data.Options.First();
-            var options = subCommand.Options.ToDictionary(o => o.Name, o => o);
 
             switch (subCommand.Name)
             {

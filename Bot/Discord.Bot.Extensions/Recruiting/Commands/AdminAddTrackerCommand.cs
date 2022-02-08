@@ -68,9 +68,9 @@ namespace TyniBot.Commands
             {
                 // This is an existing team -> Modify old team message
                 await recruitingChannel.ModifyMessageAsync(updatedTeam.MsgId, (message) => message.Content = updatedTeam.ToMessage());
-            }            
+            }
 
-            await command.RespondAsync($"{newPlayer.DiscordUser}'s RL tracker has been added to the recruiting board in channel <#{recruitingChannel.Id}>", ephemeral: true);
+            await command.FollowupAsync($"{newPlayer.DiscordUser}'s RL tracker has been added to the recruiting board in channel <#{recruitingChannel.Id}>", ephemeral: true);
 
             await storageClient.SaveTableRow(Team.TableName, updatedTeam.Name, guildId, updatedTeam);
         }
