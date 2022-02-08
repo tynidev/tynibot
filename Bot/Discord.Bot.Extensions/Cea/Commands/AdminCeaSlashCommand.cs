@@ -32,7 +32,7 @@ namespace Discord.Cea
         {
         }
 
-        public override async Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client)
+        public override async Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client, StorageClient storageClient)
         {
             var subCommand = command.Data.Options.Where(o => o.Type.Equals(ApplicationCommandOptionType.SubCommand)).First();
             string configuration = (string) subCommand.Options.Where(o => o.Name.Equals("configuration")).First().Value;
