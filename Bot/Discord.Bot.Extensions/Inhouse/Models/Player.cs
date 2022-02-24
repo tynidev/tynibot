@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Immutable;
+using System.Collections.Generic;
 
 namespace Discord.Inhouse
 {
@@ -73,17 +74,9 @@ namespace Discord.Inhouse
         [BsonIgnore]
         public UserProperties? PublicFlags => DiscordUser.PublicFlags;
 
-        [BsonIgnore]
-        public IImmutableSet<ClientType> ActiveClients => DiscordUser.ActiveClients;
+        public IReadOnlyCollection<ClientType> ActiveClients => DiscordUser.ActiveClients;
 
-        [BsonIgnore]
-        public IImmutableList<IActivity> Activities => DiscordUser.Activities;
-
-        [BsonIgnore]
-        public string BannerId => DiscordUser.BannerId;
-
-        [BsonIgnore]
-        public Color? AccentColor => DiscordUser.AccentColor;
+        public IReadOnlyCollection<IActivity> Activities => DiscordUser.Activities;
 
         public string GetAvatarUrl(ImageFormat format = ImageFormat.Auto, ushort size = 128)
         {
@@ -93,11 +86,6 @@ namespace Discord.Inhouse
         public string GetDefaultAvatarUrl()
         {
             return DiscordUser.GetDefaultAvatarUrl();
-        }
-
-        public string GetBannerUrl(ImageFormat format = ImageFormat.Auto, ushort size = 256)
-        {
-            return DiscordUser.GetBannerUrl(format, size);
         }
 
         public Task<IDMChannel> CreateDMChannelAsync(RequestOptions options = null)
