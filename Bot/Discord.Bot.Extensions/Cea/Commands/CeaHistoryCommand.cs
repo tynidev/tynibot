@@ -21,6 +21,12 @@ namespace Discord.Cea
         internal override Embed Run(SocketSlashCommand command, DiscordSocketClient client, IReadOnlyDictionary<SlashCommandOptions, string> options, Team team)
         {
             EmbedBuilder builder = new();
+            AddHistoryToEmbed(builder, team);
+            return builder.Build();
+        }
+
+        internal static void AddHistoryToEmbed(EmbedBuilder builder, Team team)
+        {
             StringBuilder sb = new();
             League league = LeagueManager.League;
             foreach (BracketRound round in league.Bracket.Rounds.SelectMany(r => r))
@@ -34,8 +40,7 @@ namespace Discord.Cea
                 }
             }
 
-            builder.AddField(team.Name, sb.ToString());
-            return builder.Build();
+            builder.AddField($"{team.Name}'s Match History", sb.ToString());
         }
     }
 }
