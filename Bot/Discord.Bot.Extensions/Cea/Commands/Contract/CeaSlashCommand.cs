@@ -34,7 +34,6 @@ namespace Discord.Cea
                 new CeaRecordCommand(),
                 new CeaHistoryCommand(),
                 new CeaRoundCommand(),
-                new CeaPreviewCommand(),
                 new CeaForceRefreshCommand(),
             };
 
