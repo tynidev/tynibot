@@ -50,7 +50,8 @@ namespace TyniBot
 
             Client = new DiscordSocketClient(new DiscordSocketConfig()
             {
-                LogLevel = LogSeverity.Debug
+                LogLevel = LogSeverity.Debug,
+                UseInteractionSnowflakeDate = false
             });
 
             Services = new ServiceCollection().BuildServiceProvider();

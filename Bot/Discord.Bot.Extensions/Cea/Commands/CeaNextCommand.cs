@@ -20,30 +20,43 @@ namespace Discord.Cea
 
         internal override Embed Run(SocketSlashCommand command, DiscordSocketClient client, IReadOnlyDictionary<SlashCommandOptions, string> options, Team team)
         {
-            League league = LeagueManager.League;
-            if (!league.NextMatchLookup.ContainsKey(team))
+            EmbedBuilder builder = new();
+            if (!AddNextMatchToEmbed(builder, team))
             {
                 return null;
             }
+            
+            return builder.Build();
+        }
 
-            EmbedBuilder builder = new();
+        internal static bool AddNextMatchToEmbed(EmbedBuilder builder, Team team)
+        {
+            League league = LeagueManager.League;
+
+            if (!league.NextMatchLookup.ContainsKey(team))
+            {
+                return false;
+            }
+
             MatchResult match = league.NextMatchLookup[team];
             List<BracketRound> rounds = league.Bracket.Rounds.Last();
             BracketRound round = rounds.Where(r => r.Matches.SelectMany(m => new List<Team>() { m.HomeTeam, m.AwayTeam }).Contains(team)).First();
 
             string message;
-            
-            if (match.Bye) {
+
+            if (match.Bye)
+            {
                 message = string.Format("{0}'s next match is a *BYE*.",
                     team);
-            } else {
+            }
+            else
+            {
                 message = string.Format("{0}'s next match is , {1} ({4}) vs {2} ({5}).{3}",
                     team, match.HomeTeam, match.AwayTeam, match.Completed ? $" (Completed) [{match.HomeGamesWon}-{match.AwayGamesWon}]" : "", match.HomeTeam.RoundRanking[round], match.AwayTeam.RoundRanking[round]);
             }
-            
+
             builder.AddField(team.Name, message);
-            
-            return builder.Build();
+            return true;
         }
     }
 }

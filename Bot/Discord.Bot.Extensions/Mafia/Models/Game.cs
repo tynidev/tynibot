@@ -42,7 +42,7 @@ namespace Discord.Mafia
             if (mentions == null)
                 throw new ArgumentNullException(nameof(mentions));
 
-            if (mentions.Where(u => u.IsBot || u.IsWebhook).Count() > 0)
+            if (!mentions.Where(u => u.IsBot || u.IsWebhook).Any())
                 throw new Exception("Players mentioned must not be Bots or Webhooks you hacker!");
 
             // Validate that we have more than zero mafia
@@ -61,15 +61,11 @@ namespace Discord.Mafia
             if (numMafias >= mentions.Count)
                 throw new Exception("Number of mafia can not be equal or exceed players moron!");
 
-            switch (mode)
+            return mode switch
             {
-                case GameMode.Normal:
-                default:
-                    return createNormalMafiaGame(mentions, numMafias);
-                case GameMode.Battle:
-                    return createBattleMafiaGame(mentions, numMafias, hasJoker: false);
-                case GameMode.Joker:            
-                    return createBattleMafiaGame(mentions, numMafias, hasJoker: true);
+                GameMode.Battle => CreateBattleMafiaGame(mentions, numMafias, hasJoker: false),
+                GameMode.Joker => CreateBattleMafiaGame(mentions, numMafias, hasJoker: true),
+                _ => CreateNormalMafiaGame(mentions, numMafias),
             };
         }
         
@@ -184,11 +180,11 @@ namespace Discord.Mafia
             return game;
         }
 
-        private static Game createNormalMafiaGame(List<IUser> users, int numMafias)
+        private static Game CreateNormalMafiaGame(List<IUser> users, int numMafias)
         {
-            var players = divideTeams(users);
+            var players = DivideTeams(users);
 
-            pickMafia(players, numMafias, divideEvenly: false);
+            PickMafia(players, numMafias, divideEvenly: false);
 
             Dictionary<ulong, Player> gamePlayers = null;
             try
@@ -206,14 +202,14 @@ namespace Discord.Mafia
             };
         }
 
-        private static Game createBattleMafiaGame(List<IUser> users, int numMafias, bool hasJoker = false)
+        private static Game CreateBattleMafiaGame(List<IUser> users, int numMafias, bool hasJoker = false)
         {
-            var players = divideTeams(users);
+            var players = DivideTeams(users);
 
-            pickMafia(players, numMafias, divideEvenly: true);
+            PickMafia(players, numMafias, divideEvenly: true);
 
             if (hasJoker)
-                pickJoker(players);
+                PickJoker(players);
 
             Dictionary<ulong, Player> gamePlayers = null;
             try
@@ -232,7 +228,7 @@ namespace Discord.Mafia
             };
         }
 
-        private static List<Player> divideTeams(List<IUser> users)
+        private static List<Player> DivideTeams(List<IUser> users)
         {
             // shuffle teams we call ToList after shuffle to solidfy the list and ensure select doesn't occur randomly
             var players = users.Shuffle().ToList().Select(u => new Player() { Id = u.Id, Type = PlayerType.Villager, DiscordUser = u }).ToList();
@@ -249,7 +245,7 @@ namespace Discord.Mafia
             return players;
         }
 
-        private static void pickMafia(List<Player> players, int numMafias, bool divideEvenly = false)
+        private static void PickMafia(List<Player> players, int numMafias, bool divideEvenly = false)
         {
             if (!divideEvenly)
             {
@@ -271,7 +267,7 @@ namespace Discord.Mafia
                     if (numMafias % 2 == 1) // odd # of Mafia + even teams == randomize Mafia inbalance
                     {
                         Random rnd = new Random();
-                        team1LargerMafia = rnd.Next(2) % 2 == 0 ? true : false;
+                        team1LargerMafia = rnd.Next(2) % 2 == 0;
                     }
                 }
                 else if(team1Size > team2Size)
@@ -290,7 +286,7 @@ namespace Discord.Mafia
             }
         }
 
-        private static void pickJoker(List<Player> players)
+        private static void PickJoker(List<Player> players)
         {
             var team1 = players.Where(p => p.Team == Team.Orange && p.Type == PlayerType.Villager).ToList();
             var team2 = players.Where(p => p.Team == Team.Blue && p.Type == PlayerType.Villager).ToList();

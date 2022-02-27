@@ -21,13 +21,19 @@ namespace Discord.Cea
         internal override Embed Run(SocketSlashCommand command, DiscordSocketClient client, IReadOnlyDictionary<SlashCommandOptions, string> options, Team team)
         {
             EmbedBuilder builder = new();
+
+            AddRecordStatsToEmbed(builder, team);
+
+            return builder.Build();
+        }
+
+        internal static void AddRecordStatsToEmbed(EmbedBuilder builder, Team team)
+        {
             builder.AddField($"{ team.Name}'s Total Stats:", team.Stats.ToString(true));
             foreach (KeyValuePair<string, TeamStatistics> stats in team.StageStats)
             {
                 builder.AddField($"{ stats.Key} Stats:", stats.Value.ToString(true));
             }
-
-            return builder.Build();
         }
     }
 }

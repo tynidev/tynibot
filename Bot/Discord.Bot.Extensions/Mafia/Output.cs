@@ -16,7 +16,7 @@ namespace Discord.Mafia
         public static readonly string OvertimeEmoji = EmojiLibrary.ByShortname(":alarm_clock:").Unicode;
         public static readonly string EndedEmoji = EmojiLibrary.ByShortname(":checkered_flag:").Unicode;
 
-        private static List<string[]> PossibleEmjoiGroups = new List<string[]>()
+        private static readonly List<string[]> PossibleEmjoiGroups = new List<string[]>()
         {
             new string[]{
                 EmojiLibrary.ByShortname(":one:").Unicode,
@@ -30,7 +30,7 @@ namespace Discord.Mafia
             },
         };
 
-        private static Random rand = new Random();
+        private static readonly Random rand = new Random();
         private static string[] PossiblePlayerEmojis()
         {
             return PossibleEmjoiGroups[rand.Next(PossibleEmjoiGroups.Count)];
@@ -41,7 +41,7 @@ namespace Discord.Mafia
             // Notify each Player
             var msgs = new List<IUserMessage>();
             foreach (var player in game.Players.Values)
-                msgs.Add(await player.SendMessageAsync($"You are a {player.Type} on {player.Team} Team!"));
+                msgs.Add(await player.DiscordUser.SendMessageAsync($"You are a {player.Type} on {player.Team} Team!"));
             return msgs;
         }
 
@@ -51,8 +51,8 @@ namespace Discord.Mafia
 
             EmbedBuilder embedBuilder = new EmbedBuilder();
 
-            embedBuilder.AddField("Blue Team:", string.Join(' ', game.TeamBlue.Select(u => u.Mention)));
-            embedBuilder.AddField("Orange Team:", string.Join(' ', game.TeamOrange.Select(u => u.Mention)));
+            embedBuilder.AddField("Blue Team:", string.Join(' ', game.TeamBlue.Select(u => u.DiscordUser.Mention)));
+            embedBuilder.AddField("Orange Team:", string.Join(' ', game.TeamOrange.Select(u => u.DiscordUser.Mention)));
 
             embedBuilder.AddField("Game Result:", $"{Output.BlueEmoji} Blue Won! {Output.OrangeEmoji} Orange Won! {Output.OvertimeEmoji} Went to OT! {Output.EndedEmoji} End Game!");
 
@@ -74,7 +74,7 @@ namespace Discord.Mafia
             foreach (var p in game.Players.Values)
             {
                 p.Emoji = emojis[i++];
-                players += $"{p.Emoji} - {p.Mention} ";
+                players += $"{p.Emoji} - {p.DiscordUser.Mention} ";
                 if (i > 0 && i % 3 == 0) players += "\r\n";
             }
 
@@ -90,7 +90,7 @@ namespace Discord.Mafia
             {   // Send each player a private DM for voting 
                 foreach (var p in game.Players.Values)
                 {
-                    msgs.Add(await p.SendMessageAsync($"**Vote for Mafia!**", false, embed));
+                    msgs.Add(await p.DiscordUser.SendMessageAsync($"**Vote for Mafia!**", false, embed));
                 }
             }
 
@@ -114,13 +114,13 @@ namespace Discord.Mafia
 
             var ordered = game.Players.OrderByDescending(x => x.Value.Score);
 
-            embedBuilder.AddField("Score: ", string.Join("\r\n", ordered.Select(p => $"{p.Value.Emoji} {p.Value.Mention} = {p.Value.Score}")));
+            embedBuilder.AddField("Score: ", string.Join("\r\n", ordered.Select(p => $"{p.Value.Emoji} {p.Value.DiscordUser.Mention} = {p.Value.Score}")));
 
-            embedBuilder.AddField("Mafia: ", string.Join(" | ", game.Mafia.Select(u => $"{u.Emoji} {u.Mention}")));
+            embedBuilder.AddField("Mafia: ", string.Join(" | ", game.Mafia.Select(u => $"{u.Emoji} {u.DiscordUser.Mention}")));
             if (game.Joker != null)
-                embedBuilder.AddField("Joker: ", $"{game.Joker.Emoji} {game.Joker.Mention}");
+                embedBuilder.AddField("Joker: ", $"{game.Joker.Emoji} {game.Joker.DiscordUser.Mention}");
 
-            return await channel.SendMessageAsync($"**Game Over! {ordered.First().Value.Mention} Won!**", false, embedBuilder.Build());
+            return await channel.SendMessageAsync($"**Game Over! {ordered.First().Value.DiscordUser.Mention} Won!**", false, embedBuilder.Build());
         }
 
         public static async Task<IUserMessage> HelpText(IMessageChannel channel)
