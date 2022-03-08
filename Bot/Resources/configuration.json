@@ -1,14 +1,19 @@
 {
   "bracketSets": [
     [ "e9BDcD_Jb0" ],
-    [ "vsrMjnFDMc", "WZaqjbfPLL" ]
+    [ "vsrMjnFDMc", "WZaqjbfPLL" ],
+    [ "tnhmjDEqaV" ]
   ],
   "stageConfiguration": {
     "preseason 1": "Preseason",
     "Stage1-4wks-swiss 1": "Stage 1",
     "Stage1-4wks-swiss 2": "Stage 1",
     "Stage1-4wks-swiss 3": "Stage 1",
-    "Stage1-4wks-swiss 4": "Stage 1"
+    "Stage1-4wks-swiss 4": "Stage 1",
+    "stage2-placement 1": "Stage 2",
+    "stage2-placement 2": "Stage 2",
+    "stage2-placement 3": "Stage 2",
+    "stage2-placement 4": "Stage 2"
   },
   "stageGroups": [
     {
@@ -29,17 +34,17 @@
     {
       "Stage": "Stage 2",
       "StartingRank": 1,
-      "TeamIds": []
+      "TeamIds": [ "i2HmRvkIrh","Rl2XkHPzUn","WRo73i2EHl","RffqWCFRFX","O-ccsUTq7F","za4IX1sT2e","9DpS09s7Tj","Q4dn8A48ZT" ]
     },
     {
       "Stage": "Stage 2",
       "StartingRank": 9,
-      "TeamIds": []
+      "TeamIds": ["JdPmCBB5x6","LMcsxk54iV","quTzSlM_So","t4-toFJV9e","rrd84n9U-3","A5vxppXdIE","NZahTtd57C","r9ljiGlwJp","xgIw44XSOl","AM332bh8eg","CIPBKTb6XN","qO5R3VJFsd","YFAMtsLkqX","CAJdA_5qoF","LDeThHv0s9","oWCQtCYliC","tRZwpDprz4","bxGWuL5O6w","DTyIMNzVM-","VckKY2prsT","u8zDeafYsZ","burI03-5uC"]
     },
     {
       "Stage": "Stage 2",
-      "StartingRank": 33,
-      "TeamIds": []
+      "StartingRank": 31,
+      "TeamIds": ["zZESgfOu0e","-PRIWHKsml","JRHmJWqqmy","OWs4NbadUU","NeiSNX068Z","1Yy4c73McM","hbiokRzMoo","BsIQtGI8MM","h2sZnIvJ6L","-xaZrd_5rH","tsM6u9VaSB","IAn9WN9_ib","XdWUuCfWMH","6J8ky4zsrG","DlK9AuHk6t","L2S6qVfDpW","_bS47viO6e","BYwae94YHs","JAIKFJxa53"]
     },
     {
       "Stage": "Playoffs",
