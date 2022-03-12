@@ -34,10 +34,10 @@ namespace Discord.Cea
             if (!match.Bye)
             {
                 CeaRecordCommand.AddRecordStatsToEmbed(builder, match.HomeTeam);
-                CeaHistoryCommand.AddHistoryToEmbed(builder, match.HomeTeam);
+                CeaHistoryCommand.AddFullHistoryToEmbed(builder, match.HomeTeam);
 
                 CeaRecordCommand.AddRecordStatsToEmbed(builder, match.AwayTeam);
-                CeaHistoryCommand.AddHistoryToEmbed(builder, match.AwayTeam);
+                CeaHistoryCommand.AddFullHistoryToEmbed(builder, match.AwayTeam);
             }
 
             return builder.Build();
