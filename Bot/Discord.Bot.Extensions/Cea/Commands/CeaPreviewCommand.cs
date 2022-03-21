@@ -28,7 +28,7 @@ namespace Discord.Cea
 
             MatchResult match = league.NextMatchLookup[team];
 
-            EmbedBuilder builder = new();
+            EmbedBuilder builder = new EmbedBuilder().WithThumbnailUrl(team.ImageURL); ;
             builder.Title = CeaNextCommand.GetNextMatchString(team);
 
             if (!match.Bye)
