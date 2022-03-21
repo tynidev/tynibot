@@ -29,13 +29,15 @@ namespace Discord.Cea
             MatchResult match = league.NextMatchLookup[team];
 
             EmbedBuilder builder = new();
-            CeaNextCommand.AddNextMatchToEmbed(builder, team);
+            builder.Title = CeaNextCommand.GetNextMatchString(team);
 
             if (!match.Bye)
             {
+                CeaTeamCommand.AddRosterToEmbed(builder, match.HomeTeam);
                 CeaRecordCommand.AddRecordStatsToEmbed(builder, match.HomeTeam);
                 CeaHistoryCommand.AddFullHistoryToEmbed(builder, match.HomeTeam);
 
+                CeaTeamCommand.AddRosterToEmbed(builder, match.AwayTeam);
                 CeaRecordCommand.AddRecordStatsToEmbed(builder, match.AwayTeam);
                 CeaHistoryCommand.AddFullHistoryToEmbed(builder, match.AwayTeam);
             }

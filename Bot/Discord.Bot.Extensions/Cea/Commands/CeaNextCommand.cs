@@ -51,12 +51,36 @@ namespace Discord.Cea
             }
             else
             {
-                message = string.Format("{0}'s next match is , {1} ({4}) vs {2} ({5}).{3}",
+                message = string.Format("{0}'s next match is {1} ({4}) vs {2} ({5}).{3}",
                     team, match.HomeTeam, match.AwayTeam, match.Completed ? $" (Completed) [{match.HomeGamesWon}-{match.AwayGamesWon}]" : "", match.HomeTeam.RoundRanking[round], match.AwayTeam.RoundRanking[round]);
             }
 
             builder.AddField(team.Name, message);
             return true;
+        }
+
+        internal static string GetNextMatchString(Team team)
+        {
+            League league = LeagueManager.League;
+
+            if (!league.NextMatchLookup.ContainsKey(team))
+            {
+                return "No match found.";
+            }
+
+            MatchResult match = league.NextMatchLookup[team];
+            List<BracketRound> rounds = league.Bracket.Rounds.Last();
+            BracketRound round = rounds.Where(r => r.Matches.SelectMany(m => new List<Team>() { m.HomeTeam, m.AwayTeam }).Contains(team)).First();
+            if (match.Bye)
+            {
+                return string.Format("{0}'s next match is a *BYE*",
+                    team);
+            } 
+            else
+            {
+                return string.Format("{0} ({3}) vs {1} ({4}) {2}",
+                    match.HomeTeam, match.AwayTeam, match.Completed ? $" (Completed) [{match.HomeGamesWon}-{match.AwayGamesWon}]" : "", match.HomeTeam.RoundRanking[round], match.AwayTeam.RoundRanking[round]);
+            }
         }
     }
 }
