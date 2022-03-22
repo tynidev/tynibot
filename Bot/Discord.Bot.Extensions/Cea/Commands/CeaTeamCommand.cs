@@ -24,16 +24,20 @@ namespace Discord.Cea
             sb.AppendLine($"Current Rank: {team.Rank} [{team.Stats.MatchWins}-{team.Stats.MatchLosses}]");
             sb.AppendLine($"Goal Differential: {team.Stats.TotalGoalDifferential}, Goals/Game: {(double)team.Stats.TotalGoals / team.Stats.TotalGames:#.000}");
             builder.AddField(team.Name, sb.ToString());
+            AddRosterToEmbed(builder, team);
 
-            sb = new();
+            return builder.Build();
+        }
+
+        internal static void AddRosterToEmbed(EmbedBuilder builder, Team team)
+        {
+            StringBuilder sb = new();
             foreach (Player p in team.Players)
             {
                 string captainTag = p.Captain ? "(c) " : "";
                 sb.AppendLine($"{captainTag} {p.DiscordId}");
             }
-            builder.AddField("Roster", sb.ToString());
-
-            return builder.Build();
+            builder.AddField($"{team.Name}'s Roster", sb.ToString());
         }
     }
 }

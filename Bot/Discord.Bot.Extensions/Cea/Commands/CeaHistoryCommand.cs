@@ -44,7 +44,8 @@ namespace Discord.Cea
                 {
                     if (result.HomeTeam == team || result.AwayTeam == team)
                     {
-                        sb.AppendLine($"[{result.HomeGamesWon}-{result.AwayGamesWon}] {result.HomeTeam} [{result.HomeTeam.RoundRanking[round]}] vs {result.AwayTeam} [{result.AwayTeam.RoundRanking[round]}]");
+                        string awayString = result.Bye ? "BYE" : $"{result.AwayTeam}[{ result.AwayTeam.RoundRanking[round]}]";
+                        sb.AppendLine($"[{result.HomeGamesWon}-{result.AwayGamesWon}] {result.HomeTeam} [{result.HomeTeam.RoundRanking[round]}] vs {awayString}");
                     }
                 }
             }
