@@ -26,7 +26,7 @@ namespace Discord.Cea
         async Task ICeaSubCommand.Run(SocketSlashCommand command, DiscordSocketClient client, IReadOnlyDictionary<SlashCommandOptions, string> options, Lazy<List<Team>> lazyTeams)
         {
             BracketSet currentBrackets = LeagueManager.League.Bracket;
-            BracketRound currentRound = currentBrackets.Rounds.First().First();
+            BracketRound currentRound = currentBrackets.Rounds.Last().First();
             string currentStage = StageMatcher.Lookup(currentRound.RoundName);
             List<StageGroup> stageGroups = ConfigurationManager.Configuration.stageGroups.ToList();
             List<StageGroup> currentStageGroups = stageGroups.Where(g => g.Stage.Equals(currentStage)).ToList();
@@ -50,7 +50,10 @@ namespace Discord.Cea
                     }
                 }
 
-                builder.AddField(page == 0 ? $"{group.Name} Standings" : $"{group.Name} Continued", result.ToString());
+                if (result.Length > 0)
+                {
+                    builder.AddField(page == 0 ? $"{group.Name} Standings" : $"{group.Name} Continued", result.ToString());
+                }
                 embeds.Add(builder.Build());
             }
 
