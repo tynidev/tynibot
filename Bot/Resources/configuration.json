@@ -2,7 +2,8 @@
   "bracketSets": [
     [ "e9BDcD_Jb0" ],
     [ "vsrMjnFDMc", "WZaqjbfPLL" ],
-    [ "tnhmjDEqaV" ]
+    [ "tnhmjDEqaV" ],
+    [ "Dn6g98MPsh" ]
   ],
   "stageConfiguration": {
     "preseason 1": "Preseason",
@@ -13,7 +14,12 @@
     "stage2-placement 1": "Stage 2",
     "stage2-placement 2": "Stage 2",
     "stage2-placement 3": "Stage 2",
-    "stage2-placement 4": "Stage 2"
+    "stage2-placement 4": "Stage 2",
+    "Round of 32": "Playoffs",
+    "Round of 16": "Playoffs",
+    "Round of 8": "Playoffs",
+    "Round of 4": "Playoffs",
+    "Round of 2": "Playoffs"
   },
   "stageGroups": [
     {
@@ -56,7 +62,7 @@
       "Name": "Playoffs Group",
       "Stage": "Playoffs",
       "StartingRank": 1,
-      "TeamIds": []
+      "TeamIds": [ "RffqWCFRFX", "IAn9WN9_ib", "JRHmJWqqmy", "WRo73i2EHl", "u8zDeafYsZ", "bxGWuL5O6w", "A5vxppXdIE", "tsM6u9VaSB", "quTzSlM_So", "6J8ky4zsrG", "NZahTtd57C", "VckKY2prsT", "oWCQtCYliC", "O-ccsUTq7F", "qO5R3VJFsd", "hbiokRzMoo", "Rl2XkHPzUn", "xgIw44XSOl", "za4IX1sT2e", "YFAMtsLkqX", "AM332bh8eg", "LMcsxk54iV", "r9ljiGlwJp", "9DpS09s7Tj", "DTyIMNzVM-", "_bS47viO6e", "Q4dn8A48ZT", "CAJdA_5qoF", "i2HmRvkIrh", "LDeThHv0s9", "t4-toFJV9e", "tRZwpDprz4" ]
     }
   ]
 }
