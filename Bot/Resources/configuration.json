@@ -17,9 +17,9 @@
     "stage2-placement 4": "Stage 2",
     "Round of 32": "Playoffs",
     "Round of 16": "Playoffs",
-    "Round of 8": "Playoffs",
-    "Round of 4": "Playoffs",
-    "Round of 2": "Playoffs"
+    "Quarterfinals": "Playoffs",
+    "Semifinals": "Playoffs",
+    "Finals": "Playoffs"
   },
   "stageGroups": [
     {
