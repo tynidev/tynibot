@@ -74,7 +74,7 @@ namespace Discord.Cea
                     name: "configuration",
                     type: ApplicationCommandOptionType.String,
                     description: "The full JSON configuration for the CEA bot.",
-                    required: true);
+                    isRequired: true);
             
 
             builder.AddOption(optionBuilder);

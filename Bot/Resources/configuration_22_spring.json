@@ -1,0 +1,68 @@
+{
+  "bracketSets": [
+    [ "e9BDcD_Jb0" ],
+    [ "vsrMjnFDMc", "WZaqjbfPLL" ],
+    [ "tnhmjDEqaV" ],
+    [ "Dn6g98MPsh" ]
+  ],
+  "stageConfiguration": {
+    "preseason 1": "Preseason",
+    "Stage1-4wks-swiss 1": "Stage 1",
+    "Stage1-4wks-swiss 2": "Stage 1",
+    "Stage1-4wks-swiss 3": "Stage 1",
+    "Stage1-4wks-swiss 4": "Stage 1",
+    "stage2-placement 1": "Stage 2",
+    "stage2-placement 2": "Stage 2",
+    "stage2-placement 3": "Stage 2",
+    "stage2-placement 4": "Stage 2",
+    "Round of 32": "Playoffs",
+    "Round of 16": "Playoffs",
+    "Quarterfinals": "Playoffs",
+    "Semifinals": "Playoffs",
+    "Grand Finals": "Playoffs"
+  },
+  "stageGroups": [
+    {
+      "Name": "Preseason Group",
+      "Stage": "Preseason",
+      "StartingRank": 1,
+      "TeamIds": [ "RffqWCFRFX", "IAn9WN9_ib", "JRHmJWqqmy", "OWs4NbadUU", "WRo73i2EHl", "u8zDeafYsZ", "bxGWuL5O6w", "A5vxppXdIE", "tsM6u9VaSB", "quTzSlM_So", "6J8ky4zsrG", "NZahTtd57C", "VckKY2prsT", "oWCQtCYliC", "DlK9AuHk6t", "O-ccsUTq7F", "qO5R3VJFsd", "hbiokRzMoo", "h2sZnIvJ6L", "Rl2XkHPzUn", "xgIw44XSOl", "za4IX1sT2e", "NeiSNX068Z", "YFAMtsLkqX", "L2S6qVfDpW", "AM332bh8eg", "LMcsxk54iV", "r9ljiGlwJp", "-PRIWHKsml", "BYwae94YHs", "JAIKFJxa53", "CIPBKTb6XN", "9DpS09s7Tj", "BsIQtGI8MM", "DTyIMNzVM-", "1Yy4c73McM", "_bS47viO6e", "rrd84n9U-3", "XdWUuCfWMH", "Q4dn8A48ZT", "CAJdA_5qoF", "zZESgfOu0e", "i2HmRvkIrh", "LDeThHv0s9", "-xaZrd_5rH", "t4-toFJV9e", "JdPmCBB5x6", "tRZwpDprz4", "burI03-5uC" ]
+    },
+    {
+      "Name": "Legacy Group",
+      "Stage": "Stage 1",
+      "StartingRank": 1,
+      "TeamIds": [ "RffqWCFRFX", "WRo73i2EHl", "VckKY2prsT", "O-ccsUTq7F", "Rl2XkHPzUn", "za4IX1sT2e", "YFAMtsLkqX", "AM332bh8eg", "LMcsxk54iV", "CIPBKTb6XN", "9DpS09s7Tj", "Q4dn8A48ZT", "CAJdA_5qoF", "i2HmRvkIrh", "LDeThHv0s9" ]
+    },
+    {
+      "Name": "Contenders Group",
+      "Stage": "Stage 1",
+      "StartingRank": 16,
+      "TeamIds": [ "IAn9WN9_ib", "JRHmJWqqmy", "OWs4NbadUU", "u8zDeafYsZ", "bxGWuL5O6w", "A5vxppXdIE", "tsM6u9VaSB", "quTzSlM_So", "6J8ky4zsrG", "NZahTtd57C", "oWCQtCYliC", "DlK9AuHk6t", "qO5R3VJFsd", "hbiokRzMoo", "h2sZnIvJ6L", "xgIw44XSOl", "NeiSNX068Z", "L2S6qVfDpW", "r9ljiGlwJp", "-PRIWHKsml", "BYwae94YHs", "JAIKFJxa53", "BsIQtGI8MM", "DTyIMNzVM-", "1Yy4c73McM", "_bS47viO6e", "rrd84n9U-3", "XdWUuCfWMH", "zZESgfOu0e", "-xaZrd_5rH", "t4-toFJV9e", "JdPmCBB5x6", "tRZwpDprz4", "burI03-5uC" ]
+    },
+    {
+      "Name": "Group A",
+      "Stage": "Stage 2",
+      "StartingRank": 1,
+      "TeamIds": [ "i2HmRvkIrh", "Rl2XkHPzUn", "WRo73i2EHl", "RffqWCFRFX", "O-ccsUTq7F", "za4IX1sT2e", "9DpS09s7Tj", "Q4dn8A48ZT" ]
+    },
+    {
+      "Name": "Group B",
+      "Stage": "Stage 2",
+      "StartingRank": 9,
+      "TeamIds": [ "JdPmCBB5x6", "LMcsxk54iV", "quTzSlM_So", "t4-toFJV9e", "rrd84n9U-3", "A5vxppXdIE", "NZahTtd57C", "r9ljiGlwJp", "xgIw44XSOl", "AM332bh8eg", "CIPBKTb6XN", "qO5R3VJFsd", "YFAMtsLkqX", "CAJdA_5qoF", "LDeThHv0s9", "oWCQtCYliC", "tRZwpDprz4", "bxGWuL5O6w", "DTyIMNzVM-", "VckKY2prsT", "u8zDeafYsZ", "burI03-5uC" ]
+    },
+    {
+      "Name": "Group C",
+      "Stage": "Stage 2",
+      "StartingRank": 31,
+      "TeamIds": [ "zZESgfOu0e", "-PRIWHKsml", "JRHmJWqqmy", "OWs4NbadUU", "NeiSNX068Z", "1Yy4c73McM", "hbiokRzMoo", "BsIQtGI8MM", "h2sZnIvJ6L", "-xaZrd_5rH", "tsM6u9VaSB", "IAn9WN9_ib", "XdWUuCfWMH", "6J8ky4zsrG", "DlK9AuHk6t", "L2S6qVfDpW", "_bS47viO6e", "BYwae94YHs", "JAIKFJxa53" ]
+    },
+    {
+      "Name": "Playoffs Group",
+      "Stage": "Playoffs",
+      "StartingRank": 1,
+      "TeamIds": [ "RffqWCFRFX", "IAn9WN9_ib", "JRHmJWqqmy", "WRo73i2EHl", "u8zDeafYsZ", "bxGWuL5O6w", "A5vxppXdIE", "tsM6u9VaSB", "quTzSlM_So", "6J8ky4zsrG", "NZahTtd57C", "VckKY2prsT", "oWCQtCYliC", "O-ccsUTq7F", "qO5R3VJFsd", "hbiokRzMoo", "Rl2XkHPzUn", "xgIw44XSOl", "za4IX1sT2e", "YFAMtsLkqX", "AM332bh8eg", "LMcsxk54iV", "r9ljiGlwJp", "9DpS09s7Tj", "DTyIMNzVM-", "_bS47viO6e", "Q4dn8A48ZT", "CAJdA_5qoF", "i2HmRvkIrh", "LDeThHv0s9", "t4-toFJV9e", "tRZwpDprz4" ]
+    }
+  ]
+}
