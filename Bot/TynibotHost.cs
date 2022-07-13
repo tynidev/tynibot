@@ -87,8 +87,15 @@ namespace TyniBot
                 await Client.LoginAsync(TokenType.Bot, this.Settings.BotToken);
                 await Client.StartAsync();
 
-                // Bootstrap the CEA Data (Otherwise first response will timeout)
-                PlayCEAStats.RequestManagement.LeagueManager.Bootstrap();
+                try
+                {
+                    // Bootstrap the CEA Data (Otherwise first response will timeout)
+                    PlayCEAStats.RequestManagement.LeagueManager.Bootstrap();
+                }
+                catch(Exception e)
+                {
+                    Console.WriteLine($"Error starting bot: {e}");
+                }
 
                 if (!stoppingToken.HasValue)
                 {
