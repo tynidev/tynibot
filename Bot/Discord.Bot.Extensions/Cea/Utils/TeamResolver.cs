@@ -37,7 +37,10 @@ namespace Discord.Cea
             else
             {
                 string discordId = $"{user.Username}#{user.Discriminator}";
-                teams.Add(league.PlayerDiscordLookup[discordId]);
+                if (league?.PlayerDiscordLookup?.ContainsKey(discordId) == true)
+                {
+                    teams.Add(league.PlayerDiscordLookup[discordId]);
+                }
             }
 
             return teams;
