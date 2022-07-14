@@ -46,5 +46,19 @@ namespace Recruiting.UnitTests
 
             Assert.AreEqual(lookingForPlayers, actual.LookingForPlayers);
         }
+
+        [DataRow("https://rocketleague.tracker.network/rocket-league/profile/epic/7656119817146987/overview", true)]
+        [DataRow("https://rocketleague.tracker.network/rocket-league/profile/psn/7656119817146987/overview", true)]
+        [DataRow("https://rocketleague.tracker.network/rocket-league/profile/steam/7656119817146987/overview", true)]
+        [DataRow("https://rocketleague.tracker.network/rocket-league/profile/xbl/7656119817146987/overview", true)]
+        [DataRow("https://rocketleague.tracker.network/rocket-league/profile/xbl/7656119817146987/", false)]
+        [DataRow("https://rocketleague.tracker.network/rocket-league/profile/epic//overview", false)]
+        [DataRow("https://rocketleague.tracker.network/rocket-league/profile/notreal/7656119817146987/overview", false)]
+        [DataRow("randomstring", false)]
+        [DataTestMethod]
+        public void TestValidateTracker(string tracker, bool valid)
+        {
+            Assert.AreEqual(valid, Player.ValidateTrackerLink(tracker));
+        }
     }
 }
