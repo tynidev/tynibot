@@ -11,6 +11,8 @@ namespace TyniBot.Recruiting
     {
         public ulong MsgId { get; set; } = 0;
         public string Name { get; set; } = null;
+        public bool LookingForPlayers { get; set; } = false;
+
         public Player Captain = null;
         public List<Player> Players { get; set; } = new List<Player>();
 
@@ -21,10 +23,14 @@ namespace TyniBot.Recruiting
             team.Name = msg.Substring(4, msg.IndexOf("**__") - 4);
 
             StringReader strReader = new StringReader(msg);
-            strReader.ReadLine();
-
             var line = strReader.ReadLine();
 
+            if (string.Equals(line.Substring(msg.IndexOf("**__") + 4).Trim(), "(looking for players)", StringComparison.OrdinalIgnoreCase))
+            {
+                team.LookingForPlayers = true;
+            }
+
+            line = strReader.ReadLine();
             if (team.Name != "Free_Agents")
             {
                 string captainName = line.Substring("Captain:".Length).Trim();
@@ -32,6 +38,7 @@ namespace TyniBot.Recruiting
 
                 line = strReader.ReadLine();
             }
+
 
             while (line != null)
             {
@@ -46,7 +53,7 @@ namespace TyniBot.Recruiting
 
         public string ToMessage()
         {
-            string msg = $"__**{this.Name}**__\n";
+            string msg = $"__**{this.Name}**__ { (this.LookingForPlayers ? "(looking for players)" : "")}\n";
 
             if (this.Name != "Free_Agents")
             {

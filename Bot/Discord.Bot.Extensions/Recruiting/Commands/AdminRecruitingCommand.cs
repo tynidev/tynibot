@@ -72,11 +72,20 @@ namespace TyniBot.Commands
             };
             deleteTeamCmd.AddOption("team", ApplicationCommandOptionType.String, "Team to remove", isRequired: true);
 
+            var lookingForPlayersCmd = new SlashCommandOptionBuilder()
+            {
+                Name = "lookingforplayers",
+                Description = "Mark your team as looking for players or not.",
+                Type = ApplicationCommandOptionType.SubCommand
+            };
+            lookingForPlayersCmd.AddOption("team", ApplicationCommandOptionType.String, "Team to mark as looking for players", isRequired: true);
+            lookingForPlayersCmd.AddOption("looking", ApplicationCommandOptionType.Boolean, "Are you looking for new players", isRequired: true);
+
             var builder = new SlashCommandBuilder()
                    .WithName(this.Name)
                    .WithDescription(this.Description)
                    .WithDefaultPermission(this.DefaultPermissions)
-                   .AddOptions(addCmd, moveCmd, removeCmd, deleteTeamCmd);
+                   .AddOptions(addCmd, moveCmd, removeCmd, deleteTeamCmd, lookingForPlayersCmd);
 
             return builder.Build();
         }

@@ -72,6 +72,9 @@ namespace TyniBot.Commands
                 case "deleteteam":
                     await DeleteTeamTrackerCommand.Run(command, client, options, recruitingChannel, messages, teams);
                     break;
+                case "lookingforplayers":
+                    await LookingForPlayersCommand.Run(command, client, options, recruitingChannel, messages, teams);
+                    break;
                 default:
                     await command.RespondAsync($"SubCommand {subCommand} not supported", ephemeral: true);
                     return;
