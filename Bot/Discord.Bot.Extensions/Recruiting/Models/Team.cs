@@ -11,6 +11,8 @@ namespace TyniBot.Recruiting
     {
         public ulong MsgId { get; set; } = 0;
         public string Name { get; set; } = null;
+        public bool LookingForPlayers { get; set; } = false;
+
         public Player Captain = null;
         public List<Player> Players { get; set; } = new List<Player>();
 
@@ -31,7 +33,14 @@ namespace TyniBot.Recruiting
                 team.Captain = new Player() { DiscordUser = captainName };
 
                 line = strReader.ReadLine();
+
+                if (line != null)
+                {
+                    team.LookingForPlayers = line.StartsWith("Looking For Players:") ? bool.Parse(line.Substring("Looking For Players:".Length).Trim()) : false;
+                    line = strReader.ReadLine();
+                }
             }
+
 
             while (line != null)
             {
@@ -51,6 +60,7 @@ namespace TyniBot.Recruiting
             if (this.Name != "Free_Agents")
             {
                 msg += $"Captain: {(this.Captain != null ? $"{this.Captain.DiscordUser}" : " ")}\n";
+                msg += $"Looking For Players: {this.LookingForPlayers}\n";
             }
             Players.Sort((p1, p2) => p1.DiscordUser.CompareTo(p2.DiscordUser));
 

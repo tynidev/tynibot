@@ -14,12 +14,15 @@ namespace Recruiting.UnitTests
     [TestClass]
     public class RecruitingTests
     {
-        [TestMethod]
-        public void TestTeamParseTeam()
+        [DataRow(false)]
+        [DataRow(true)]
+        [DataTestMethod]
+        public void TestTeamParseTeam(bool lookingForPlayers)
         {
             Team expected = new Team();
             expected.Name = "Free Agents";
             expected.Captain = null;
+            expected.LookingForPlayers = lookingForPlayers;
             expected.Players = new List<Player>()
             {
                 new Player() { DiscordUser = "tyni", Platform = Platform.Steam, PlatformId = "acuo" },
@@ -40,6 +43,8 @@ namespace Recruiting.UnitTests
             Assert.AreEqual("tyni", actual.Players[1].DiscordUser);
             Assert.AreEqual(Platform.Steam, actual.Players[1].Platform);
             Assert.AreEqual("acuo", actual.Players[1].PlatformId);
+
+            Assert.AreEqual(lookingForPlayers, actual.LookingForPlayers);
         }
     }
 }
