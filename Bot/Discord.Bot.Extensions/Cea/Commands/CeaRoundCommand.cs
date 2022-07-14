@@ -22,9 +22,14 @@ namespace Discord.Cea
 
         async Task ICeaSubCommand.Run(SocketSlashCommand command, DiscordSocketClient client, IReadOnlyDictionary<SlashCommandOptions, string> options, Lazy<List<Team>> lazyTeams)
         {
+            bool ephemeral = !options.ContainsKey(SlashCommandOptions.post) || !options[SlashCommandOptions.post].Equals("True");
             BracketSet currentBrackets = LeagueManager.League.Bracket;
-            List<Tuple<string, string, string>> bracketResults = new();
+            if (currentBrackets == null)
+            {
+                await command.RespondAsync(text: "No Current Brackets.", ephemeral: ephemeral);
+            }
 
+            List<Tuple<string, string, string>> bracketResults = new();
             foreach (Bracket bracket in currentBrackets.Brackets)
             {
                 List<BracketRound> rounds = bracket.Rounds;
@@ -43,8 +48,6 @@ namespace Discord.Cea
 
                 bracketResults.Add(new Tuple<string, string, string>(bracket.Name, round.RoundName, sb.ToString()));
             }
-            
-            bool ephemeral = !options.ContainsKey(SlashCommandOptions.post) || !options[SlashCommandOptions.post].Equals("True");
 
             if (bracketResults.All(s => s.Item3.Length < 1024)) 
             {

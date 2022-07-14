@@ -92,7 +92,7 @@ namespace TyniBot.Commands
             addCmd.AddOption("platform",
                                 ApplicationCommandOptionType.String,
                                 "Platorm you play on",
-                                required: true,
+                                isRequired: true,
                                 choices:
                                     new ApplicationCommandOptionChoiceProperties[] { new ApplicationCommandOptionChoiceProperties() { Name = "epic", Value = "Epic" },
                                         new ApplicationCommandOptionChoiceProperties() { Name = "steam", Value = "Steam" },
@@ -100,7 +100,7 @@ namespace TyniBot.Commands
                                         new ApplicationCommandOptionChoiceProperties() { Name = "xbox", Value = "Xbox" },
                                         new ApplicationCommandOptionChoiceProperties() { Name = "tracker", Value = "Tracker" }
                                     });
-            addCmd.AddOption("id", ApplicationCommandOptionType.String, "For steam use your id, others use username, tracker post full tracker", required: true);
+            addCmd.AddOption("id", ApplicationCommandOptionType.String, "For steam use your id, others use username, tracker post full tracker", isRequired: true);
 
            
             var builder = new SlashCommandBuilder()
@@ -134,7 +134,7 @@ namespace TyniBot.Commands
         {
             var msgs = new List<IMessage>();
             var messages = await channel.GetMessagesAsync().FlattenAsync();
-            while (messages.Count() > 0 && msgs.Count() < limit)
+            while (messages.Any() && msgs.Count < limit)
             {
                 msgs.AddRange(messages);
                 messages = await channel.GetMessagesAsync(messages.Last(), Direction.Before).FlattenAsync();
