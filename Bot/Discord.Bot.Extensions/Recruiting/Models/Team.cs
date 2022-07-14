@@ -38,6 +38,7 @@ namespace TyniBot.Recruiting
                 {
                     team.LookingForPlayers = bool.Parse(line.Substring("Looking For Players:".Length).Trim());
                     line = strReader.ReadLine();
+                    line = strReader.ReadLine();
                 }
             }
 
@@ -60,7 +61,7 @@ namespace TyniBot.Recruiting
             if (this.Name != "Free_Agents")
             {
                 msg += $"Captain: {(this.Captain != null ? $"{this.Captain.DiscordUser}" : " ")}\n";
-                msg += $"Looking For Players: {this.LookingForPlayers}\n";
+                msg += $"Looking For Players: {this.LookingForPlayers}\n\n";
             }
             Players.Sort((p1, p2) => p1.DiscordUser.CompareTo(p2.DiscordUser));
 
