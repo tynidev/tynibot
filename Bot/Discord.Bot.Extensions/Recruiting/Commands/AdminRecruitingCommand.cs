@@ -78,8 +78,8 @@ namespace TyniBot.Commands
                 Description = "Mark your team as looking for players or not.",
                 Type = ApplicationCommandOptionType.SubCommand
             };
-            lookingForPlayersCmd.AddOption("team", ApplicationCommandOptionType.String, "Team to mark as looking for players", required: true);
-            lookingForPlayersCmd.AddOption("looking", ApplicationCommandOptionType.Boolean, "Are you looking for new players", required: true);
+            lookingForPlayersCmd.AddOption("team", ApplicationCommandOptionType.String, "Team to mark as looking for players", isRequired: true);
+            lookingForPlayersCmd.AddOption("looking", ApplicationCommandOptionType.Boolean, "Are you looking for new players", isRequired: true);
 
             var builder = new SlashCommandBuilder()
                    .WithName(this.Name)
