@@ -23,23 +23,20 @@ namespace TyniBot.Recruiting
             team.Name = msg.Substring(4, msg.IndexOf("**__") - 4);
 
             StringReader strReader = new StringReader(msg);
-            strReader.ReadLine();
-
             var line = strReader.ReadLine();
 
+            if (string.Equals(line.Substring(msg.IndexOf("**__") + 4).Trim(), "(looking for players)", StringComparison.OrdinalIgnoreCase))
+            {
+                team.LookingForPlayers = true;
+            }
+
+            line = strReader.ReadLine();
             if (team.Name != "Free_Agents")
             {
                 string captainName = line.Substring("Captain:".Length).Trim();
                 team.Captain = new Player() { DiscordUser = captainName };
 
                 line = strReader.ReadLine();
-
-                if (line.StartsWith("Looking For Players:"))
-                {
-                    team.LookingForPlayers = bool.Parse(line.Substring("Looking For Players:".Length).Trim());
-                    line = strReader.ReadLine();
-                    line = strReader.ReadLine();
-                }
             }
 
 
@@ -56,12 +53,11 @@ namespace TyniBot.Recruiting
 
         public string ToMessage()
         {
-            string msg = $"__**{this.Name}**__\n";
+            string msg = $"__**{this.Name}**__ { (this.LookingForPlayers ? "(looking for players)" : "")}\n";
 
             if (this.Name != "Free_Agents")
             {
                 msg += $"Captain: {(this.Captain != null ? $"{this.Captain.DiscordUser}" : " ")}\n";
-                msg += $"Looking For Players: {this.LookingForPlayers}\n\n";
             }
             Players.Sort((p1, p2) => p1.DiscordUser.CompareTo(p2.DiscordUser));
 
