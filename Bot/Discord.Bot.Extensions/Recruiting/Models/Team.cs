@@ -34,9 +34,9 @@ namespace TyniBot.Recruiting
 
                 line = strReader.ReadLine();
 
-                if (line != null)
+                if (line.StartsWith("Looking For Players:"))
                 {
-                    team.LookingForPlayers = line.StartsWith("Looking For Players:") ? bool.Parse(line.Substring("Looking For Players:".Length).Trim()) : false;
+                    team.LookingForPlayers = bool.Parse(line.Substring("Looking For Players:".Length).Trim());
                     line = strReader.ReadLine();
                 }
             }
