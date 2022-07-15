@@ -42,7 +42,15 @@ namespace TyniBot.Recruiting
 
             while (line != null)
             {
-                team.Players.Add(Player.ParsePlayer(line));
+                try
+                {
+                    team.Players.Add(Player.ParsePlayer(line));
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Error parsing player {line}");
+                }
+
                 line = strReader.ReadLine();
             }
 
