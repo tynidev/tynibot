@@ -31,7 +31,7 @@ namespace TyniBot.Recruiting
                 case Platform.Steam: platform = "steam"; break;
                 case Platform.Xbox: platform = "xbl"; break;
                 case Platform.Playstation: platform = "psn"; break;
-                case Platform.Tracker: return this.PlatformId;
+                case Platform.Tracker: return $"<{this.PlatformId}>";
             }
 
             return $"<https://rocketleague.tracker.network/rocket-league/profile/{platform}/{Uri.EscapeUriString(PlatformId)}/overview>";
