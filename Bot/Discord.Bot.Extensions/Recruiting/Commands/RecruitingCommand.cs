@@ -29,7 +29,7 @@ namespace TyniBot.Commands
 
         public override bool IsGlobal => false;
 
-        protected static readonly ImmutableDictionary<ulong, ulong> recruitingChannelForGuild = new Dictionary<ulong, ulong> {
+        public static readonly ImmutableDictionary<ulong, ulong> recruitingChannelForGuild = new Dictionary<ulong, ulong> {
             { 902581441727197195, 903521423522398278}, //tynibot test
             { 124366291611025417,  541894310258278400}, //msft rl
             { 801598108467200031,  904856579403300905}, //tyni's server
