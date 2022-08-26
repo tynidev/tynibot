@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Worker;Microsoft.NET.Sdk.Publish">
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <UserSecretsId>dotnet-TyniBotDockerService-51297F16-0E9B-4964-904E-360D36A62E18</UserSecretsId>
     <DockerDefaultTargetOS>Windows</DockerDefaultTargetOS>
     <AssemblyName>TyniBotDockerService</AssemblyName>
