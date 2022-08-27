@@ -120,7 +120,7 @@ namespace TyniBot
 
         public async Task AnnounceJoinedUser(SocketGuildUser user) //Welcomes the new user
         {
-            var channel = user.Guild.DefaultChannel; // Gets the channel to send the message in
+            var channel = user.Guild.Id == 124366291611025417 ? user.Guild.GetTextChannel(124366291611025417) : user.Guild.DefaultChannel; // Gets the channel to send the message in
 
             var guild = await Guild.GetGuildAsync(user.Guild.Id, StorageClient);
             var rolesMessage = guild.RolesChannelId != default ? $"Check out <#{guild.RolesChannelId}> to get notifications for when people are looking for others to play with. " : "";
