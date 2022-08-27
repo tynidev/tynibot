@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Collections.Immutable;
 using System.Linq;
 using Discord.Bot;
+using Discord.Bot.Utils;
 using System;
 using TyniBot.Recruiting;
 
@@ -14,7 +15,7 @@ namespace TyniBot.Commands
     // Todo: create and assign and delete roles for the teams, create/delete team channels as well.
     public class MoveTrackedUserCommand
     {
-        public static async Task Run(SocketSlashCommand command, DiscordSocketClient client, StorageClient storageClient, Dictionary<string, SocketSlashCommandDataOption> options, string guildId, ISocketMessageChannel recruitingChannel, List<Team> teams)
+        public static async Task Run(SocketSlashCommand command, DiscordSocketClient client, StorageClient storageClient, Dictionary<string, SocketSlashCommandDataOption> options, Guild guild, ISocketMessageChannel recruitingChannel, List<Team> teams)
         {
             var guildUser = (SocketGuildUser)options["username"].Value;
             var discordUser = guildUser.Nickname ?? guildUser.Username;
@@ -78,15 +79,15 @@ namespace TyniBot.Commands
 
             await command.FollowupAsync($"You have moved user {discordUser} from {oldTeam.Name} -> {newTeam.Name}", ephemeral: true);
 
-            await storageClient.SaveTableRow(Team.TableName, newTeam.Name, guildId, newTeam);
+            await storageClient.SaveTableRow(Team.TableName, newTeam.Name, guild.RowKey, newTeam);
 
             if (oldTeam.Players.Count > 0)
             {
-                await storageClient.SaveTableRow(Team.TableName, oldTeam.Name, guildId, oldTeam);
+                await storageClient.SaveTableRow(Team.TableName, oldTeam.Name, guild.RowKey, oldTeam);
             }
             else
             {
-                await storageClient.DeleteTableRow(Team.TableName, oldTeam.Name, guildId);
+                await storageClient.DeleteTableRow(Team.TableName, oldTeam.Name, guild.RowKey);
             }
         }
     }

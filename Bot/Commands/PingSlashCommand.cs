@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Bot;
+using Discord.Bot.Utils;
 using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
@@ -19,9 +20,7 @@ namespace TyniBot.Commands
 
         public override bool IsGlobal => true;
 
-        public override Dictionary<ulong, List<ApplicationCommandPermission>> GuildIdsAndPermissions => new Dictionary<ulong, List<ApplicationCommandPermission>>();
-
-        public override async Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client, StorageClient storageClient)
+        public override async Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client, StorageClient storageClient, Guild guild)
         {
             await command.RespondAsync("Pong!");
         }

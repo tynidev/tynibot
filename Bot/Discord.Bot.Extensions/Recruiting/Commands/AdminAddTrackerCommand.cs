@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Collections.Immutable;
 using System.Linq;
 using Discord.Bot;
+using Discord.Bot.Utils;
 using System;
 using TyniBot.Recruiting;
 
@@ -13,7 +14,7 @@ namespace TyniBot.Commands
     // Todo: store guild Ids, role ids, and channel ids in permanent external storage to allow for servers to configure their addtracker command 
     public class AdminAddTrackerCommand
     {
-        public static async Task Run(SocketSlashCommand command, DiscordSocketClient client, StorageClient storageClient, Dictionary<string, SocketSlashCommandDataOption> options, string guildId, ISocketMessageChannel recruitingChannel, List<Team> teams)
+        public static async Task Run(SocketSlashCommand command, DiscordSocketClient client, StorageClient storageClient, Dictionary<string, SocketSlashCommandDataOption> options, Guild guild, ISocketMessageChannel recruitingChannel, List<Team> teams)
         {
             var guildUser = (SocketGuildUser)options["username"].Value;
 
@@ -79,7 +80,7 @@ namespace TyniBot.Commands
 
             await command.FollowupAsync($"{newPlayer.DiscordUser}'s RL tracker has been added to the recruiting board in channel <#{recruitingChannel.Id}>", ephemeral: true);
 
-            await storageClient.SaveTableRow(Team.TableName, updatedTeam.Name, guildId, updatedTeam);
+            await storageClient.SaveTableRow(Team.TableName, updatedTeam.Name, guild.RowKey, updatedTeam);
         }
     }
 }

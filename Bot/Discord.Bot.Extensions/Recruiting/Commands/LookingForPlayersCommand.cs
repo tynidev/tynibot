@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Collections.Immutable;
 using System.Linq;
 using Discord.Bot;
+using Discord.Bot.Utils;
 using System;
 using TyniBot.Recruiting;
 
@@ -13,7 +14,7 @@ namespace TyniBot.Commands
     // Todo: store guild Ids, role ids, and channel ids in permanent external storage to allow for servers to configure their addtracker command 
     public class LookingForPlayersCommand
     {
-        public static async Task Run(SocketSlashCommand command, DiscordSocketClient client, StorageClient storageClient, Dictionary<string, SocketSlashCommandDataOption> options, string guildId, ISocketMessageChannel recruitingChannel, List<Team> teams)
+        public static async Task Run(SocketSlashCommand command, DiscordSocketClient client, StorageClient storageClient, Dictionary<string, SocketSlashCommandDataOption> options, Guild guild, ISocketMessageChannel recruitingChannel, List<Team> teams)
         {
             var teamName = options["team"].Value.ToString();
             var lookingForPlayers = (bool)options["looking"].Value;
@@ -31,7 +32,7 @@ namespace TyniBot.Commands
             await recruitingChannel.ModifyMessageAsync(team.MsgId, (message) => message.Content = team.ToMessage());
             await command.FollowupAsync($"You marked team {team.Name} as looking for players {lookingForPlayers}", ephemeral: true);
 
-            await storageClient.SaveTableRow(Team.TableName, teamName, guildId, team);
+            await storageClient.SaveTableRow(Team.TableName, teamName, guild.RowKey, team);
         }
     }
 }

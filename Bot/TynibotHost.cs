@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Bot;
+using Discord.Bot.Utils;
 using Discord.Cea;
 using Discord.WebSocket;
 using LiteDB;
@@ -11,6 +12,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TyniBot.Commands;
+using TyniBot.Recruiting;
 
 namespace TyniBot
 {
@@ -35,21 +37,6 @@ namespace TyniBot
             new CeaSlashCommand(),
             new AdminCeaSlashCommand()
         };
-
-        private static readonly ImmutableDictionary<ulong, ulong> rolesChannelForGuild = new Dictionary<ulong, ulong> {
-            { 902581441727197195, 904472700616073316}, //tynibot test
-            { 124366291611025417,  549039583459934209}, //msft rl
-            { 801598108467200031,  904856579403300905}, //tyni's server
-            { 904804698484260874, 904804698484260877 } // nates server
-        }.ToImmutableDictionary();
-
-
-        private static readonly ImmutableDictionary<ulong, ulong> inhouseChannelForGuild = new Dictionary<ulong, ulong> {
-            { 902581441727197195, 902729259905351701}, //tynibot test
-            { 124366291611025417,  552350525555867658}, //msft rl
-            { 801598108467200031,  904856579403300905}, //tyni's server
-            { 904804698484260874, 904867794376618005 } // nates server
-        }.ToImmutableDictionary();
 
         private readonly Dictionary<string, SlashCommand> SlashCommandDictionary;
 
@@ -134,18 +121,12 @@ namespace TyniBot
         public async Task AnnounceJoinedUser(SocketGuildUser user) //Welcomes the new user
         {
             var channel = user.Guild.DefaultChannel; // Gets the channel to send the message in
-            ulong recruitingChannelId = 0;
-            ulong inhouseChannelId =0;
-            ulong rolesChannelId = 0;
 
-            RecruitingCommand.recruitingChannelForGuild.TryGetValue(user.Guild.Id, out recruitingChannelId);
-            inhouseChannelForGuild.TryGetValue(user.Guild.Id, out inhouseChannelId);
-            rolesChannelForGuild.TryGetValue(user.Guild.Id, out rolesChannelId);
-            var rolesMessage = rolesChannelId != 0 ? $"Check out <#{rolesChannelId}> to get notifications for when people are looking for others to play with. " : "";
-            var inhouseMessage = inhouseChannelId != 0 ? $"If you are looking for others to play with you can ping in <#{inhouseChannelId}> and hop into a voice channel. " : "";
-            var recruitingMessage = recruitingChannelId != 0 ? $"If you are a Microsoft employee you can get verified. If you are interested in participating in upcoming CEA seasons, head over to <#{recruitingChannelId}>." : "";
+            var guild = await Guild.GetGuildAsync(user.Guild.Id, StorageClient);
+            var rolesMessage = guild.RolesChannelId != default ? $"Check out <#{guild.RolesChannelId}> to get notifications for when people are looking for others to play with. " : "";
+            var inhouseMessage = guild.InhouseChannelId != default ? $"If you are looking for others to play with you can ping in <#{guild.InhouseChannelId}> and hop into a voice channel. " : "";
+            var recruitingMessage = guild.RecruitingChannelId != default? $"If you are a Microsoft employee you can get verified. If you are interested in participating in upcoming CEA seasons, head over to <#{guild.RecruitingChannelId}>." : "";
 
-            // Get all messages in channel
             await channel.SendMessageAsync($"Welcome {user.Mention} to {channel.Guild.Name}. {rolesMessage}{inhouseMessage}{recruitingMessage}"); //Welcomes the new user
         }
 
@@ -248,9 +229,11 @@ namespace TyniBot
 
         private async Task SlashCommandTriggeredAsync(SocketSlashCommand command)
         {
+            var guild = await Guild.GetGuildAsync(command.GuildId.Value, StorageClient);
+
             if (SlashCommandDictionary.TryGetValue(command.Data.Name, out SlashCommand slashCommand))
             {
-                await slashCommand.HandleCommandAsync(command, Client, StorageClient);
+                await slashCommand.HandleCommandAsync(command, Client, StorageClient, guild);
             }
             else
             {

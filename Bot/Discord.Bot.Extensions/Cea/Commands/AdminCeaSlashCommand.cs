@@ -1,4 +1,5 @@
 ﻿using Discord.Bot;
+using Discord.Bot.Utils;
 using Discord.WebSocket;
 using PlayCEA_RL.Configuration;
 using PlayCEAStats.DataModel;
@@ -32,7 +33,7 @@ namespace Discord.Cea
         {
         }
 
-        public override async Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client, StorageClient storageClient)
+        public override async Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client, StorageClient storageClient, Guild guild)
         {
             var subCommand = command.Data.Options.Where(o => o.Type.Equals(ApplicationCommandOptionType.SubCommand)).First();
             string configuration = (string) subCommand.Options.Where(o => o.Name.Equals("configuration")).First().Value;

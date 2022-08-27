@@ -1,4 +1,5 @@
-﻿using Discord.Rest;
+﻿using Discord.Bot.Utils;
+using Discord.Rest;
 using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
@@ -18,7 +19,7 @@ namespace Discord.Bot
 
         public abstract bool IsGlobal { get; }
 
-        public abstract Dictionary<ulong, List<ApplicationCommandPermission>> GuildIdsAndPermissions { get; }
+        public virtual Dictionary<ulong, List<ApplicationCommandPermission>> GuildIdsAndPermissions => GuildIdMappings.defaultSlashCommandPermissions;
 
         public abstract ApplicationCommandProperties Build();
     }

@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Bot;
+using Discord.Bot.Utils;
 using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
@@ -19,24 +20,11 @@ namespace TyniBot.Commands
 
         public override bool DefaultPermissions => false;
 
-        public override Dictionary<ulong, List<ApplicationCommandPermission>> GuildIdsAndPermissions => new Dictionary<ulong, List<ApplicationCommandPermission>>()
-        {
-            { 902581441727197195, new List<ApplicationCommandPermission> { new ApplicationCommandPermission(903514452463325184, ApplicationCommandPermissionTarget.Role, true) } }, // tynibot test
-            { 124366291611025417, new List<ApplicationCommandPermission> { new ApplicationCommandPermission(598569589512863764, ApplicationCommandPermissionTarget.Role, true) } }, // msft rl
-            { 801598108467200031, new List<ApplicationCommandPermission>() }, // tyni's server
-            { 904804698484260874, new List<ApplicationCommandPermission> { new ApplicationCommandPermission(904867602571100220, ApplicationCommandPermissionTarget.Role, true) } }, // nate server
-        };
+        public override Dictionary<ulong, List<ApplicationCommandPermission>> GuildIdsAndPermissions => GuildIdMappings.recruitingPermissions;
 
         public override bool IsGlobal => false;
 
-        public static readonly ImmutableDictionary<ulong, ulong> recruitingChannelForGuild = new Dictionary<ulong, ulong> {
-            { 902581441727197195, 903521423522398278}, //tynibot test
-            { 124366291611025417,  541894310258278400}, //msft rl
-            { 801598108467200031,  904856579403300905}, //tyni's server
-            { 904804698484260874, 904867794376618005 } // nates server
-        }.ToImmutableDictionary();
-
-        public override async Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client, StorageClient storageClient)
+        public override async Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client, StorageClient storageClient, Guild guild)
         {
             var channel = command.Channel as SocketGuildChannel;
             var subCommand = command.Data.Options.First();
@@ -44,31 +32,8 @@ namespace TyniBot.Commands
 
             await command.RespondAsync($"Starting Command {command.CommandName} {subCommand.Name}", ephemeral: true);
 
-            var guild = await storageClient.GetTableRow<Guild>(Guild.TableName, channel.Guild.Id.ToString(), Guild.PartitionKeyConst);
-
-            if (guild == null)
-            {
-                if (!recruitingChannelForGuild.TryGetValue(channel.Guild.Id, out var recruitingChannelId))
-                {
-                    await command.FollowupAsync("Channel is not part of a guild that supports recruiting", ephemeral: true);
-                    return;
-                }
-
-                guild = new Guild
-                {
-                    Id = channel.Guild.Id.ToString(),
-                    ChannelId = recruitingChannelId
-                };
-
-                await storageClient.SaveTableRow<Guild>(Guild.TableName, guild.Id, Guild.PartitionKeyConst, guild);
-            }
-            else
-            {
-                // cache these values eventually, as well as make it configurable
-            }
-
             // Get all messages in channel
-            var recruitingChannel = await client.GetChannelAsync(guild.ChannelId) as ISocketMessageChannel;
+            var recruitingChannel = await client.GetChannelAsync(guild.RecruitingChannelId) as ISocketMessageChannel;
 
             // cache these values eventually as well to improve performance
             var teams = await storageClient.GetAllRowsAsync<Team>(Team.TableName, guild.ToString()); 
@@ -82,29 +47,29 @@ namespace TyniBot.Commands
 
                 if (teams.Count > 0)
                 {
-                    await ConvertMessageTeamsToStorage(teams, guild.Id, storageClient);
+                    await ConvertMessageTeamsToStorage(teams, guild.RowKey, storageClient);
                 }
             }
 
             switch (subCommand.Name)
             {
                 case "add":
-                    await AddTrackerCommand.Run(command, client, storageClient, options, guild.Id, recruitingChannel, teams);
+                    await AddTrackerCommand.Run(command, client, storageClient, options, guild, recruitingChannel, teams);
                     break;
                 case "adminadd":
-                    await AdminAddTrackerCommand.Run(command, client, storageClient, options, guild.Id, recruitingChannel, teams);
+                    await AdminAddTrackerCommand.Run(command, client, storageClient, options, guild, recruitingChannel, teams);
                     break;
                 case "move":
-                    await MoveTrackedUserCommand.Run(command, client, storageClient, options, guild.Id, recruitingChannel, teams);
+                    await MoveTrackedUserCommand.Run(command, client, storageClient, options, guild, recruitingChannel, teams);
                     break;
                 case "remove":
-                    await RemoveTrackedUserCommand.Run(command, client, storageClient, options, guild.Id, recruitingChannel, teams);
+                    await RemoveTrackedUserCommand.Run(command, client, storageClient, options, guild, recruitingChannel, teams);
                     break;
                 case "deleteteam":
-                    await DeleteTeamTrackerCommand.Run(command, client, storageClient, options, guild.Id, recruitingChannel, teams);
+                    await DeleteTeamTrackerCommand.Run(command, client, storageClient, options, guild, recruitingChannel, teams);
                     break;
                 case "lookingforplayers":
-                    await LookingForPlayersCommand.Run(command, client, storageClient, options, guild.Id, recruitingChannel, teams);
+                    await LookingForPlayersCommand.Run(command, client, storageClient, options, guild, recruitingChannel, teams);
                     break;
                 default:
                     await command.FollowupAsync($"SubCommand {subCommand} not supported", ephemeral: true);
@@ -174,7 +139,7 @@ namespace TyniBot.Commands
             return msgs;
         }
 
-        internal async Task ConvertMessageTeamsToStorage(List<Team> teams, string guildId, StorageClient storageClient)
+        internal async Task ConvertMessageTeamsToStorage(List<Team> teams, string rowKey, StorageClient storageClient)
         {
             List<(string, Team)> rowKeysAndTeams = new List<(string, Team)>();
 
@@ -183,7 +148,7 @@ namespace TyniBot.Commands
                 rowKeysAndTeams.Add((team.Name, team));
             }
 
-            await storageClient.SaveTableRows(Team.TableName, rowKeysAndTeams, guildId);
+            await storageClient.SaveTableRows(Team.TableName, rowKeysAndTeams, rowKey);
         }
 
     }
