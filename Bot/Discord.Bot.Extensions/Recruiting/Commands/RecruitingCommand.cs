@@ -50,7 +50,7 @@ namespace TyniBot.Commands
             {
                 if (!recruitingChannelForGuild.TryGetValue(channel.Guild.Id, out var recruitingChannelId))
                 {
-                    await command.RespondAsync("Channel is not part of a guild that supports recruiting", ephemeral: true);
+                    await command.FollowupAsync("Channel is not part of a guild that supports recruiting", ephemeral: true);
                     return;
                 }
 
@@ -104,10 +104,10 @@ namespace TyniBot.Commands
                     await DeleteTeamTrackerCommand.Run(command, client, storageClient, options, guild.Id, recruitingChannel, teams);
                     break;
                 case "lookingforplayers":
-                    await LookingForPlayersCommand.Run(command, client, options, recruitingChannel, messages, teams);
+                    await LookingForPlayersCommand.Run(command, client, storageClient, options, guild.Id, recruitingChannel, teams);
                     break;
                 default:
-                    await command.RespondAsync($"SubCommand {subCommand} not supported", ephemeral: true);
+                    await command.FollowupAsync($"SubCommand {subCommand} not supported", ephemeral: true);
                     return;
             }
         }

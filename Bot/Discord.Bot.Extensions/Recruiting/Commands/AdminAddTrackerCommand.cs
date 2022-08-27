@@ -26,7 +26,7 @@ namespace TyniBot.Commands
 
             if (newPlayer.Platform == Platform.Tracker && !Player.ValidateTrackerLink(newPlayer.PlatformId))
             {
-                await command.RespondAsync($"Your RL tracker link is invalid", ephemeral: true);
+                await command.FollowupAsync($"Your RL tracker link is invalid", ephemeral: true);
                 return;
             }
 

@@ -13,7 +13,7 @@ namespace TyniBot.Commands
     // Todo: store guild Ids, role ids, and channel ids in permanent external storage to allow for servers to configure their addtracker command 
     public class LookingForPlayersCommand
     {
-        public static async Task Run(SocketSlashCommand command, DiscordSocketClient client, Dictionary<string, SocketSlashCommandDataOption> options, ISocketMessageChannel recruitingChannel, List<IMessage> messages, List<Team> teams)
+        public static async Task Run(SocketSlashCommand command, DiscordSocketClient client, StorageClient storageClient, Dictionary<string, SocketSlashCommandDataOption> options, string guildId, ISocketMessageChannel recruitingChannel, List<Team> teams)
         {
             var teamName = options["team"].Value.ToString();
             var lookingForPlayers = (bool)options["looking"].Value;
@@ -22,14 +22,16 @@ namespace TyniBot.Commands
             var team = Team.FindTeam(teams, teamName);
             if (team == null)
             {
-                await command.RespondAsync($"Team {teamName} does not exist in the recruiting table", ephemeral: true);
+                await command.FollowupAsync($"Team {teamName} does not exist in the recruiting table", ephemeral: true);
                 return;
             }
 
             team.LookingForPlayers = lookingForPlayers;
 
             await recruitingChannel.ModifyMessageAsync(team.MsgId, (message) => message.Content = team.ToMessage());
-            await command.RespondAsync($"You marked team {team.Name} as looking for players {lookingForPlayers}", ephemeral: true);
+            await command.FollowupAsync($"You marked team {team.Name} as looking for players {lookingForPlayers}", ephemeral: true);
+
+            await storageClient.SaveTableRow(Team.TableName, teamName, guildId, team);
         }
     }
 }
