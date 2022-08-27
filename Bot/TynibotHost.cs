@@ -131,7 +131,7 @@ namespace TyniBot
 
         public async Task AnnounceJoinedUser(SocketGuildUser user) //Welcomes the new user
         {
-            var channel = user.Guild.DefaultChannel; // Gets the channel to send the message in
+            var channel = user.Guild.Id == 124366291611025417 ? user.Guild.GetTextChannel(124366291611025417) : user.Guild.DefaultChannel; // Gets the channel to send the message in
             ulong recruitingChannelId = 0;
             ulong inhouseChannelId =0;
             ulong rolesChannelId = 0;
