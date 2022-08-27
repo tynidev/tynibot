@@ -32,11 +32,11 @@ namespace TyniBot.Commands
                 Type = ApplicationCommandOptionType.SubCommand
             };
 
-            addCmd.AddOption("username", ApplicationCommandOptionType.User, "Username of user to move", required: true); 
+            addCmd.AddOption("username", ApplicationCommandOptionType.User, "Username of user to move", isRequired: true); 
             addCmd.AddOption("platform",
                                  ApplicationCommandOptionType.String,
                                  "Platorm you play on",
-                                 required: true,
+                                 isRequired: true,
                                  choices:
                                      new ApplicationCommandOptionChoiceProperties[] { new ApplicationCommandOptionChoiceProperties() { Name = "epic", Value = "Epic" },
                                         new ApplicationCommandOptionChoiceProperties() { Name = "steam", Value = "Steam" },
@@ -44,7 +44,7 @@ namespace TyniBot.Commands
                                         new ApplicationCommandOptionChoiceProperties() { Name = "xbox", Value = "Xbox" },
                                         new ApplicationCommandOptionChoiceProperties() { Name = "tracker", Value = "Tracker" }
                                      });
-            addCmd.AddOption("id", ApplicationCommandOptionType.String, "For steam use your id, others use username, tracker post full tracker", required: true);
+            addCmd.AddOption("id", ApplicationCommandOptionType.String, "For steam use your id, others use username, tracker post full tracker", isRequired: true);
 
             var moveCmd = new SlashCommandOptionBuilder()
             {
@@ -52,9 +52,9 @@ namespace TyniBot.Commands
                 Description = "Move a tracked user to a team.",
                 Type = ApplicationCommandOptionType.SubCommand
             };
-            moveCmd.AddOption("username", ApplicationCommandOptionType.User, "Username of user to move", required: true);
-            moveCmd.AddOption("team", ApplicationCommandOptionType.String, "Team to move user to", required: true);
-            moveCmd.AddOption("captain", ApplicationCommandOptionType.Boolean, "Is this user the captain of the team?", required: false);
+            moveCmd.AddOption("username", ApplicationCommandOptionType.User, "Username of user to move", isRequired: true);
+            moveCmd.AddOption("team", ApplicationCommandOptionType.String, "Team to move user to", isRequired: true);
+            moveCmd.AddOption("captain", ApplicationCommandOptionType.Boolean, "Is this user the captain of the team?", isRequired: false);
 
             var removeCmd = new SlashCommandOptionBuilder()
             {
@@ -62,7 +62,7 @@ namespace TyniBot.Commands
                 Description = "Remove a tracked user.",
                 Type = ApplicationCommandOptionType.SubCommand
             };
-            removeCmd.AddOption("username", ApplicationCommandOptionType.User, "Username of user to remove", required: true);
+            removeCmd.AddOption("username", ApplicationCommandOptionType.User, "Username of user to remove", isRequired: true);
 
             var deleteTeamCmd = new SlashCommandOptionBuilder()
             {
@@ -70,13 +70,22 @@ namespace TyniBot.Commands
                 Description = "Remove team.",
                 Type = ApplicationCommandOptionType.SubCommand
             };
-            deleteTeamCmd.AddOption("team", ApplicationCommandOptionType.String, "Team to remove", required: true);
+            deleteTeamCmd.AddOption("team", ApplicationCommandOptionType.String, "Team to remove", isRequired: true);
+
+            var lookingForPlayersCmd = new SlashCommandOptionBuilder()
+            {
+                Name = "lookingforplayers",
+                Description = "Mark your team as looking for players or not.",
+                Type = ApplicationCommandOptionType.SubCommand
+            };
+            lookingForPlayersCmd.AddOption("team", ApplicationCommandOptionType.String, "Team to mark as looking for players", isRequired: true);
+            lookingForPlayersCmd.AddOption("looking", ApplicationCommandOptionType.Boolean, "Are you looking for new players", isRequired: true);
 
             var builder = new SlashCommandBuilder()
                    .WithName(this.Name)
                    .WithDescription(this.Description)
                    .WithDefaultPermission(this.DefaultPermissions)
-                   .AddOptions(addCmd, moveCmd, removeCmd, deleteTeamCmd);
+                   .AddOptions(addCmd, moveCmd, removeCmd, deleteTeamCmd, lookingForPlayersCmd);
 
             return builder.Build();
         }

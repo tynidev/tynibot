@@ -23,6 +23,12 @@ namespace TyniBot.Commands
             newPlayer.Platform = (Platform)Enum.Parse(typeof(Platform), options["platform"].Value.ToString());
             newPlayer.PlatformId = options["id"].Value.ToString();
 
+            if (newPlayer.Platform == Platform.Tracker && !Player.ValidateTrackerLink(newPlayer.PlatformId))
+            {
+                await command.RespondAsync($"Your RL tracker link is invalid", ephemeral: true);
+                return;
+            }
+
             // Is player just updating tracker link? -> Update link
             Team updatedTeam = null;
             foreach (var team in teams)

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace TyniBot.Recruiting
@@ -30,7 +31,7 @@ namespace TyniBot.Recruiting
                 case Platform.Steam: platform = "steam"; break;
                 case Platform.Xbox: platform = "xbl"; break;
                 case Platform.Playstation: platform = "psn"; break;
-                case Platform.Tracker: return this.PlatformId;
+                case Platform.Tracker: return $"<{this.PlatformId}>";
             }
 
             return $"<https://rocketleague.tracker.network/rocket-league/profile/{platform}/{Uri.EscapeUriString(PlatformId)}/overview>";
@@ -56,6 +57,11 @@ namespace TyniBot.Recruiting
             }
 
             return player;
+        }
+
+        public static bool ValidateTrackerLink(string tracker)
+        {
+            return Regex.IsMatch(tracker, "https://rocketleague.tracker.network/rocket-league/profile/(epic|steam|xbl|psn)/.+/overview");
         }
 
         internal string ToMessage() =>

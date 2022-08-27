@@ -1,4 +1,5 @@
 ﻿using Discord.WebSocket;
+using PlayCEAStats.Analysis;
 using PlayCEAStats.DataModel;
 using PlayCEAStats.RequestManagement;
 using System;
@@ -21,21 +22,35 @@ namespace Discord.Cea
         internal override Embed Run(SocketSlashCommand command, DiscordSocketClient client, IReadOnlyDictionary<SlashCommandOptions, string> options, Team team)
         {
             EmbedBuilder builder = new();
-            StringBuilder sb = new();
+            AddFullHistoryToEmbed(builder, team);
+            return builder.Build();
+        }
+
+        internal static void AddFullHistoryToEmbed(EmbedBuilder builder, Team team)
+        {
             League league = LeagueManager.League;
-            foreach (BracketRound round in league.Bracket.Rounds.SelectMany(r => r))
+            foreach (BracketSet bracket in league.Brackets)
+            {
+                AddHistoryToEmbed(builder, team, bracket);
+            }
+        }
+
+        internal static void AddHistoryToEmbed(EmbedBuilder builder, Team team, BracketSet bracket)
+        {
+            StringBuilder sb = new();
+            foreach (BracketRound round in bracket.Rounds.SelectMany(r => r))
             {
                 foreach (MatchResult result in round.Matches)
                 {
                     if (result.HomeTeam == team || result.AwayTeam == team)
                     {
-                        sb.AppendLine($"[{result.HomeGamesWon}-{result.AwayGamesWon}] {result.HomeTeam} vs {result.AwayTeam}");
+                        string awayString = result.Bye ? "BYE" : $"{result.AwayTeam}[{ result.AwayTeam.RoundRanking[round]}]";
+                        sb.AppendLine($"[{result.HomeGamesWon}-{result.AwayGamesWon}] {result.HomeTeam} [{result.HomeTeam.RoundRanking[round]}] vs {awayString}");
                     }
                 }
             }
 
-            builder.AddField(team.Name, sb.ToString());
-            return builder.Build();
+            builder.AddField($"{team.Name}'s {StageMatcher.Lookup(bracket.Rounds.First().First().RoundName)} Match History", sb.ToString());
         }
     }
 }

@@ -14,12 +14,15 @@ namespace Recruiting.UnitTests
     [TestClass]
     public class RecruitingTests
     {
-        [TestMethod]
-        public void TestTeamParseTeam()
+        [DataRow(false)]
+        [DataRow(true)]
+        [DataTestMethod]
+        public void TestTeamParseTeam(bool lookingForPlayers)
         {
             Team expected = new Team();
             expected.Name = "Free Agents";
             expected.Captain = null;
+            expected.LookingForPlayers = lookingForPlayers;
             expected.Players = new List<Player>()
             {
                 new Player() { DiscordUser = "tyni", Platform = Platform.Steam, PlatformId = "acuo" },
@@ -40,6 +43,22 @@ namespace Recruiting.UnitTests
             Assert.AreEqual("tyni", actual.Players[1].DiscordUser);
             Assert.AreEqual(Platform.Steam, actual.Players[1].Platform);
             Assert.AreEqual("acuo", actual.Players[1].PlatformId);
+
+            Assert.AreEqual(lookingForPlayers, actual.LookingForPlayers);
+        }
+
+        [DataRow("https://rocketleague.tracker.network/rocket-league/profile/epic/7656119817146987/overview", true)]
+        [DataRow("https://rocketleague.tracker.network/rocket-league/profile/psn/7656119817146987/overview", true)]
+        [DataRow("https://rocketleague.tracker.network/rocket-league/profile/steam/7656119817146987/overview", true)]
+        [DataRow("https://rocketleague.tracker.network/rocket-league/profile/xbl/7656119817146987/overview", true)]
+        [DataRow("https://rocketleague.tracker.network/rocket-league/profile/xbl/7656119817146987/", false)]
+        [DataRow("https://rocketleague.tracker.network/rocket-league/profile/epic//overview", false)]
+        [DataRow("https://rocketleague.tracker.network/rocket-league/profile/notreal/7656119817146987/overview", false)]
+        [DataRow("randomstring", false)]
+        [DataTestMethod]
+        public void TestValidateTracker(string tracker, bool valid)
+        {
+            Assert.AreEqual(valid, Player.ValidateTrackerLink(tracker));
         }
     }
 }

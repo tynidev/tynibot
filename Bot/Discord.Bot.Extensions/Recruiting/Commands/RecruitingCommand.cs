@@ -29,7 +29,7 @@ namespace TyniBot.Commands
 
         public override bool IsGlobal => false;
 
-        protected static readonly ImmutableDictionary<ulong, ulong> recruitingChannelForGuild = new Dictionary<ulong, ulong> {
+        public static readonly ImmutableDictionary<ulong, ulong> recruitingChannelForGuild = new Dictionary<ulong, ulong> {
             { 902581441727197195, 903521423522398278}, //tynibot test
             { 124366291611025417,  541894310258278400}, //msft rl
             { 801598108467200031,  904856579403300905}, //tyni's server
@@ -103,6 +103,9 @@ namespace TyniBot.Commands
                 case "deleteteam":
                     await DeleteTeamTrackerCommand.Run(command, client, storageClient, options, guild.Id, recruitingChannel, teams);
                     break;
+                case "lookingforplayers":
+                    await LookingForPlayersCommand.Run(command, client, options, recruitingChannel, messages, teams);
+                    break;
                 default:
                     await command.RespondAsync($"SubCommand {subCommand} not supported", ephemeral: true);
                     return;
@@ -120,7 +123,7 @@ namespace TyniBot.Commands
             addCmd.AddOption("platform",
                                 ApplicationCommandOptionType.String,
                                 "Platorm you play on",
-                                required: true,
+                                isRequired: true,
                                 choices:
                                     new ApplicationCommandOptionChoiceProperties[] { new ApplicationCommandOptionChoiceProperties() { Name = "epic", Value = "Epic" },
                                         new ApplicationCommandOptionChoiceProperties() { Name = "steam", Value = "Steam" },
@@ -128,7 +131,7 @@ namespace TyniBot.Commands
                                         new ApplicationCommandOptionChoiceProperties() { Name = "xbox", Value = "Xbox" },
                                         new ApplicationCommandOptionChoiceProperties() { Name = "tracker", Value = "Tracker" }
                                     });
-            addCmd.AddOption("id", ApplicationCommandOptionType.String, "For steam use your id, others use username, tracker post full tracker", required: true);
+            addCmd.AddOption("id", ApplicationCommandOptionType.String, "For steam use your id, others use username, tracker post full tracker", isRequired: true);
 
            
             var builder = new SlashCommandBuilder()
@@ -162,7 +165,7 @@ namespace TyniBot.Commands
         {
             var msgs = new List<IMessage>();
             var messages = await channel.GetMessagesAsync().FlattenAsync();
-            while (messages.Count() > 0 && msgs.Count() < limit)
+            while (messages.Any() && msgs.Count < limit)
             {
                 msgs.AddRange(messages);
                 messages = await channel.GetMessagesAsync(messages.Last(), Direction.Before).FlattenAsync();
