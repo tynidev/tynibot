@@ -16,6 +16,7 @@ namespace TyniBot.Recruiting
         public Player Captain = null;
         public List<Player> Players { get; set; } = new List<Player>();
 
+        #region Parsing and Formatting
         public static Team ParseTeam(ulong id, string msg)
         {
             Team team = new Team();
@@ -76,7 +77,9 @@ namespace TyniBot.Recruiting
 
             return msg;
         }
+        #endregion
 
+        #region Instance Methods
         public Player FindPlayer(string discordUser)
         {
             var exists = Players.Where((p) => string.Equals(p.DiscordUser, discordUser, StringComparison.OrdinalIgnoreCase));
@@ -87,6 +90,33 @@ namespace TyniBot.Recruiting
             return null;
         }
 
+        public void RemovePlayer(Player player)
+        {
+            // If player was captain of old team remove that teams captain
+            if (this.Captain?.DiscordUser == player.DiscordUser)
+                this.Captain = null;
+
+            // Move Player
+            this.Players.Remove(player);
+        }
+        public void AddPlayer(Player player)
+        {
+            Player? existingPlayer = this.Players.Find((p) => string.Equals(p.DiscordUser, player.DiscordUser, StringComparison.OrdinalIgnoreCase));
+
+            if (existingPlayer != default(Player))
+            {
+                existingPlayer.Platform = player.Platform;
+                existingPlayer.PlatformId = player.PlatformId;
+            }
+            else
+            {
+                this.Players.Add(player);
+            }
+        }
+
+        #endregion
+
+        #region Static Methods
         public static (Team, Player) FindPlayer(IEnumerable<Team> teams, string discordUser)
         {
             foreach (var team in teams)
@@ -108,21 +138,6 @@ namespace TyniBot.Recruiting
                     return team;
             }
             return null;
-        }
-
-        public void AddPlayer(Player player)
-        {
-            Player? existingPlayer = this.Players.Find((p) => string.Equals(p.DiscordUser, player.DiscordUser, StringComparison.OrdinalIgnoreCase));
-
-            if (existingPlayer != default(Player))
-            {
-                existingPlayer.Platform = player.Platform;
-                existingPlayer.PlatformId = player.PlatformId;
-            }
-            else
-            {
-                this.Players.Add(player);
-            }
         }
 
         public static Team AddPlayer(List<Team> teams, string teamName, Player player, bool captain = false)
@@ -150,15 +165,6 @@ namespace TyniBot.Recruiting
 
             return team;
         }
-
-        public void RemovePlayer(Player player)
-        {
-            // If player was captain of old team remove that teams captain
-            if (this.Captain?.DiscordUser == player.DiscordUser)
-                this.Captain = null;
-
-            // Move Player
-            this.Players.Remove(player);
-        }
+        #endregion
     }
 }
