@@ -68,32 +68,5 @@ namespace TyniBot.Commands
 
             await command.FollowupAsync($"{newPlayer.DiscordUser}'s RL tracker has been added to the recruiting board in channel <#{recruitingChannel.Id}>", ephemeral: true);
         }
-
-        public static async Task AddWithTeam(ISocketMessageChannel recruitingChannel, List<Team> teams, Team oldTeam, Player existingPlayer, Team newTeam, Player newPlayer)
-        {
-            if (oldTeam != null && string.Equals(newTeam?.Name, oldTeam?.Name, StringComparison.OrdinalIgnoreCase))
-            {
-                await Add(recruitingChannel, teams, oldTeam, existingPlayer, newPlayer);
-                return;
-            }
-
-            newTeam.Players.Add(newPlayer);
-        }
-
-        public static async Task Add(ISocketMessageChannel recruitingChannel, List<Team> teams, Team oldTeam, Player existingPlayer, Player newPlayer)
-        {
-            
-
-            // Have we added this team message yet? -> Write team message and move to next team
-            if (oldTeam.MsgId == 0)
-            {
-                await recruitingChannel.SendMessageAsync(oldTeam.ToMessage());
-            }
-            else
-            {
-                // This is an existing team -> Modify old team message
-                await recruitingChannel.ModifyMessageAsync(oldTeam.MsgId, (message) => message.Content = oldTeam.ToMessage());
-            }
-        }
     }
 }
