@@ -1,5 +1,6 @@
 ﻿using Azure;
 using Azure.Data.Tables;
+using Discord.Bot.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace TyniBot.Recruiting
 {
-    public class Team
+    public class Team : ValueWithEtag
     {
         public static string TableName = "teams";
 

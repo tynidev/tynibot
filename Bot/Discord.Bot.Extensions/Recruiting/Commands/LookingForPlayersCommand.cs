@@ -30,9 +30,9 @@ namespace TyniBot.Commands
             team.LookingForPlayers = lookingForPlayers;
 
             await recruitingChannel.ModifyMessageAsync(team.MsgId, (message) => message.Content = team.ToMessage());
-            await command.FollowupAsync($"You marked team {team.Name} as looking for players {lookingForPlayers}", ephemeral: true);
-
             await storageClient.SaveTableRow(Team.TableName, teamName, guild.RowKey, team);
+
+            await command.FollowupAsync($"You marked team {team.Name} as looking for players {lookingForPlayers}", ephemeral: true);
         }
     }
 }

@@ -28,8 +28,8 @@ namespace TyniBot.Commands
 
             // Remove old team message
             await recruitingChannel.DeleteMessageAsync(team.MsgId);
-            await command.FollowupAsync($"You have removed team {teamName}", ephemeral: true);
             await storageClient.DeleteTableRow(Team.TableName, team.Name, guild.RowKey);
+            await command.FollowupAsync($"You have removed team {teamName}", ephemeral: true);
         }
     }
 }

@@ -8,6 +8,8 @@ using Discord.Bot;
 using Discord.Bot.Utils;
 using System;
 using TyniBot.Recruiting;
+using Azure.Data.Tables;
+using Azure;
 
 namespace TyniBot.Commands
 {
@@ -34,14 +36,14 @@ namespace TyniBot.Commands
 
             // Move Player
             oldTeam.Players.Remove(player);
-            // Update old team message
-            await recruitingChannel.ModifyMessageAsync(oldTeam.MsgId, (message) => message.Content = oldTeam.ToMessage());
 
             var teamName = options["team"].Value.ToString();
 
             var newTeam = Team.FindTeam(teams, teamName);
+            bool isNewTeam = false;
             if (newTeam == null)
             {
+                isNewTeam = true;
                 newTeam = new Team()
                 {
                     Name = teamName,
@@ -77,18 +79,22 @@ namespace TyniBot.Commands
                 await recruitingChannel.ModifyMessageAsync(newTeam.MsgId, (message) => message.Content = newTeam.ToMessage());
             }
 
-            await command.FollowupAsync($"You have moved user {discordUser} from {oldTeam.Name} -> {newTeam.Name}", ephemeral: true);
-
-            await storageClient.SaveTableRow(Team.TableName, newTeam.Name, guild.RowKey, newTeam);
-
+            var transactions = new List<(string, TableTransactionActionType, Team, ETag)>();
             if (oldTeam.Players.Count > 0)
             {
-                await storageClient.SaveTableRow(Team.TableName, oldTeam.Name, guild.RowKey, oldTeam);
+                transactions.Add((oldTeam.Name, TableTransactionActionType.UpdateMerge, oldTeam, oldTeam.etag));
             }
             else
             {
-                await storageClient.DeleteTableRow(Team.TableName, oldTeam.Name, guild.RowKey);
+                transactions.Add((oldTeam.Name, TableTransactionActionType.Delete, null, oldTeam.etag));
             }
+
+            transactions.Add((newTeam.Name, isNewTeam ? TableTransactionActionType.UpsertMerge : TableTransactionActionType.UpdateMerge, newTeam, newTeam.etag));
+
+            // if the transaction fails it should retry, and then the message will be updated to reflect the actual value in storage.
+            await storageClient.ExecuteTransaction(Team.TableName, transactions, guild.RowKey);
+            
+            await command.FollowupAsync($"You have moved user {discordUser} from {oldTeam.Name} -> {newTeam.Name}", ephemeral: true);
         }
     }
 }

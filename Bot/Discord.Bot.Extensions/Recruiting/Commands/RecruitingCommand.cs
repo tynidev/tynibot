@@ -1,7 +1,10 @@
-﻿using Discord;
+﻿using Azure;
+using Discord;
 using Discord.Bot;
 using Discord.Bot.Utils;
 using Discord.WebSocket;
+using Polly;
+using Polly.Retry;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -35,46 +38,53 @@ namespace TyniBot.Commands
             // Get all messages in channel
             var recruitingChannel = await client.GetChannelAsync(guild.RecruitingChannelId) as ISocketMessageChannel;
 
-            // cache these values eventually as well to improve performance
-            var teams = await storageClient.GetAllRowsAsync<Team>(Team.TableName, guild.ToString()); 
-
-            if (teams.Count == 0)
+            // What do we do if the policy fails 3 times and the board has values that aren't in the table. We could save values first if we didn't need the message id from new teams, but we do.
+            await Policy.Handle<RequestFailedException>(e => e.Status == 412).RetryAsync(3).ExecuteAsync(async () =>
             {
-                var messages = await GetAllChannelMessages(recruitingChannel);
+                // cache these values eventually as well to improve performance
+                var teams = await storageClient.GetAllRowsAsync<Team>(Team.TableName, guild.Id.ToString());
 
-                // Parse messages into teams
-                teams = ParseMessageAsync(messages);
-
-                if (teams.Count > 0)
+                if (teams.Count == 0)
                 {
-                    await ConvertMessageTeamsToStorage(teams, guild.RowKey, storageClient);
-                }
-            }
+                    var messages = await GetAllChannelMessages(recruitingChannel);
 
-            switch (subCommand.Name)
-            {
-                case "add":
-                    await AddTrackerCommand.Run(command, client, storageClient, options, guild, recruitingChannel, teams);
-                    break;
-                case "adminadd":
-                    await AdminAddTrackerCommand.Run(command, client, storageClient, options, guild, recruitingChannel, teams);
-                    break;
-                case "move":
-                    await MoveTrackedUserCommand.Run(command, client, storageClient, options, guild, recruitingChannel, teams);
-                    break;
-                case "remove":
-                    await RemoveTrackedUserCommand.Run(command, client, storageClient, options, guild, recruitingChannel, teams);
-                    break;
-                case "deleteteam":
-                    await DeleteTeamTrackerCommand.Run(command, client, storageClient, options, guild, recruitingChannel, teams);
-                    break;
-                case "lookingforplayers":
-                    await LookingForPlayersCommand.Run(command, client, storageClient, options, guild, recruitingChannel, teams);
-                    break;
-                default:
-                    await command.FollowupAsync($"SubCommand {subCommand} not supported", ephemeral: true);
-                    return;
-            }
+                    // Parse messages into teams
+                    teams = ParseMessageAsync(messages);
+
+                    if (teams.Count > 0)
+                    {
+                        await ConvertMessageTeamsToStorage(teams, guild.RowKey, storageClient);
+                    }
+
+                    // get etags after for optimistic concurrency
+                    teams = await storageClient.GetAllRowsAsync<Team>(Team.TableName, guild.Id.ToString());
+                }
+
+                switch (subCommand.Name)
+                {
+                    case "add":
+                        await AddTrackerCommand.Run(command, client, storageClient, options, guild, recruitingChannel, teams);
+                        break;
+                    case "adminadd":
+                        await AdminAddTrackerCommand.Run(command, client, storageClient, options, guild, recruitingChannel, teams);
+                        break;
+                    case "move":
+                        await MoveTrackedUserCommand.Run(command, client, storageClient, options, guild, recruitingChannel, teams);
+                        break;
+                    case "remove":
+                        await RemoveTrackedUserCommand.Run(command, client, storageClient, options, guild, recruitingChannel, teams);
+                        break;
+                    case "deleteteam":
+                        await DeleteTeamTrackerCommand.Run(command, client, storageClient, options, guild, recruitingChannel, teams);
+                        break;
+                    case "lookingforplayers":
+                        await LookingForPlayersCommand.Run(command, client, storageClient, options, guild, recruitingChannel, teams);
+                        break;
+                    default:
+                        await command.FollowupAsync($"SubCommand {subCommand} not supported", ephemeral: true);
+                        return;
+                }
+            });
         }
 
         public override SlashCommandProperties Build()

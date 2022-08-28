@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Discord.Bot.Utils
 {
-    public class Guild
+    public class Guild : ValueWithEtag
     {
         public static string PartitionKeyConst = "guilds";
         public static string TableName = "recruitingguilds";
