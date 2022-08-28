@@ -55,6 +55,9 @@ namespace TyniBot.Commands
 
             var subCommand = command.Data.Options.First();
             var options = subCommand.Options.ToDictionary(o => o.Name, o => o);
+            
+            await command.RespondAsync($"Starting Command {command.CommandName} {subCommand.Name}", ephemeral: true);
+            
             switch (subCommand.Name)
             {
                 case "add":
@@ -76,7 +79,7 @@ namespace TyniBot.Commands
                     await LookingForPlayersCommand.Run(command, client, options, recruitingChannel, messages, teams);
                     break;
                 default:
-                    await command.RespondAsync($"SubCommand {subCommand} not supported", ephemeral: true);
+                    await command.FollowupAsync($"SubCommand {subCommand} not supported", ephemeral: true);
                     return;
             }
         }

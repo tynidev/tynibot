@@ -22,16 +22,11 @@ namespace TyniBot.Commands
             (var oldTeam, var player) = Team.FindPlayer(teams, discordUser);
             if (player == null)
             {
-                await command.RespondAsync($"User {discordUser} does not exist in the recruiting table", ephemeral: true);
+                await command.FollowupAsync($"User {discordUser} does not exist in the recruiting table", ephemeral: true);
                 return;
             }
 
-            // If player was captain of old team remove that teams captain
-            if (oldTeam.Captain?.DiscordUser == player.DiscordUser)
-                oldTeam.Captain = null;
-
-            // Move Player
-            oldTeam.Players.Remove(player);
+            oldTeam.RemovePlayer(player);
 
             // Update old team message
             if (oldTeam.Players.Count > 0)
@@ -43,7 +38,7 @@ namespace TyniBot.Commands
                 await recruitingChannel.DeleteMessageAsync(oldTeam.MsgId);
             }
 
-            await command.RespondAsync($"You have removed user {discordUser} from {oldTeam.Name}", ephemeral: true);
+            await command.FollowupAsync($"You have removed user {discordUser} from {oldTeam.Name}", ephemeral: true);
         }
     }
 }

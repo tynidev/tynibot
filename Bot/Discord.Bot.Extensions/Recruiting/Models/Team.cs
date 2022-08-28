@@ -109,5 +109,56 @@ namespace TyniBot.Recruiting
             }
             return null;
         }
+
+        public void AddPlayer(Player player)
+        {
+            Player? existingPlayer = this.Players.Find((p) => string.Equals(p.DiscordUser, player.DiscordUser, StringComparison.OrdinalIgnoreCase));
+
+            if (existingPlayer != default(Player))
+            {
+                existingPlayer.Platform = player.Platform;
+                existingPlayer.PlatformId = player.PlatformId;
+            }
+            else
+            {
+                this.Players.Add(player);
+            }
+        }
+
+        public static Team AddPlayer(List<Team> teams, string teamName, Player player, bool captain = false)
+        {
+            var team = Team.FindTeam(teams, teamName);
+
+            // Not found? -> Add Free Agent team
+            if (team == null)
+            {
+                team = new Team()
+                {
+                    Name = teamName,
+                    Players = new List<Player>()
+                };
+
+                teams.Add(team);
+            }
+
+            team.AddPlayer(player);
+            
+            if (captain)
+            {
+                team.Captain = player;
+            }
+
+            return team;
+        }
+
+        public void RemovePlayer(Player player)
+        {
+            // If player was captain of old team remove that teams captain
+            if (this.Captain?.DiscordUser == player.DiscordUser)
+                this.Captain = null;
+
+            // Move Player
+            this.Players.Remove(player);
+        }
     }
 }

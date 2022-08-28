@@ -22,14 +22,14 @@ namespace TyniBot.Commands
             var team = Team.FindTeam(teams, teamName);
             if (team == null)
             {
-                await command.RespondAsync($"Team {teamName} does not exist in the recruiting table", ephemeral: true);
+                await command.FollowupAsync($"Team {teamName} does not exist in the recruiting table", ephemeral: true);
                 return;
             }
 
             team.LookingForPlayers = lookingForPlayers;
 
             await recruitingChannel.ModifyMessageAsync(team.MsgId, (message) => message.Content = team.ToMessage());
-            await command.RespondAsync($"You marked team {team.Name} as looking for players {lookingForPlayers}", ephemeral: true);
+            await command.FollowupAsync($"You marked team {team.Name} as looking for players {lookingForPlayers}", ephemeral: true);
         }
     }
 }

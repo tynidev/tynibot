@@ -45,6 +45,7 @@ namespace TyniBot.Commands
                                         new ApplicationCommandOptionChoiceProperties() { Name = "tracker", Value = "Tracker" }
                                      });
             addCmd.AddOption("id", ApplicationCommandOptionType.String, "For steam use your id, others use username, tracker post full tracker", isRequired: true);
+            addCmd.AddOption("team", ApplicationCommandOptionType.String, "Team to add this user to. If left blank, defaults to Free Agents", isRequired: false);
 
             var moveCmd = new SlashCommandOptionBuilder()
             {

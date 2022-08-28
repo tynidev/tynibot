@@ -18,43 +18,19 @@ namespace TyniBot.Commands
         {
             var guildUser = (SocketGuildUser)options["username"].Value;
             var discordUser = guildUser.Nickname ?? guildUser.Username;
+            var teamName = options["team"].Value.ToString();
+            var captain = options.ContainsKey("captain") && (bool)options["captain"].Value;
 
             // Player not exist? -> respond with error
             (var oldTeam, var player) = Team.FindPlayer(teams, discordUser);
             if (player == null)
             {
-                await command.RespondAsync($"User {discordUser} does not exist in the recruiting table", ephemeral: true);
+                await command.FollowupAsync($"User {discordUser} does not exist in the recruiting table", ephemeral: true);
                 return;
             }
 
-            // If player was captain of old team remove that teams captain
-            if (oldTeam.Captain?.DiscordUser == player.DiscordUser)
-                oldTeam.Captain = null;
-
-            // Move Player
-            oldTeam.Players.Remove(player);
-            // Update old team message
-            await recruitingChannel.ModifyMessageAsync(oldTeam.MsgId, (message) => message.Content = oldTeam.ToMessage());
-
-            var teamName = options["team"].Value.ToString();
-
-            var newTeam = Team.FindTeam(teams, teamName);
-            if (newTeam == null)
-            {
-                newTeam = new Team()
-                {
-                    Name = teamName,
-                    Players = new List<Player>()
-                };
-            }
-
-            newTeam.Players.Add(player);
-
-            // If this is a captain make new team captain = player
-            if (options.ContainsKey("captain") && (bool)options["captain"].Value)
-            {
-                newTeam.Captain = player;
-            }
+            oldTeam.RemovePlayer(player);
+            var newTeam = Team.AddPlayer(teams, teamName, player, captain);
 
             // Update old team message
             if (oldTeam.Players.Count > 0)
@@ -69,14 +45,14 @@ namespace TyniBot.Commands
             // Update new team message
             if(newTeam.MsgId == 0)
             {
-                await recruitingChannel.SendMessageAsync(newTeam.ToMessage());
+                newTeam.MsgId = (await recruitingChannel.SendMessageAsync(newTeam.ToMessage())).Id;
             }
             else
             {
                 await recruitingChannel.ModifyMessageAsync(newTeam.MsgId, (message) => message.Content = newTeam.ToMessage());
             }
 
-            await command.RespondAsync($"You have moved user {discordUser} from {oldTeam.Name} -> {newTeam.Name}", ephemeral: true);
+            await command.FollowupAsync($"You have moved user {discordUser} from {oldTeam.Name} -> {newTeam.Name}", ephemeral: true);
             
         }
     }
