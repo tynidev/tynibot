@@ -38,13 +38,13 @@ namespace TyniBot.Commands
             // Is player just updating tracker link? -> Update link
             (var team, var existingPlayer) = Team.FindPlayer(teams, newPlayer.DiscordUser);
 
-            if (existingPlayer != null && !string.IsNullOrEmpty(teamName))
+            if (existingPlayer != null && !string.Equals(team.Name, teamName, StringComparison.InvariantCultureIgnoreCase))
             {
-                await MoveTrackedUserCommand.Run(command, client, options, recruitingChannel, messages, teams);
-                (team, existingPlayer) = Team.FindPlayer(teams, newPlayer.DiscordUser);
+                await command.FollowupAsync($"Invalid use of add command. Please use the move command to change a user between teams", ephemeral: true);
+                return;
             }
             
-            if (team == null || !string.IsNullOrEmpty(teamName))
+            if (team == null)
             {
                 teamName = string.IsNullOrEmpty(teamName) ? "Free_Agents" : teamName;
                 team = Team.AddPlayer(teams, teamName, newPlayer);
