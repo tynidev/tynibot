@@ -163,11 +163,14 @@ namespace TyniBot.Recruiting
                 if (guild.Id != 124366291611025417) // dont delete the channels in the msft discord for now
                 {
                     var categoryChannel = socketGuild.GetCategoryChannel(CategoryChannelId);
-                    foreach (var channel in categoryChannel.Channels)
+                    if (categoryChannel != null)
                     {
-                        await channel.DeleteAsync();
+                        foreach (var channel in categoryChannel.Channels)
+                        {
+                            await channel.DeleteAsync();
+                        }
+                        await categoryChannel.DeleteAsync();
                     }
-                    await categoryChannel.DeleteAsync();
                 }
             }
 
@@ -190,11 +193,19 @@ namespace TyniBot.Recruiting
                 CategoryChannelId = categoryChannels.First().Id;
             }
             else {
-                RestCategoryChannel restCategoryChannel = await socketGuild.CreateCategoryChannelAsync(Name);
-                CategoryChannelId = restCategoryChannel.Id;
-                await socketGuild.CreateTextChannelAsync(Name.Replace(' ', '-').Replace(".", ""), (props) => { props.Position = 0; props.CategoryId = CategoryChannelId; });
-                await socketGuild.CreateTextChannelAsync("Replays", (props) => { props.Position = 1; props.CategoryId = CategoryChannelId; });
-                await socketGuild.CreateVoiceChannelAsync("Team Voice", (props) => { props.Position = 2; props.CategoryId = CategoryChannelId; });
+                try
+                {
+                    RestCategoryChannel restCategoryChannel = await socketGuild.CreateCategoryChannelAsync(Name);
+                    CategoryChannelId = restCategoryChannel.Id;
+                    await socketGuild.CreateTextChannelAsync(Name.Replace(' ', '-').Replace(".", ""), (props) => { props.Position = 0; props.CategoryId = CategoryChannelId; });
+                    await socketGuild.CreateTextChannelAsync("Replays", (props) => { props.Position = 1; props.CategoryId = CategoryChannelId; });
+                    await socketGuild.CreateVoiceChannelAsync("Team Voice", (props) => { props.Position = 2; props.CategoryId = CategoryChannelId; });
+                }
+                catch (Exception ex)
+                {
+                    // if it fails to create the channel's, it's not a big deal. the bot permissions probably weren't set correctly;
+                    Console.WriteLine(ex);
+                }
             }
         }
         #endregion
