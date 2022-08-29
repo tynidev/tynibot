@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
 using Discord.Bot;
+using Discord.Bot.Utils;
 using System.Linq;
 using Discord.Rest;
 
@@ -22,12 +23,7 @@ namespace TyniBot.Commands
 
         public override bool IsGlobal => true;
 
-        public override Dictionary<ulong, List<ApplicationCommandPermission>> GuildIdsAndPermissions => new Dictionary<ulong, List<ApplicationCommandPermission>>()
-        {
-            //{ 801598108467200031, new List<ApplicationCommandPermission>() } // tyni's server
-        };
-
-        public override async Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client)
+        public override async Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client, StorageClient storageClient, Guild guild)
         {
             var version = FileVersionInfo.GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location);
 
