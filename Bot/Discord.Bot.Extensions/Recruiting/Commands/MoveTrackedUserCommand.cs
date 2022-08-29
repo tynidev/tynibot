@@ -21,6 +21,8 @@ namespace TyniBot.Commands
         {
             var guildUser = (SocketGuildUser)options["username"].Value;
             var discordUser = guildUser.Nickname ?? guildUser.Username;
+            var teamName = options["team"].Value.ToString();
+            var captain = options.ContainsKey("captain") && (bool)options["captain"].Value;
 
             // Player not exist? -> respond with error
             (var oldTeam, var player) = Team.FindPlayer(teams, discordUser);
@@ -30,34 +32,9 @@ namespace TyniBot.Commands
                 return;
             }
 
-            // If player was captain of old team remove that teams captain
-            if (oldTeam.Captain?.DiscordUser == player.DiscordUser)
-                oldTeam.Captain = null;
-
-            // Move Player
-            oldTeam.Players.Remove(player);
-
-            var teamName = options["team"].Value.ToString();
-
-            var newTeam = Team.FindTeam(teams, teamName);
-            bool isNewTeam = false;
-            if (newTeam == null)
-            {
-                isNewTeam = true;
-                newTeam = new Team()
-                {
-                    Name = teamName,
-                    Players = new List<Player>()
-                };
-            }
-
-            newTeam.Players.Add(player);
-
-            // If this is a captain make new team captain = player
-            if (options.ContainsKey("captain") && (bool)options["captain"].Value)
-            {
-                newTeam.Captain = player;
-            }
+            oldTeam.RemovePlayer(player);
+            var newTeam = Team.AddPlayer(teams, teamName, player, captain);
+            bool isNewTeam = newTeam.MsgId == 0;
 
             // Update old team message
             if (oldTeam.Players.Count > 0)
@@ -89,7 +66,10 @@ namespace TyniBot.Commands
                 transactions.Add((oldTeam.Name, TableTransactionActionType.Delete, null, oldTeam.etag));
             }
 
-            transactions.Add((newTeam.Name, isNewTeam ? TableTransactionActionType.UpsertMerge : TableTransactionActionType.UpdateMerge, newTeam, newTeam.etag));
+            if (!string.Equals(newTeam.Name, oldTeam.Name, StringComparison.OrdinalIgnoreCase))
+            {
+                transactions.Add((newTeam.Name, isNewTeam ? TableTransactionActionType.UpsertMerge : TableTransactionActionType.UpdateMerge, newTeam, newTeam.etag));
+            }
 
             // if the transaction fails it should retry, and then the message will be updated to reflect the actual value in storage.
             await storageClient.ExecuteTransaction(Team.TableName, transactions, guild.RowKey);

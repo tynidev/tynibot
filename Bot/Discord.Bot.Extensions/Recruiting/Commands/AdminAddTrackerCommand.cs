@@ -17,13 +17,18 @@ namespace TyniBot.Commands
         public static async Task Run(SocketSlashCommand command, DiscordSocketClient client, StorageClient storageClient, Dictionary<string, SocketSlashCommandDataOption> options, Guild guild, ISocketMessageChannel recruitingChannel, List<Team> teams)
         {
             var guildUser = (SocketGuildUser)options["username"].Value;
+            var teamName = String.Empty;
+
+            if (options.TryGetValue("team", out SocketSlashCommandDataOption teamOption))
+            {
+                teamName = teamOption.Value.ToString();
+            }
 
             // Construct new player from parameters
             var newPlayer = new Player();
             newPlayer.DiscordUser = guildUser.Nickname ?? guildUser.Username;
             newPlayer.Platform = (Platform)Enum.Parse(typeof(Platform), options["platform"].Value.ToString());
             newPlayer.PlatformId = options["id"].Value.ToString();
-
 
             if (newPlayer.Platform == Platform.Tracker && !Player.ValidateTrackerLink(newPlayer.PlatformId))
             {
@@ -32,53 +37,37 @@ namespace TyniBot.Commands
             }
 
             // Is player just updating tracker link? -> Update link
-            Team updatedTeam = null;
-            foreach (var team in teams)
+            (var team, var existingPlayer) = Team.FindPlayer(teams, newPlayer.DiscordUser);
+
+            if (existingPlayer != null && !string.Equals(team.Name, teamName, StringComparison.InvariantCultureIgnoreCase))
             {
-                var exists = team.Players.Where((p) => p.DiscordUser == newPlayer.DiscordUser);
-                if (exists.Any())
-                {
-                    // Player exists on team so just update
-                    var existingPlayer = exists.First();
-                    existingPlayer.Platform = newPlayer.Platform;
-                    existingPlayer.PlatformId = newPlayer.PlatformId;
-                    updatedTeam = team;
-                    break;
-                }
+                await command.FollowupAsync($"Invalid use of add command. Please use the move command to change a user between teams", ephemeral: true);
+                return;
             }
-
-            // Is player not on a team? -> Add to FreeAgents
-            if (updatedTeam == null)
+            
+            if (team == null)
             {
-                var freeAgents = Team.FindTeam(teams, "Free_Agents");
-
-                // Not found? -> Add Free Agent team
-                if (freeAgents == null)
-                {
-                    freeAgents = new Team()
-                    {
-                        Name = "Free_Agents",
-                        Players = new List<Player>()
-                    };
-                    teams.Add(freeAgents);
-                }
-
-                freeAgents.Players.Add(newPlayer);
-                updatedTeam = freeAgents;
+                teamName = string.IsNullOrEmpty(teamName) ? "Free_Agents" : teamName;
+                team = Team.AddPlayer(teams, teamName, newPlayer);
+            }
+            else
+            {
+                existingPlayer.Platform = newPlayer.Platform;
+                existingPlayer.PlatformId = newPlayer.PlatformId;
             }
 
             // Have we added this team message yet? -> Write team message and move to next team
-            if (updatedTeam.MsgId == 0)
+            if (team.MsgId == 0)
             {
-                updatedTeam.MsgId = (await recruitingChannel.SendMessageAsync(updatedTeam.ToMessage())).Id;
+                team.MsgId = (await recruitingChannel.SendMessageAsync(team.ToMessage())).Id;
             }
             else
             {
                 // This is an existing team -> Modify old team message
-                await recruitingChannel.ModifyMessageAsync(updatedTeam.MsgId, (message) => message.Content = updatedTeam.ToMessage());
+                await recruitingChannel.ModifyMessageAsync(team.MsgId, (message) => message.Content = team.ToMessage());
             }
 
-            await storageClient.SaveTableRow(Team.TableName, updatedTeam.Name, guild.RowKey, updatedTeam);
+            await storageClient.SaveTableRow(Team.TableName, team.Name, guild.RowKey, team);
             await command.FollowupAsync($"{newPlayer.DiscordUser}'s RL tracker has been added to the recruiting board in channel <#{recruitingChannel.Id}>", ephemeral: true);
         }
     }

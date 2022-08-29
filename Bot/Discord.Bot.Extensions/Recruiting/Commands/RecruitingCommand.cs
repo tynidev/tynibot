@@ -29,6 +29,12 @@ namespace TyniBot.Commands
 
         public override async Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client, StorageClient storageClient, Guild guild)
         {
+            if (guild.RecruitingChannelId == default)
+            {
+                await command.RespondAsync("Channel is not part of a guild that supports recruiting", ephemeral: true);
+                return;
+            }
+
             var channel = command.Channel as SocketGuildChannel;
             var subCommand = command.Data.Options.First();
             var options = subCommand.Options.ToDictionary(o => o.Name, o => o);

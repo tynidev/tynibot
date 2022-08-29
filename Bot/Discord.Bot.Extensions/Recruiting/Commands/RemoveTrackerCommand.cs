@@ -27,12 +27,7 @@ namespace TyniBot.Commands
                 return;
             }
 
-            // If player was captain of old team remove that teams captain
-            if (oldTeam.Captain?.DiscordUser == player.DiscordUser)
-                oldTeam.Captain = null;
-
-            // Move Player
-            oldTeam.Players.Remove(player);
+            oldTeam.RemovePlayer(player);
 
             // Update old team message
             if (oldTeam.Players.Count > 0)
