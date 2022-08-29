@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Collections.Immutable;
 using System.Linq;
 using Discord.Bot;
+using Discord.Bot.Utils;
 using System;
 using TyniBot.Recruiting;
 
@@ -13,7 +14,7 @@ namespace TyniBot.Commands
     // Todo: store guild Ids, role ids, and channel ids in permanent external storage to allow for servers to configure their addtracker command 
     public class AdminAddTrackerCommand
     {
-        public static async Task Run(SocketSlashCommand command, DiscordSocketClient client, Dictionary<string, SocketSlashCommandDataOption> options, ISocketMessageChannel recruitingChannel, List<IMessage> messages, List<Team> teams)
+        public static async Task Run(SocketSlashCommand command, DiscordSocketClient client, StorageClient storageClient, Dictionary<string, SocketSlashCommandDataOption> options, Guild guild, ISocketMessageChannel recruitingChannel, List<Team> teams)
         {
             var guildUser = (SocketGuildUser)options["username"].Value;
 
@@ -26,7 +27,7 @@ namespace TyniBot.Commands
 
             if (newPlayer.Platform == Platform.Tracker && !Player.ValidateTrackerLink(newPlayer.PlatformId))
             {
-                await command.RespondAsync($"Your RL tracker link is invalid", ephemeral: true);
+                await command.FollowupAsync($"Your RL tracker link is invalid", ephemeral: true);
                 return;
             }
 
@@ -69,15 +70,16 @@ namespace TyniBot.Commands
             // Have we added this team message yet? -> Write team message and move to next team
             if (updatedTeam.MsgId == 0)
             {
-                await recruitingChannel.SendMessageAsync(updatedTeam.ToMessage());
+                updatedTeam.MsgId = (await recruitingChannel.SendMessageAsync(updatedTeam.ToMessage())).Id;
             }
             else
             {
                 // This is an existing team -> Modify old team message
                 await recruitingChannel.ModifyMessageAsync(updatedTeam.MsgId, (message) => message.Content = updatedTeam.ToMessage());
-            }            
+            }
 
-            await command.RespondAsync($"{newPlayer.DiscordUser}'s RL tracker has been added to the recruiting board in channel <#{recruitingChannel.Id}>", ephemeral: true);
+            await storageClient.SaveTableRow(Team.TableName, updatedTeam.Name, guild.RowKey, updatedTeam);
+            await command.FollowupAsync($"{newPlayer.DiscordUser}'s RL tracker has been added to the recruiting board in channel <#{recruitingChannel.Id}>", ephemeral: true);
         }
     }
 }

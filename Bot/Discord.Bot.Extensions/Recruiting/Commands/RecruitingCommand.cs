@@ -1,6 +1,10 @@
-﻿using Discord;
+﻿using Azure;
+using Discord;
 using Discord.Bot;
+using Discord.Bot.Utils;
 using Discord.WebSocket;
+using Polly;
+using Polly.Retry;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -19,66 +23,68 @@ namespace TyniBot.Commands
 
         public override bool DefaultPermissions => false;
 
-        public override Dictionary<ulong, List<ApplicationCommandPermission>> GuildIdsAndPermissions => new Dictionary<ulong, List<ApplicationCommandPermission>>()
-        {
-            { 902581441727197195, new List<ApplicationCommandPermission> { new ApplicationCommandPermission(903514452463325184, ApplicationCommandPermissionTarget.Role, true) } }, // tynibot test
-            { 124366291611025417, new List<ApplicationCommandPermission> { new ApplicationCommandPermission(598569589512863764, ApplicationCommandPermissionTarget.Role, true) } }, // msft rl
-            { 801598108467200031, new List<ApplicationCommandPermission>() }, // tyni's server
-            { 904804698484260874, new List<ApplicationCommandPermission> { new ApplicationCommandPermission(904867602571100220, ApplicationCommandPermissionTarget.Role, true) } }, // nate server
-        };
+        public override Dictionary<ulong, List<ApplicationCommandPermission>> GuildIdsAndPermissions => GuildIdMappings.recruitingPermissions;
 
         public override bool IsGlobal => false;
 
-        public static readonly ImmutableDictionary<ulong, ulong> recruitingChannelForGuild = new Dictionary<ulong, ulong> {
-            { 902581441727197195, 903521423522398278}, //tynibot test
-            { 124366291611025417,  541894310258278400}, //msft rl
-            { 801598108467200031,  904856579403300905}, //tyni's server
-            { 904804698484260874, 904867794376618005 } // nates server
-        }.ToImmutableDictionary();
-
-        public override async Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client)
+        public override async Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client, StorageClient storageClient, Guild guild)
         {
             var channel = command.Channel as SocketGuildChannel;
-
-            if (!recruitingChannelForGuild.TryGetValue(channel.Guild.Id, out var recruitingChannelId))
-            {
-                await command.RespondAsync("Channel is not part of a guild that supports recruiting", ephemeral: true);
-                return;
-            }
-
-            // Get all messages in channel
-            var recruitingChannel = await client.GetChannelAsync(recruitingChannelId) as ISocketMessageChannel;
-            var messages = await GetAllChannelMessages(recruitingChannel);
-
-            // Parse messages into teams
-            var teams = ParseMessageAsync(messages);
-
             var subCommand = command.Data.Options.First();
             var options = subCommand.Options.ToDictionary(o => o.Name, o => o);
-            switch (subCommand.Name)
+
+            await command.RespondAsync($"Starting Command {command.CommandName} {subCommand.Name}", ephemeral: true);
+
+            // Get all messages in channel
+            var recruitingChannel = await client.GetChannelAsync(guild.RecruitingChannelId) as ISocketMessageChannel;
+
+            // What do we do if the policy fails 3 times and the board has values that aren't in the table. We could save values first if we didn't need the message id from new teams, but we do.
+            await Policy.Handle<RequestFailedException>(e => e.Status == 412).RetryAsync(3).ExecuteAsync(async () =>
             {
-                case "add":
-                    await AddTrackerCommand.Run(command, client, options, recruitingChannel, messages, teams);
-                    break;
-                case "adminadd":
-                    await AdminAddTrackerCommand.Run(command, client, options, recruitingChannel, messages, teams);
-                    break;
-                case "move":
-                    await MoveTrackedUserCommand.Run(command, client, options, recruitingChannel, messages, teams);
-                    break;
-                case "remove":
-                    await RemoveTrackedUserCommand.Run(command, client, options, recruitingChannel, messages, teams);
-                    break;
-                case "deleteteam":
-                    await DeleteTeamTrackerCommand.Run(command, client, options, recruitingChannel, messages, teams);
-                    break;
-                case "lookingforplayers":
-                    await LookingForPlayersCommand.Run(command, client, options, recruitingChannel, messages, teams);
-                    break;
-                default:
-                    await command.RespondAsync($"SubCommand {subCommand} not supported", ephemeral: true);
-                    return;
-            }
+                // cache these values eventually as well to improve performance
+                var teams = await storageClient.GetAllRowsAsync<Team>(Team.TableName, guild.Id.ToString());
+
+                if (teams.Count == 0)
+                {
+                    var messages = await GetAllChannelMessages(recruitingChannel);
+
+                    // Parse messages into teams
+                    teams = ParseMessageAsync(messages);
+
+                    if (teams.Count > 0)
+                    {
+                        await ConvertMessageTeamsToStorage(teams, guild.RowKey, storageClient);
+                    }
+
+                    // get etags after for optimistic concurrency
+                    teams = await storageClient.GetAllRowsAsync<Team>(Team.TableName, guild.Id.ToString());
+                }
+
+                switch (subCommand.Name)
+                {
+                    case "add":
+                        await AddTrackerCommand.Run(command, client, storageClient, options, guild, recruitingChannel, teams);
+                        break;
+                    case "adminadd":
+                        await AdminAddTrackerCommand.Run(command, client, storageClient, options, guild, recruitingChannel, teams);
+                        break;
+                    case "move":
+                        await MoveTrackedUserCommand.Run(command, client, storageClient, options, guild, recruitingChannel, teams);
+                        break;
+                    case "remove":
+                        await RemoveTrackedUserCommand.Run(command, client, storageClient, options, guild, recruitingChannel, teams);
+                        break;
+                    case "deleteteam":
+                        await DeleteTeamTrackerCommand.Run(command, client, storageClient, options, guild, recruitingChannel, teams);
+                        break;
+                    case "lookingforplayers":
+                        await LookingForPlayersCommand.Run(command, client, storageClient, options, guild, recruitingChannel, teams);
+                        break;
+                    default:
+                        await command.FollowupAsync($"SubCommand {subCommand} not supported", ephemeral: true);
+                        return;
+                }
+            });
         }
 
         public override SlashCommandProperties Build()
@@ -142,5 +148,18 @@ namespace TyniBot.Commands
 
             return msgs;
         }
+
+        internal async Task ConvertMessageTeamsToStorage(List<Team> teams, string rowKey, StorageClient storageClient)
+        {
+            List<(string, Team)> rowKeysAndTeams = new List<(string, Team)>();
+
+            foreach (Team team in teams)
+            {
+                rowKeysAndTeams.Add((team.Name, team));
+            }
+
+            await storageClient.SaveTableRows(Team.TableName, rowKeysAndTeams, rowKey);
+        }
+
     }
 }
