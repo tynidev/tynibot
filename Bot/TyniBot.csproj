@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <Minor>$([System.DateTime]::UtcNow.ToString(yyyy))</Minor>
     <Build>$([System.DateTime]::UtcNow.ToString(MMdd))</Build>
     <Revision>$([System.DateTime]::UtcNow.ToString(HHmm))</Revision>
