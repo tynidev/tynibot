@@ -159,12 +159,16 @@ namespace TyniBot.Recruiting
             if (CategoryChannelId != 0)
             {
                 SocketGuild socketGuild = client.GetGuild(guild.Id);
-                var categoryChannel = socketGuild.GetCategoryChannel(CategoryChannelId);
-                foreach (var channel in categoryChannel.Channels)
+
+                if (guild.Id != 124366291611025417) // dont delete the channels in the msft discord for now
                 {
-                    await channel.DeleteAsync();
+                    var categoryChannel = socketGuild.GetCategoryChannel(CategoryChannelId);
+                    foreach (var channel in categoryChannel.Channels)
+                    {
+                        await channel.DeleteAsync();
+                    }
+                    await categoryChannel.DeleteAsync();
                 }
-                await categoryChannel.DeleteAsync();
             }
 
             await recruitingChannel.DeleteMessageAsync(MsgId);
