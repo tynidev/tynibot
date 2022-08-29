@@ -37,24 +37,10 @@ namespace TyniBot.Commands
             bool isNewTeam = newTeam.MsgId == 0;
 
             // Update old team message
-            if (oldTeam.Players.Count > 0)
-            {
-                await recruitingChannel.ModifyMessageAsync(oldTeam.MsgId, (message) => message.Content = oldTeam.ToMessage());
-            }
-            else
-            {
-                await recruitingChannel.DeleteMessageAsync(oldTeam.MsgId);
-            }
+            await oldTeam.ConfigureTeamAsync(client, guild, recruitingChannel);
 
             // Update new team message
-            if(newTeam.MsgId == 0)
-            {
-                newTeam.MsgId = (await recruitingChannel.SendMessageAsync(newTeam.ToMessage())).Id;
-            }
-            else
-            {
-                await recruitingChannel.ModifyMessageAsync(newTeam.MsgId, (message) => message.Content = newTeam.ToMessage());
-            }
+            await newTeam.ConfigureTeamAsync(client, guild, recruitingChannel);
 
             var transactions = new List<(string, TableTransactionActionType, Team, ETag)>();
             if (oldTeam.Players.Count > 0)

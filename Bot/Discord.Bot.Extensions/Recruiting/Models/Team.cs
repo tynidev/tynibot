@@ -1,6 +1,8 @@
 ﻿using Azure;
 using Azure.Data.Tables;
 using Discord.Bot.Utils;
+using Discord.Rest;
+using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,10 +15,12 @@ namespace TyniBot.Recruiting
     public class Team : ValueWithEtag
     {
         public static string TableName = "teams";
+        public static string FreeAgentTeam = "Free_Agents";
 
         public ulong MsgId { get; set; } = 0;
         public string Name { get; set; } = null;
         public bool LookingForPlayers { get; set; } = false;
+        public ulong CategoryChannelId { get; set; } = 0;
 
         public Player Captain = null;
         public List<Player> Players { get; set; } = new List<Player>();
@@ -104,6 +108,7 @@ namespace TyniBot.Recruiting
             // Move Player
             this.Players.Remove(player);
         }
+        
         public void AddPlayer(Player player)
         {
             Player? existingPlayer = this.Players.Find((p) => string.Equals(p.DiscordUser, player.DiscordUser, StringComparison.OrdinalIgnoreCase));
@@ -119,6 +124,75 @@ namespace TyniBot.Recruiting
             }
         }
 
+        public async Task ConfigureTeamAsync(DiscordSocketClient client, Guild guild, ISocketMessageChannel recruitingChannel)
+        {
+            if (Players.Any())
+            {
+                if (MsgId == 0)
+                {
+                    MsgId = (await recruitingChannel.SendMessageAsync(ToMessage())).Id;
+                }
+                else
+                {
+                    await recruitingChannel.ModifyMessageAsync(MsgId, (message) => message.Content = ToMessage());
+                }
+
+                if (CategoryChannelId == 0)
+                {
+                    await ConfigureNewTeamAsync(client, guild, recruitingChannel);
+                }
+            }
+            else
+            {
+                await CleanupDeletedTeamAsync(client, guild, recruitingChannel);
+            }
+        }
+
+
+        public async Task CleanupDeletedTeamAsync(DiscordSocketClient client, Guild guild, ISocketMessageChannel recruitingChannel)
+        {
+            if (string.Equals(Name, FreeAgentTeam, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            if (CategoryChannelId != 0)
+            {
+                SocketGuild socketGuild = client.GetGuild(guild.Id);
+                var categoryChannel = socketGuild.GetCategoryChannel(CategoryChannelId);
+                foreach (var channel in categoryChannel.Channels)
+                {
+                    await channel.DeleteAsync();
+                }
+                await categoryChannel.DeleteAsync();
+            }
+
+            await recruitingChannel.DeleteMessageAsync(MsgId);
+        }
+
+
+        private async Task ConfigureNewTeamAsync(DiscordSocketClient client, Guild guild, ISocketMessageChannel recruitingChannel)
+        {
+            if (string.Equals(Name, FreeAgentTeam, StringComparison.OrdinalIgnoreCase)){
+                return;
+            }
+
+            SocketGuild socketGuild = client.GetGuild(guild.Id);
+
+            var categoryChannels = socketGuild.CategoryChannels.Where(channel => string.Equals(channel.Name, Name));
+
+            if (categoryChannels.Any())
+            {
+                CategoryChannelId = categoryChannels.First().Id;
+            }
+            else {
+                RestCategoryChannel restCategoryChannel = await socketGuild.CreateCategoryChannelAsync(Name);
+                CategoryChannelId = restCategoryChannel.Id;
+                await socketGuild.CreateTextChannelAsync(Name.Replace(' ', '-').Replace(".", ""), (props) => { props.Position = 0; props.CategoryId = CategoryChannelId; });
+                await socketGuild.CreateTextChannelAsync("Replays", (props) => { props.Position = 1; props.CategoryId = CategoryChannelId; });
+                await socketGuild.CreateVoiceChannelAsync("Team Voice", (props) => { props.Position = 2; props.CategoryId = CategoryChannelId; });
+            }
+        }
         #endregion
 
         #region Static Methods

@@ -30,14 +30,14 @@ namespace TyniBot.Commands
             oldTeam.RemovePlayer(player);
 
             // Update old team message
+            await oldTeam.ConfigureTeamAsync(client, guild, recruitingChannel);
+
             if (oldTeam.Players.Count > 0)
             {
-                await recruitingChannel.ModifyMessageAsync(oldTeam.MsgId, (message) => message.Content = oldTeam.ToMessage());
                 await storageClient.SaveTableRow(Team.TableName, oldTeam.Name, guild.RowKey, oldTeam);
             }
             else
             {
-                await recruitingChannel.DeleteMessageAsync(oldTeam.MsgId);
                 await storageClient.DeleteTableRow(Team.TableName, oldTeam.Name, guild.RowKey);
             }
 

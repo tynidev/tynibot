@@ -56,17 +56,7 @@ namespace TyniBot.Commands
                 existingPlayer.PlatformId = newPlayer.PlatformId;
             }
 
-            // Have we added this team message yet? -> Write team message and move to next team
-            if (team.MsgId == 0)
-            {
-                team.MsgId = (await recruitingChannel.SendMessageAsync(team.ToMessage())).Id;
-            }
-            else
-            {
-                // This is an existing team -> Modify old team message
-                await recruitingChannel.ModifyMessageAsync(team.MsgId, (message) => message.Content = team.ToMessage());
-            }
-
+            await team.ConfigureTeamAsync(client, guild, recruitingChannel);
             await storageClient.SaveTableRow(Team.TableName, team.Name, guild.RowKey, team);
             await command.FollowupAsync($"{newPlayer.DiscordUser}'s RL tracker has been added to the recruiting board in channel <#{recruitingChannel.Id}>", ephemeral: true);
         }
