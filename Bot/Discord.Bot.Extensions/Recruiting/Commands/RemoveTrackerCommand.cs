@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Collections.Immutable;
 using System.Linq;
 using Discord.Bot;
+using Discord.Bot.Utils;
 using System;
 using TyniBot.Recruiting;
 
@@ -13,7 +14,7 @@ namespace TyniBot.Commands
     // Todo: store guild Ids, role ids, and channel ids in permanent external storage to allow for servers to configure their addtracker command 
     public class RemoveTrackedUserCommand
     {
-        public static async Task Run(SocketSlashCommand command, DiscordSocketClient client, Dictionary<string, SocketSlashCommandDataOption> options, ISocketMessageChannel recruitingChannel, List<IMessage> messages, List<Team> teams)
+        public static async Task Run(SocketSlashCommand command, DiscordSocketClient client, StorageClient storageClient, Dictionary<string, SocketSlashCommandDataOption> options, Guild guild, ISocketMessageChannel recruitingChannel, List<Team> teams)
         {
             var guildUser = (SocketGuildUser)options["username"].Value;
             var discordUser = guildUser.Nickname ?? guildUser.Username;
@@ -22,7 +23,7 @@ namespace TyniBot.Commands
             (var oldTeam, var player) = Team.FindPlayer(teams, discordUser);
             if (player == null)
             {
-                await command.RespondAsync($"User {discordUser} does not exist in the recruiting table", ephemeral: true);
+                await command.FollowupAsync($"User {discordUser} does not exist in the recruiting table", ephemeral: true);
                 return;
             }
 
@@ -37,13 +38,15 @@ namespace TyniBot.Commands
             if (oldTeam.Players.Count > 0)
             {
                 await recruitingChannel.ModifyMessageAsync(oldTeam.MsgId, (message) => message.Content = oldTeam.ToMessage());
+                await storageClient.SaveTableRow(Team.TableName, oldTeam.Name, guild.RowKey, oldTeam);
             }
             else
             {
                 await recruitingChannel.DeleteMessageAsync(oldTeam.MsgId);
+                await storageClient.DeleteTableRow(Team.TableName, oldTeam.Name, guild.RowKey);
             }
 
-            await command.RespondAsync($"You have removed user {discordUser} from {oldTeam.Name}", ephemeral: true);
+            await command.FollowupAsync($"You have removed user {discordUser} from {oldTeam.Name}", ephemeral: true);
         }
     }
 }

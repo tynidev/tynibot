@@ -5,8 +5,11 @@ using System.Threading.Tasks;
 using System.Collections.Immutable;
 using System.Linq;
 using Discord.Bot;
+using Discord.Bot.Utils;
 using System;
 using TyniBot.Recruiting;
+using Azure.Data.Tables;
+using Azure;
 
 namespace TyniBot.Commands
 {
@@ -14,7 +17,7 @@ namespace TyniBot.Commands
     // Todo: create and assign and delete roles for the teams, create/delete team channels as well.
     public class MoveTrackedUserCommand
     {
-        public static async Task Run(SocketSlashCommand command, DiscordSocketClient client, Dictionary<string, SocketSlashCommandDataOption> options, ISocketMessageChannel recruitingChannel, List<IMessage> messages, List<Team> teams)
+        public static async Task Run(SocketSlashCommand command, DiscordSocketClient client, StorageClient storageClient, Dictionary<string, SocketSlashCommandDataOption> options, Guild guild, ISocketMessageChannel recruitingChannel, List<Team> teams)
         {
             var guildUser = (SocketGuildUser)options["username"].Value;
             var discordUser = guildUser.Nickname ?? guildUser.Username;
@@ -23,7 +26,7 @@ namespace TyniBot.Commands
             (var oldTeam, var player) = Team.FindPlayer(teams, discordUser);
             if (player == null)
             {
-                await command.RespondAsync($"User {discordUser} does not exist in the recruiting table", ephemeral: true);
+                await command.FollowupAsync($"User {discordUser} does not exist in the recruiting table", ephemeral: true);
                 return;
             }
 
@@ -33,14 +36,14 @@ namespace TyniBot.Commands
 
             // Move Player
             oldTeam.Players.Remove(player);
-            // Update old team message
-            await recruitingChannel.ModifyMessageAsync(oldTeam.MsgId, (message) => message.Content = oldTeam.ToMessage());
 
             var teamName = options["team"].Value.ToString();
 
             var newTeam = Team.FindTeam(teams, teamName);
+            bool isNewTeam = false;
             if (newTeam == null)
             {
+                isNewTeam = true;
                 newTeam = new Team()
                 {
                     Name = teamName,
@@ -69,15 +72,29 @@ namespace TyniBot.Commands
             // Update new team message
             if(newTeam.MsgId == 0)
             {
-                await recruitingChannel.SendMessageAsync(newTeam.ToMessage());
+                newTeam.MsgId = (await recruitingChannel.SendMessageAsync(newTeam.ToMessage())).Id;
             }
             else
             {
                 await recruitingChannel.ModifyMessageAsync(newTeam.MsgId, (message) => message.Content = newTeam.ToMessage());
             }
 
-            await command.RespondAsync($"You have moved user {discordUser} from {oldTeam.Name} -> {newTeam.Name}", ephemeral: true);
+            var transactions = new List<(string, TableTransactionActionType, Team, ETag)>();
+            if (oldTeam.Players.Count > 0)
+            {
+                transactions.Add((oldTeam.Name, TableTransactionActionType.UpdateMerge, oldTeam, oldTeam.etag));
+            }
+            else
+            {
+                transactions.Add((oldTeam.Name, TableTransactionActionType.Delete, null, oldTeam.etag));
+            }
+
+            transactions.Add((newTeam.Name, isNewTeam ? TableTransactionActionType.UpsertMerge : TableTransactionActionType.UpdateMerge, newTeam, newTeam.etag));
+
+            // if the transaction fails it should retry, and then the message will be updated to reflect the actual value in storage.
+            await storageClient.ExecuteTransaction(Team.TableName, transactions, guild.RowKey);
             
+            await command.FollowupAsync($"You have moved user {discordUser} from {oldTeam.Name} -> {newTeam.Name}", ephemeral: true);
         }
     }
 }

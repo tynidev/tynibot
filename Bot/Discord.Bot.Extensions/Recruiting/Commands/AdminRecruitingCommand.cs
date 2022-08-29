@@ -1,4 +1,5 @@
 ﻿using Discord;
+using Discord.Bot.Utils;
 using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
@@ -14,13 +15,7 @@ namespace TyniBot.Commands
 
         public override string Description => "Manage teams for CEA recruiting.";
 
-        public override Dictionary<ulong, List<ApplicationCommandPermission>> GuildIdsAndPermissions => new Dictionary<ulong, List<ApplicationCommandPermission>>()
-        {
-            { 902581441727197195, new List<ApplicationCommandPermission> { new ApplicationCommandPermission(903514452463325184, ApplicationCommandPermissionTarget.Role, true) } }, // tynibot test
-            { 124366291611025417, new List<ApplicationCommandPermission> { new ApplicationCommandPermission(469941381075435523, ApplicationCommandPermissionTarget.Role, true), new ApplicationCommandPermission(480419333995233280, ApplicationCommandPermissionTarget.Role, true) } }, // msft rl
-            { 801598108467200031, new List<ApplicationCommandPermission>() }, // tyni's server
-            { 904804698484260874, new List<ApplicationCommandPermission> { new ApplicationCommandPermission(904867602571100220, ApplicationCommandPermissionTarget.Role, true) } }, // nate server
-        };
+        public override Dictionary<ulong, List<ApplicationCommandPermission>> GuildIdsAndPermissions => GuildIdMappings.adminRecruitingPermissions;
 
         public override SlashCommandProperties Build()
         {

@@ -1,4 +1,5 @@
 ﻿using Discord.Bot;
+using Discord.Bot.Utils;
 using Discord.WebSocket;
 using PlayCEAStats.DataModel;
 using System;
@@ -19,9 +20,7 @@ namespace Discord.Cea
 
         public override bool IsGlobal => true;
 
-        public override Dictionary<ulong, List<ApplicationCommandPermission>> GuildIdsAndPermissions => new Dictionary<ulong, List<ApplicationCommandPermission>>()
-        {
-        };
+        public override Dictionary<ulong, List<ApplicationCommandPermission>> GuildIdsAndPermissions => GuildIdMappings.defaultSlashCommandPermissions;
 
         private readonly Dictionary<string, ICeaSubCommand> subCommands;
 
@@ -42,7 +41,7 @@ namespace Discord.Cea
             this.subCommands = subCommands.ToDictionary(c => c.OptionBuilder.Name);
         }
 
-        public override async Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client)
+        public override async Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client, StorageClient storageClient, Guild guild)
         {
             var subCommand = command.Data.Options.Where(o => o.Type.Equals(ApplicationCommandOptionType.SubCommand)).First();
             IReadOnlyDictionary<SlashCommandOptions, string> options = SlashCommandUtils.OptionsToDictionary(subCommand.Options);

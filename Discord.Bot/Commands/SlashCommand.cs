@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Rest;
 using Discord.WebSocket;
+using Discord.Bot.Utils;
 
 namespace Discord.Bot
 {
@@ -21,6 +22,6 @@ namespace Discord.Bot
             return builder.Build();
         }
 
-        public abstract Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client);
+        public abstract Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client, StorageClient storageClient, Guild guild);
     }
 }
