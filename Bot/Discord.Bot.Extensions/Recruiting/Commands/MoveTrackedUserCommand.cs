@@ -25,14 +25,14 @@ namespace TyniBot.Commands
             var captain = options.ContainsKey("captain") && (bool)options["captain"].Value;
 
             // Player not exist? -> respond with error
-            (var oldTeam, var player) = Team.FindPlayer(teams, discordUser);
+            (var oldTeam, var player) = Team.FindPlayer(teams, guildUser);
             if (player == null)
             {
                 await command.FollowupAsync($"User {discordUser} does not exist in the recruiting table", ephemeral: true);
                 return;
             }
 
-            oldTeam.RemovePlayer(player);
+            await oldTeam.RemovePlayerAsync(player, guildUser);
             var newTeam = Team.AddPlayer(teams, teamName, player, captain);
             bool isNewTeam = newTeam.MsgId == 0;
 

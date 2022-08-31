@@ -21,6 +21,7 @@ namespace TyniBot.Commands
             // Construct new player from parameters
             var newPlayer = new Player();
             newPlayer.DiscordUser = user.Nickname ?? user.Username;
+            newPlayer.DiscordId = user.Id;
             newPlayer.Platform = (Platform)Enum.Parse(typeof(Platform), options["platform"].Value.ToString());
             newPlayer.PlatformId = options["id"].Value.ToString();
 
@@ -31,7 +32,7 @@ namespace TyniBot.Commands
             }
 
             // Is player just updating tracker link? -> Update link
-            (var team, var existingPlayer) = Team.FindPlayer(teams, newPlayer.DiscordUser);
+            (var team, var existingPlayer) = Team.FindPlayer(teams, user);
 
             // Is player not on a team? -> Add to FreeAgents
             if (team == null)

@@ -1,10 +1,12 @@
 ﻿using Azure;
 using Azure.Data.Tables;
+using Discord;
 using Discord.Bot.Utils;
 using Discord.Rest;
 using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -21,6 +23,7 @@ namespace TyniBot.Recruiting
         public string Name { get; set; } = null;
         public bool LookingForPlayers { get; set; } = false;
         public ulong CategoryChannelId { get; set; } = 0;
+        public ulong RoleId { get; set; } = 0;
 
         public Player Captain = null;
         public List<Player> Players { get; set; } = new List<Player>();
@@ -89,9 +92,9 @@ namespace TyniBot.Recruiting
         #endregion
 
         #region Instance Methods
-        public Player FindPlayer(string discordUser)
+        public Player FindPlayer(SocketGuildUser guildUser)
         {
-            var exists = Players.Where((p) => string.Equals(p.DiscordUser, discordUser, StringComparison.OrdinalIgnoreCase));
+            var exists = Players.Where((p) => p.DiscordId == guildUser.Id || (p.DiscordId== 0 && string.Equals(p.DiscordUser, guildUser.Nickname ?? guildUser.Username, StringComparison.OrdinalIgnoreCase)));
             if (exists.Any())
             {
                 return exists.First();
@@ -99,14 +102,19 @@ namespace TyniBot.Recruiting
             return null;
         }
 
-        public void RemovePlayer(Player player)
+        public async Task RemovePlayerAsync(Player player, SocketGuildUser guildUser)
         {
             // If player was captain of old team remove that teams captain
-            if (this.Captain?.DiscordUser == player.DiscordUser)
+            if (this.Captain?.DiscordId == player.DiscordId || (this.Captain?.DiscordId == 0 && this.Captain?.DiscordUser == player.DiscordUser))
                 this.Captain = null;
 
             // Move Player
             this.Players.Remove(player);
+
+            if (RoleId != 0)
+            {
+                await guildUser.RemoveRoleAsync(RoleId);
+            }
         }
         
         public void AddPlayer(Player player)
@@ -141,6 +149,8 @@ namespace TyniBot.Recruiting
                 {
                     await ConfigureNewTeamAsync(client, guild, recruitingChannel);
                 }
+
+                await AssignRolesToPlayersAsync((recruitingChannel as SocketTextChannel).Guild);
             }
             else
             {
@@ -148,8 +158,20 @@ namespace TyniBot.Recruiting
             }
         }
 
+        private async Task AssignRolesToPlayersAsync(SocketGuild guild)
+        {
+            foreach (Player player in Players)
+            {
+                if (player.DiscordId == 0)
+                {
+                    player.DiscordId = guild.Users.Where(user => user.Username == player.DiscordUser || user.Nickname == player.DiscordUser).First().Id;
+                }
 
-        public async Task CleanupDeletedTeamAsync(DiscordSocketClient client, Guild guild, ISocketMessageChannel recruitingChannel)
+                await guild.GetUser(player.DiscordId).AddRoleAsync(RoleId);
+            }
+        }
+
+        public async Task CleanupDeletedTeamAsync(DiscordSocketClient client, Guild guild, ISocketMessageChannel recruitingChannel, bool seasonRefresh = false)
         {
             if (string.Equals(Name, FreeAgentTeam, StringComparison.OrdinalIgnoreCase))
             {
@@ -160,16 +182,39 @@ namespace TyniBot.Recruiting
             {
                 SocketGuild socketGuild = client.GetGuild(guild.Id);
 
-                if (guild.Id != 124366291611025417) // dont delete the channels in the msft discord for now
+                var categoryChannel = socketGuild.GetCategoryChannel(CategoryChannelId);
+                if (categoryChannel != null)
                 {
-                    var categoryChannel = socketGuild.GetCategoryChannel(CategoryChannelId);
-                    if (categoryChannel != null)
+                    if (guild.Id != 124366291611025417 || seasonRefresh == false) // dont delete the channels in the msft discord for now
                     {
                         foreach (var channel in categoryChannel.Channels)
                         {
                             await channel.DeleteAsync();
                         }
+
                         await categoryChannel.DeleteAsync();
+
+                        var role = socketGuild.GetRole(RoleId);
+
+                        if (role != null)
+                        {
+                            await role.DeleteAsync();
+                        }
+                    }
+                    else
+                    {
+                        await categoryChannel.ModifyAsync(props => props.Position = socketGuild.Channels.Count - 1);
+
+                        var role = socketGuild.GetRole(RoleId);
+                        if (role != null)
+                        {
+                            await role?.ModifyAsync(props =>
+                            {
+                                props.Name = $"{props.Name} {DateTime.UtcNow.Year % 2000.0}H{(DateTime.UtcNow.Month <= 6 ? "1" : "2")}";
+                                props.Hoist = false;
+                                props.Mentionable = false;
+                            });
+                        }
                     }
                 }
             }
@@ -186,20 +231,42 @@ namespace TyniBot.Recruiting
 
             SocketGuild socketGuild = client.GetGuild(guild.Id);
 
-            var categoryChannels = socketGuild.CategoryChannels.Where(channel => string.Equals(channel.Name, Name));
+            var roles = socketGuild.Roles.Where(role => string.Equals(role.Name, Name, StringComparison.OrdinalIgnoreCase));
+            var roleExisted = false;
+            if (roles.Any())
+            {
+                RoleId = roles.First().Id;
+            }
+            else
+            {
+                var role = await socketGuild.CreateRoleAsync(Name, isMentionable: true, isHoisted: true);
+                RoleId = role.Id;
+            }
+
+            var categoryChannels = socketGuild.CategoryChannels.Where(channel => string.Equals(channel.Name, Name, StringComparison.OrdinalIgnoreCase));
 
             if (categoryChannels.Any())
             {
                 CategoryChannelId = categoryChannels.First().Id;
+                if (!roleExisted)
+                {
+                    var channels = categoryChannels.First().Channels.ToList();
+                    await CreateChannelRoles(client, socketGuild, channels[0] as SocketTextChannel, channels[1] as SocketTextChannel, channels[2] as SocketVoiceChannel);
+                }
             }
             else {
                 try
                 {
-                    RestCategoryChannel restCategoryChannel = await socketGuild.CreateCategoryChannelAsync(Name);
+                    var restCategoryChannel = await socketGuild.CreateCategoryChannelAsync(Name);
+
                     CategoryChannelId = restCategoryChannel.Id;
-                    await socketGuild.CreateTextChannelAsync(Name.Replace(' ', '-').Replace(".", ""), (props) => { props.Position = 0; props.CategoryId = CategoryChannelId; });
-                    await socketGuild.CreateTextChannelAsync("Replays", (props) => { props.Position = 1; props.CategoryId = CategoryChannelId; });
-                    await socketGuild.CreateVoiceChannelAsync("Team Voice", (props) => { props.Position = 2; props.CategoryId = CategoryChannelId; });
+                    var teamChannel = await socketGuild.CreateTextChannelAsync(Name.Replace(' ', '-').Replace(".", ""), (props) => { props.Position = 0; props.CategoryId = CategoryChannelId; });
+                    var replaysChannel = await socketGuild.CreateTextChannelAsync("Replays", (props) => { props.Position = 1; props.CategoryId = CategoryChannelId; });
+                    var voiceChannel = await socketGuild.CreateVoiceChannelAsync("Team Voice", (props) => { props.Position = 2; props.CategoryId = CategoryChannelId; });
+                    
+                    var channel = socketGuild.GetCategoryChannel(restCategoryChannel.Id);
+
+                    await CreateChannelRoles(client, socketGuild, teamChannel, replaysChannel, voiceChannel);
                 }
                 catch (Exception ex)
                 {
@@ -208,10 +275,39 @@ namespace TyniBot.Recruiting
                 }
             }
         }
+
+        private async Task CreateChannelRoles(DiscordSocketClient client, SocketGuild socketGuild, ITextChannel teamChannel, ITextChannel replayChannel, IVoiceChannel voiceChannel)
+        {
+            await teamChannel.ModifyAsync(func =>
+                func.PermissionOverwrites = new List<Overwrite>
+                {
+                    //new Overwrite(socketGuild.GetUser(client.CurrentUser.Id).Roles.Where(role => string.Equals(role.Name, client.CurrentUser.Username, StringComparison.OrdinalIgnoreCase)).FirstOrDefault().Id, PermissionTarget.Role, new OverwritePermissions(manageChannel: PermValue.Allow)),
+                    new Overwrite(client.CurrentUser.Id, PermissionTarget.User, new OverwritePermissions(manageChannel: PermValue.Allow, viewChannel: PermValue.Allow)),
+                    new Overwrite(RoleId, PermissionTarget.Role, new OverwritePermissions(viewChannel: PermValue.Allow)),
+                    new Overwrite(socketGuild.EveryoneRole.Id, PermissionTarget.Role, new OverwritePermissions(viewChannel: PermValue.Deny)),
+                });
+
+            await replayChannel.ModifyAsync(func =>
+                func.PermissionOverwrites = new List<Overwrite>
+                {
+                    new Overwrite(client.CurrentUser.Id, PermissionTarget.User, new OverwritePermissions(manageChannel: PermValue.Allow, sendMessages: PermValue.Allow)),
+                    new Overwrite(RoleId, PermissionTarget.Role, new OverwritePermissions(sendMessages: PermValue.Allow)),
+                    new Overwrite(socketGuild.EveryoneRole.Id, PermissionTarget.Role,new OverwritePermissions(sendMessages: PermValue.Deny)),
+                });
+
+            await voiceChannel.ModifyAsync(func =>
+                func.PermissionOverwrites = new List<Overwrite> 
+                {
+                    new Overwrite(client.CurrentUser.Id, PermissionTarget.User, new OverwritePermissions(manageChannel: PermValue.Allow, connect: PermValue.Allow)),
+                    new Overwrite(RoleId, PermissionTarget.Role, new OverwritePermissions(connect: PermValue.Allow)),
+                    new Overwrite(socketGuild.EveryoneRole.Id, PermissionTarget.Role,new OverwritePermissions(connect: PermValue.Deny)),
+                });
+
+        }
         #endregion
 
         #region Static Methods
-        public static (Team, Player) FindPlayer(IEnumerable<Team> teams, string discordUser)
+        public static (Team, Player) FindPlayer(IEnumerable<Team> teams, SocketGuildUser discordUser)
         {
             foreach (var team in teams)
             {

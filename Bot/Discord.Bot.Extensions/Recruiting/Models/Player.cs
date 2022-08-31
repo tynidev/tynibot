@@ -21,6 +21,7 @@ namespace TyniBot.Recruiting
         public Platform Platform { get; set; } = Platform.Epic;
         public string PlatformId { get; set; } = null;
         public string DiscordUser { get; set; } = null;
+        public ulong DiscordId { get; set; } = 0;
 
         public string TrackerLink()
         {

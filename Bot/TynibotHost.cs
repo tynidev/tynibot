@@ -89,7 +89,7 @@ namespace TyniBot
                 Client.ReactionsCleared += ReactionsClearedAsync;
                 Client.UserJoined += AnnounceJoinedUser;
                 Client.SlashCommandExecuted += SlashCommandTriggeredAsync;
-                Client.Ready += ReadyAsync;
+                Client.Ready += ReadyAsync;               
                 await Client.LoginAsync(TokenType.Bot, this.Settings.BotToken);
                 await Client.StartAsync();
 
@@ -230,7 +230,7 @@ namespace TyniBot
         private async Task SlashCommandTriggeredAsync(SocketSlashCommand command)
         {
             var guild = await Guild.GetGuildAsync(command.GuildId.Value, StorageClient);
-
+            
             if (SlashCommandDictionary.TryGetValue(command.Data.Name, out SlashCommand slashCommand))
             {
                 await slashCommand.HandleCommandAsync(command, Client, StorageClient, guild);
