@@ -1,7 +1,22 @@
 {
   "bracketSets": [
+    [ "fyiq5ESVw7" ]
   ],
   "stageConfiguration": {
+    "preseason 1": "Preseason",
+    "Stage1-4wks-swiss 1": "Stage 1",
+    "Stage1-4wks-swiss 2": "Stage 1",
+    "Stage1-4wks-swiss 3": "Stage 1",
+    "Stage1-4wks-swiss 4": "Stage 1",
+    "stage2-placement 1": "Stage 2",
+    "stage2-placement 2": "Stage 2",
+    "stage2-placement 3": "Stage 2",
+    "stage2-placement 4": "Stage 2",
+    "Round of 32": "Playoffs",
+    "Round of 16": "Playoffs",
+    "Quarterfinals": "Playoffs",
+    "Semifinals": "Playoffs",
+    "Grand Finals": "Playoffs"
   },
   "stageGroups": [
   ]
