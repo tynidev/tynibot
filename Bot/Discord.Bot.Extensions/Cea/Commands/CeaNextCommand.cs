@@ -51,8 +51,10 @@ namespace Discord.Cea
             }
             else
             {
+                string homeRank = match.HomeTeam.RoundRanking.ContainsKey(round) ? match.HomeTeam.RoundRanking[round].ToString() : "?";
+                string awayRank = match.AwayTeam.RoundRanking.ContainsKey(round) ? match.AwayTeam.RoundRanking[round].ToString() : "?";
                 message = string.Format("{0}'s next match is {1} ({4}) vs {2} ({5}).{3}",
-                    team, match.HomeTeam, match.AwayTeam, match.Completed ? $" (Completed) [{match.HomeGamesWon}-{match.AwayGamesWon}]" : "", match.HomeTeam.RoundRanking[round], match.AwayTeam.RoundRanking[round]);
+                    team, match.HomeTeam, match.AwayTeam, match.Completed ? $" (Completed) [{match.HomeGamesWon}-{match.AwayGamesWon}]" : "", homeRank, awayRank);
             }
 
             builder.AddField(team.Name, message);
@@ -78,8 +80,10 @@ namespace Discord.Cea
             } 
             else
             {
+                string homeRank = match.HomeTeam.RoundRanking.ContainsKey(round) ? match.HomeTeam.RoundRanking[round].ToString() : "?";
+                string awayRank = match.AwayTeam.RoundRanking.ContainsKey(round) ? match.AwayTeam.RoundRanking[round].ToString() : "?";
                 return string.Format("{0} ({3}) vs {1} ({4}) {2}",
-                    match.HomeTeam, match.AwayTeam, match.Completed ? $" (Completed) [{match.HomeGamesWon}-{match.AwayGamesWon}]" : "", match.HomeTeam.RoundRanking[round], match.AwayTeam.RoundRanking[round]);
+                    match.HomeTeam, match.AwayTeam, match.Completed ? $" (Completed) [{match.HomeGamesWon}-{match.AwayGamesWon}]" : "", homeRank, awayRank);
             }
         }
     }

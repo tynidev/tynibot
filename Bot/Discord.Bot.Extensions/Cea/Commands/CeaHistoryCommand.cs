@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Discord.Cea
@@ -44,8 +45,10 @@ namespace Discord.Cea
                 {
                     if (result.HomeTeam == team || result.AwayTeam == team)
                     {
-                        string awayString = result.Bye ? "BYE" : $"{result.AwayTeam}[{ result.AwayTeam.RoundRanking[round]}]";
-                        sb.AppendLine($"[{result.HomeGamesWon}-{result.AwayGamesWon}] {result.HomeTeam} [{result.HomeTeam.RoundRanking[round]}] vs {awayString}");
+                        string homeRank = result.HomeTeam.RoundRanking.ContainsKey(round) ? result.HomeTeam.RoundRanking[round].ToString() : "?";
+                        string awayRank = result.AwayTeam.RoundRanking.ContainsKey(round) ? result.AwayTeam.RoundRanking[round].ToString() : "?";
+                        string awayString = result.Bye ? "BYE" : $"{result.AwayTeam}[{awayRank}]";
+                        sb.AppendLine($"[{result.HomeGamesWon}-{result.AwayGamesWon}] {result.HomeTeam} [{homeRank}] vs {awayString}");
                     }
                 }
             }

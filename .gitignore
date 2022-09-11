@@ -3,3 +3,5 @@ obj/
 .vs/
 .editorconfig
 Bot.ConsoleApp/botsettings.json
+.DS_Store
+Bot.ConsoleApp/.DS_Store
