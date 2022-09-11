@@ -25,6 +25,7 @@ namespace Discord.Cea
 
         async Task ICeaSubCommand.Run(SocketSlashCommand command, DiscordSocketClient client, IReadOnlyDictionary<SlashCommandOptions, string> options, Lazy<List<Team>> lazyTeams)
         {
+            bool ephemeral = !options.ContainsKey(SlashCommandOptions.post) || !options[SlashCommandOptions.post].Equals("True");
             BracketSet currentBrackets = LeagueManager.League.Bracket;
             BracketRound currentRound = currentBrackets.Rounds.Last().First();
             string currentStage = StageMatcher.Lookup(currentRound.RoundName);
@@ -32,16 +33,24 @@ namespace Discord.Cea
             List<StageGroup> currentStageGroups = stageGroups.Where(g => g.Stage.Equals(currentStage)).ToList();
 
             List<Embed> embeds = new();
+
+            if (currentStageGroups.Count == 0)
+            {
+                await command.RespondAsync("No current stage groups.", ephemeral: ephemeral);
+                return;
+            }
+
             foreach (StageGroup group in currentStageGroups)
             {
                 EmbedBuilder builder = new();
                 StringBuilder result = new StringBuilder();
                 int page = 0;
-                List<Team> teams = group.Teams.OrderBy(t => t.RoundRanking[currentRound]).ToList();
+                List<Team> teams = group.Teams.OrderBy(t => t.RoundRanking.ContainsKey(currentRound) ? t.RoundRanking[currentRound] : 0).ToList();
                 foreach (Team team in teams)
                 {
                     TeamStatistics stats = team.StageStats[currentStage];
-                    result.AppendLine($"{team.RoundRanking[currentRound]} {team} [**{stats.MatchWins}**-{stats.MatchLosses}] GoalDiff: {stats.TotalGoalDifferential}");
+                    string roundRanking = team.RoundRanking.ContainsKey(currentRound) ? team.RoundRanking[currentRound].ToString() : "?";
+                    result.AppendLine($"{roundRanking} {team} [**{stats.MatchWins}**-{stats.MatchLosses}] GoalDiff: {stats.TotalGoalDifferential}");
                     if (result.Length > 800)
                     {
                         builder.AddField(page == 0 ? $"{group.Name} Standings" : $"{group.Name} Continued", result.ToString());
@@ -57,7 +66,6 @@ namespace Discord.Cea
                 embeds.Add(builder.Build());
             }
 
-            bool ephemeral = !options.ContainsKey(SlashCommandOptions.post) || !options[SlashCommandOptions.post].Equals("True");
             await command.RespondAsync(embeds: embeds.ToArray(), ephemeral: ephemeral);
         }
     }

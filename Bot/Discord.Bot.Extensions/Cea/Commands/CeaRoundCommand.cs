@@ -38,12 +38,15 @@ namespace Discord.Cea
                 StringBuilder sb = new();
                 foreach (MatchResult match in round.NonByeMatches)
                 {
-                    sb.AppendLine($"[{match.HomeGamesWon}-{match.AwayGamesWon}] (**{match.HomeTeam.RoundRanking[round]}**){match.HomeTeam} vs (**{match.AwayTeam.RoundRanking[round]}**){match.AwayTeam}");
+                    string homeRank = match.HomeTeam.RoundRanking.ContainsKey(round) ? match.HomeTeam.RoundRanking[round].ToString() : "?";
+                    string awayRank = match.AwayTeam.RoundRanking.ContainsKey(round) ? match.AwayTeam.RoundRanking[round].ToString() : "?";
+                    sb.AppendLine($"[{match.HomeGamesWon}-{match.AwayGamesWon}] (**{homeRank}**){match.HomeTeam} vs (**{awayRank}**){match.AwayTeam}");
                 }
 
                 foreach (MatchResult match in round.ByeMatches)
                 {
-                    sb.AppendLine($"[BYE] (**{match.HomeTeam.RoundRanking[round]}**){match.HomeTeam} vs *BYE*");
+                    string homeRank = match.HomeTeam.RoundRanking.ContainsKey(round) ? match.HomeTeam.RoundRanking[round].ToString() : "?";
+                    sb.AppendLine($"[BYE] (**{homeRank}**){match.HomeTeam} vs *BYE*");
                 }
 
                 bracketResults.Add(new Tuple<string, string, string>(bracket.Name, round.RoundName, sb.ToString()));
