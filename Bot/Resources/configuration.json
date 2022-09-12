@@ -1,23 +1,37 @@
 {
   "bracketSets": [
-    [ "fyiq5ESVw7" ]
+    [ "fyiq5ESVw7" ],
+    [ "0ynqMRAz_p", "YgmH6jEZ52" ]
   ],
   "stageConfiguration": {
     "preseason 1": "Preseason",
-    "Stage1-4wks-swiss 1": "Stage 1",
-    "Stage1-4wks-swiss 2": "Stage 1",
-    "Stage1-4wks-swiss 3": "Stage 1",
-    "Stage1-4wks-swiss 4": "Stage 1",
-    "stage2-placement 1": "Stage 2",
-    "stage2-placement 2": "Stage 2",
-    "stage2-placement 3": "Stage 2",
-    "stage2-placement 4": "Stage 2",
-    "Round of 32": "Playoffs",
-    "Round of 16": "Playoffs",
-    "Quarterfinals": "Playoffs",
-    "Semifinals": "Playoffs",
-    "Grand Finals": "Playoffs"
+    "Stage 1 Swiss 1": "Stage 1",
+    "Stage 1 Swiss 2": "Stage 1",
+    "Stage 1 Swiss 3": "Stage 1",
+    "Stage 1 Swiss 4": "Stage 1",
+    "Stage 1 1": "Stage 1",
+    "Stage 1 2": "Stage 1",
+    "Stage 1 3": "Stage 1",
+    "Stage 1 4": "Stage 1"
   },
   "stageGroups": [
+    {
+      "Name": "Preseason Group",
+      "Stage": "Preseason",
+      "StartingRank": 1,
+      "TeamIds": [ "VbX-4UDC8r","VFTCl4t4-f","QWE89cCT2W","5d05EZ69jX","1_MUeSq5s9","qbWVPfNDmS","ZtFu2dmF95","2lOWs2o8oE","wvwZ9O3l53","KQR5JiTjya","d0_wYqECut","wZbj8Cc_0r","cy97MnDt9J","myYeFTkG5R","hPpD-tjiaz","mfzQmKYcSa","kFK74eb0AS","WqZtahyLyI","hKZfBpjh1l","UetUJQSjrp","1EAe31fE-R","gmrW1G4EOg","uEhRkFRP7c","RpoJUfFxnO","3AOevE0YRZ","iIUfp1D2nu","CFeeD18TH1","mLsra-3Xjy","KybW0OqWxa","O4oB2QKCdv","k7E2HQyjBh","JUYRACHC7I","26zD-NbyHB","gdTrm8QmtC","_UgY7agFk0","cVwJ5RDWbM","cHanOm1Suf","hm9Rc70JCv","mG63AK6pzG","S_KzLbm0cq","gWucRLq9j4","p_Z50YMlI5","IhzTNQut0h","wWNmlh_2hI","cpJSvGiA_t","PLVTrIB886","H7dryTli8C","sGWxGvDtfh","KAtEgi6RSh","5cSxthOZ0U","ITmyPepp6M","rRW_1ddRft","pmEE5vxcGS","xXtzVVpQ-y","gvPmKv91CH","0WktHMxchv","BxspX59_IY","Ra8P422t9n","DN7WnlNWTa","8uYOqzDZmY","UdRNAEj0hT","l21Nrq9amP","ThWj8HnyKD","LIqnzgf6V5" ]
+    },
+    {
+      "Name": "Legacy Group",
+      "Stage": "Stage 1",
+      "StartingRank": 1,
+      "TeamIds": [ "VbX-4UDC8r","qbWVPfNDmS","ZtFu2dmF95","2lOWs2o8oE","wZbj8Cc_0r","WqZtahyLyI","UetUJQSjrp","JUYRACHC7I","gdTrm8QmtC","S_KzLbm0cq","p_Z50YMlI5","H7dryTli8C","5cSxthOZ0U","xXtzVVpQ-y" ]
+    },
+    {
+      "Name": "Contenders Group",
+      "Stage": "Stage 1",
+      "StartingRank": 15,
+      "TeamIds": [ "VFTCl4t4-f","QWE89cCT2W","5d05EZ69jX","1_MUeSq5s9","wvwZ9O3l53","KQR5JiTjya","d0_wYqECut","cy97MnDt9J","myYeFTkG5R","hPpD-tjiaz","mfzQmKYcSa","kFK74eb0AS","hKZfBpjh1l","1EAe31fE-R","gmrW1G4EOg","uEhRkFRP7c","RpoJUfFxnO","3AOevE0YRZ","iIUfp1D2nu","CFeeD18TH1","mLsra-3Xjy","KybW0OqWxa","O4oB2QKCdv","k7E2HQyjBh","26zD-NbyHB","_UgY7agFk0","cVwJ5RDWbM","cHanOm1Suf","hm9Rc70JCv","mG63AK6pzG","gWucRLq9j4","IhzTNQut0h","wWNmlh_2hI","cpJSvGiA_t","PLVTrIB886","sGWxGvDtfh","KAtEgi6RSh","ITmyPepp6M","rRW_1ddRft","pmEE5vxcGS","gvPmKv91CH","0WktHMxchv","BxspX59_IY","Ra8P422t9n","DN7WnlNWTa","8uYOqzDZmY","UdRNAEj0hT","l21Nrq9amP","ThWj8HnyKD","LIqnzgf6V5" ]
+    }
   ]
 }
