@@ -96,7 +96,7 @@ namespace TyniBot
                 try
                 {
                     // Bootstrap the CEA Data (Otherwise first response will timeout)
-                    PlayCEAStats.RequestManagement.LeagueManager.Bootstrap();
+                    PlayCEASharp.RequestManagement.LeagueManager.Bootstrap();
                 }
                 catch(Exception e)
                 {

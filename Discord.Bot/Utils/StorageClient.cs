@@ -38,7 +38,7 @@ namespace Discord.Bot
                 value.etag = res.Value.ETag;
                 return value;
             }
-            catch(RequestFailedException e)
+            catch(RequestFailedException)
             {
                 return null;
             }
@@ -59,7 +59,7 @@ namespace Discord.Bot
                         return value;
                     });
             }
-            catch (RequestFailedException e)
+            catch (RequestFailedException)
             {
                 return null;
             }
@@ -137,7 +137,7 @@ namespace Discord.Bot
             {
                 await tableClient.DeleteEntityAsync(partitionKey, rowKey, etag);
             }
-            catch (RequestFailedException e)
+            catch (RequestFailedException)
             {
             }
         }

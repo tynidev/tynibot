@@ -1,9 +1,8 @@
-﻿using CEA_RL_Bot.DataModel;
-using Discord.WebSocket;
-using PlayCEA_RL.Configuration;
-using PlayCEAStats.Analysis;
-using PlayCEAStats.DataModel;
-using PlayCEAStats.RequestManagement;
+﻿using Discord.WebSocket;
+using PlayCEASharp.Configuration;
+using PlayCEASharp.Analysis;
+using PlayCEASharp.DataModel;
+using PlayCEASharp.RequestManagement;
 using System;
 using System.Collections.Generic;
 using System.Linq;

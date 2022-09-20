@@ -1,7 +1,7 @@
 ﻿using Discord.Bot;
 using Discord.Bot.Utils;
 using Discord.WebSocket;
-using PlayCEAStats.DataModel;
+using PlayCEASharp.DataModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;

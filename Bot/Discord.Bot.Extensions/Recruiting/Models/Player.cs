@@ -34,7 +34,7 @@ namespace TyniBot.Recruiting
                 case Platform.Tracker: return $"<{this.PlatformId}>";
             }
 
-            return $"<https://rocketleague.tracker.network/rocket-league/profile/{platform}/{Uri.EscapeUriString(PlatformId)}/overview>";
+            return $"<https://rocketleague.tracker.network/rocket-league/profile/{platform}/{Uri.EscapeDataString(PlatformId)}/overview>";
         }
 
         public static Player ParsePlayer(string line)

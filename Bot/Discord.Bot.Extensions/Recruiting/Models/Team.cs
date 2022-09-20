@@ -52,7 +52,7 @@ namespace TyniBot.Recruiting
                 {
                     team.Players.Add(Player.ParsePlayer(line));
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     Console.WriteLine($"Error parsing player {line}");
                 }
@@ -106,7 +106,7 @@ namespace TyniBot.Recruiting
         }
         public void AddPlayer(Player player)
         {
-            Player? existingPlayer = this.Players.Find((p) => string.Equals(p.DiscordUser, player.DiscordUser, StringComparison.OrdinalIgnoreCase));
+            Player existingPlayer = this.Players.Find((p) => string.Equals(p.DiscordUser, player.DiscordUser, StringComparison.OrdinalIgnoreCase));
 
             if (existingPlayer != default(Player))
             {
