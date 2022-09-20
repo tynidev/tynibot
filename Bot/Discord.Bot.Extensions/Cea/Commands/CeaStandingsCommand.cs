@@ -26,8 +26,8 @@ namespace Discord.Cea
         {
             bool ephemeral = !options.ContainsKey(SlashCommandOptions.post) || !options[SlashCommandOptions.post].Equals("True");
             BracketSet currentBrackets = LeagueManager.League.Bracket;
-            BracketRound currentRound = currentBrackets.Rounds.Last().First();
-            string currentStage = StageMatcher.Lookup(currentRound.RoundName);
+            List<BracketRound> currentRounds = currentBrackets.Rounds.Last();
+            string currentStage = StageMatcher.Lookup(currentRounds.First().RoundName);
             List<StageGroup> stageGroups = ConfigurationManager.Configuration.stageGroups.ToList();
             List<StageGroup> currentStageGroups = stageGroups.Where(g => g.Stage.Equals(currentStage)).ToList();
 
@@ -39,16 +39,26 @@ namespace Discord.Cea
                 return;
             }
 
+
+            Dictionary<Team, BracketRound> currentRoundLookup = new Dictionary<Team, BracketRound>();
+            foreach (BracketRound round in currentRounds)
+            {
+                foreach (Team t in round.Matches.SelectMany(r => r.Teams).ToList())
+                {
+                    currentRoundLookup[t] = round;
+                }
+            }
+
             foreach (StageGroup group in currentStageGroups)
             {
                 EmbedBuilder builder = new();
                 StringBuilder result = new StringBuilder();
                 int page = 0;
-                List<Team> teams = group.Teams.OrderBy(t => t.RoundRanking.ContainsKey(currentRound) ? t.RoundRanking[currentRound] : 0).ToList();
+                List<Team> teams = group.Teams.OrderBy(t => t.RoundRanking.ContainsKey(currentRoundLookup[t]) ? t.RoundRanking[currentRoundLookup[t]] : 0).ToList();
                 foreach (Team team in teams)
                 {
                     TeamStatistics stats = team.StageStats[currentStage];
-                    string roundRanking = team.RoundRanking.ContainsKey(currentRound) ? team.RoundRanking[currentRound].ToString() : "?";
+                    string roundRanking = team.RoundRanking.ContainsKey(currentRoundLookup[team]) ? team.RoundRanking[currentRoundLookup[team]].ToString() : "?";
                     result.AppendLine($"{roundRanking} {team} [**{stats.MatchWins}**-{stats.MatchLosses}] GoalDiff: {stats.TotalGoalDifferential}");
                     if (result.Length > 800)
                     {
