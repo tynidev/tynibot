@@ -5,6 +5,7 @@
     <DockerDefaultTargetOS>Windows</DockerDefaultTargetOS>
     <AssemblyName>TyniBotDockerService</AssemblyName>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(RunConfiguration)' == 'TyniBotDockerService' " />
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.17.0" />

@@ -1,6 +1,6 @@
 ﻿using Discord.WebSocket;
-using PlayCEAStats.DataModel;
-using PlayCEAStats.RequestManagement;
+using PlayCEASharp.DataModel;
+using PlayCEASharp.RequestManagement;
 using System;
 using System.Collections.Generic;
 using System.Linq;
