@@ -27,6 +27,7 @@ namespace TyniBot.Commands
             // Construct new player from parameters
             var newPlayer = new Player();
             newPlayer.DiscordUser = guildUser.Nickname ?? guildUser.Username;
+            newPlayer.DiscordId = guildUser.Id;
             newPlayer.Platform = (Platform)Enum.Parse(typeof(Platform), options["platform"].Value.ToString());
             newPlayer.PlatformId = options["id"].Value.ToString();
 
@@ -37,7 +38,7 @@ namespace TyniBot.Commands
             }
 
             // Is player just updating tracker link? -> Update link
-            (var team, var existingPlayer) = Team.FindPlayer(teams, newPlayer.DiscordUser);
+            (var team, var existingPlayer) = Team.FindPlayer(teams, guildUser);
 
             if (existingPlayer != null && !string.Equals(team.Name, teamName, StringComparison.InvariantCultureIgnoreCase))
             {
@@ -56,17 +57,7 @@ namespace TyniBot.Commands
                 existingPlayer.PlatformId = newPlayer.PlatformId;
             }
 
-            // Have we added this team message yet? -> Write team message and move to next team
-            if (team.MsgId == 0)
-            {
-                team.MsgId = (await recruitingChannel.SendMessageAsync(team.ToMessage())).Id;
-            }
-            else
-            {
-                // This is an existing team -> Modify old team message
-                await recruitingChannel.ModifyMessageAsync(team.MsgId, (message) => message.Content = team.ToMessage());
-            }
-
+            await team.ConfigureTeamAsync(client, guild, recruitingChannel);
             await storageClient.SaveTableRow(Team.TableName, team.Name, guild.RowKey, team);
             await command.FollowupAsync($"{newPlayer.DiscordUser}'s RL tracker has been added to the recruiting board in channel <#{recruitingChannel.Id}>", ephemeral: true);
         }

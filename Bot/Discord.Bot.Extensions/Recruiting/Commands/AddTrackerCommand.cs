@@ -21,6 +21,7 @@ namespace TyniBot.Commands
             // Construct new player from parameters
             var newPlayer = new Player();
             newPlayer.DiscordUser = user.Nickname ?? user.Username;
+            newPlayer.DiscordId = user.Id;
             newPlayer.Platform = (Platform)Enum.Parse(typeof(Platform), options["platform"].Value.ToString());
             newPlayer.PlatformId = options["id"].Value.ToString();
 
@@ -31,7 +32,7 @@ namespace TyniBot.Commands
             }
 
             // Is player just updating tracker link? -> Update link
-            (var team, var existingPlayer) = Team.FindPlayer(teams, newPlayer.DiscordUser);
+            (var team, var existingPlayer) = Team.FindPlayer(teams, user);
 
             // Is player not on a team? -> Add to FreeAgents
             if (team == null)
@@ -44,16 +45,8 @@ namespace TyniBot.Commands
                 existingPlayer.PlatformId = newPlayer.PlatformId;
             }
 
-            // Have we added this team message yet? -> Write team message and move to next team
-            if (team.MsgId == 0)
-            {
-                team.MsgId = (await recruitingChannel.SendMessageAsync(team.ToMessage())).Id;
-            }
-            else
-            {
-                // This is an existing team -> Modify old team message
-                await recruitingChannel.ModifyMessageAsync(team.MsgId, (message) => message.Content = team.ToMessage());
-            }            
+
+            await team.ConfigureTeamAsync(client, guild, recruitingChannel);
 
             await storageClient.SaveTableRow(Team.TableName, team.Name, guild.RowKey, team);
 

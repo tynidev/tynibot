@@ -25,36 +25,22 @@ namespace TyniBot.Commands
             var captain = options.ContainsKey("captain") && (bool)options["captain"].Value;
 
             // Player not exist? -> respond with error
-            (var oldTeam, var player) = Team.FindPlayer(teams, discordUser);
+            (var oldTeam, var player) = Team.FindPlayer(teams, guildUser);
             if (player == null)
             {
                 await command.FollowupAsync($"User {discordUser} does not exist in the recruiting table", ephemeral: true);
                 return;
             }
 
-            oldTeam.RemovePlayer(player);
+            await oldTeam.RemovePlayerAsync(player, guildUser);
             var newTeam = Team.AddPlayer(teams, teamName, player, captain);
             bool isNewTeam = newTeam.MsgId == 0;
 
             // Update old team message
-            if (oldTeam.Players.Count > 0)
-            {
-                await recruitingChannel.ModifyMessageAsync(oldTeam.MsgId, (message) => message.Content = oldTeam.ToMessage());
-            }
-            else
-            {
-                await recruitingChannel.DeleteMessageAsync(oldTeam.MsgId);
-            }
+            await oldTeam.ConfigureTeamAsync(client, guild, recruitingChannel);
 
             // Update new team message
-            if(newTeam.MsgId == 0)
-            {
-                newTeam.MsgId = (await recruitingChannel.SendMessageAsync(newTeam.ToMessage())).Id;
-            }
-            else
-            {
-                await recruitingChannel.ModifyMessageAsync(newTeam.MsgId, (message) => message.Content = newTeam.ToMessage());
-            }
+            await newTeam.ConfigureTeamAsync(client, guild, recruitingChannel);
 
             var transactions = new List<(string, TableTransactionActionType, Team, ETag)>();
             if (oldTeam.Players.Count > 0)
