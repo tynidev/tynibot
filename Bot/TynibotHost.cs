@@ -28,20 +28,27 @@ namespace TyniBot
         private DefaultHandler DefaultHandler = null;
         private readonly Dictionary<string, IChannelHandler> ChannelHandlers = new Dictionary<string, IChannelHandler>();
 
-        private readonly List<SlashCommand> SlashCommands = new List<SlashCommand>()
+        private readonly List<ApplicationCommand> ApplicationCommands = new List<ApplicationCommand>()
         {
             new PingSlashCommand(),
             new VersionSlashCommand(),
             new RecruitingCommand(),
             new AdminRecruitingCommand(),
             new CeaSlashCommand(),
+            new CeaTeamUserCommand(),
+            new CeaPreviewUserCommand(),
+            new CeaHistoryUserCommand(),
+            new CeaNextUserCommand(),
+            new CeaRecordUserCommand(),
         };
 
         private readonly Dictionary<string, SlashCommand> SlashCommandDictionary;
+        private readonly Dictionary<string, UserCommand> UserCommandDictionary;
 
         public TynibotHost()
         {
-            SlashCommandDictionary = SlashCommands.ToDictionary(s => s.Name);
+            SlashCommandDictionary = ApplicationCommands.Where(c => c is SlashCommand).Select(c => c as SlashCommand).ToDictionary(s => s.Name);
+            UserCommandDictionary = ApplicationCommands.Where(c => c is UserCommand).Select(c => c as UserCommand).ToDictionary(u => u.Name);
         }
 
         public async Task RunAsync(
@@ -88,6 +95,7 @@ namespace TyniBot
                 Client.ReactionsCleared += ReactionsClearedAsync;
                 Client.UserJoined += AnnounceJoinedUser;
                 Client.SlashCommandExecuted += SlashCommandTriggeredAsync;
+                Client.UserCommandExecuted += UserCommandTriggeredAsync;
                 Client.Ready += ReadyAsync;
                 await Client.LoginAsync(TokenType.Bot, this.Settings.BotToken);
                 await Client.StartAsync();
@@ -150,19 +158,19 @@ namespace TyniBot
 
             */
 
-            foreach (var SlashCommand in SlashCommandDictionary.Values)
+            foreach (var applicationCommand in ApplicationCommands)
             {
-                if (SlashCommand.IsGlobal)
+                if (applicationCommand.IsGlobal)
                 {
-                    await Client.Rest.CreateGlobalCommand(SlashCommand.Build());
+                    await Client.Rest.CreateGlobalCommand(applicationCommand.Build());
                 }
                 else
                 {
-                    foreach ((var guildId, var permissions) in SlashCommand.GuildIdsAndPermissions)
+                    foreach ((var guildId, var permissions) in applicationCommand.GuildIdsAndPermissions)
                     {
                         try
                         {
-                            var createdCommand = await Client.Rest.CreateGuildCommand(SlashCommand.Build(), guildId);
+                            var createdCommand = await Client.Rest.CreateGuildCommand(applicationCommand.Build(), guildId);
 
                             if (permissions.Count > 0)
                             {
@@ -171,7 +179,7 @@ namespace TyniBot
                         }
                         catch (Exception e)
                         {
-                            Console.Error.WriteLine($"Error creating command {SlashCommand.Name} in guilld {guildId}: {e.Message}");
+                            Console.Error.WriteLine($"Error creating command {applicationCommand.Name} in guilld {guildId}: {e.Message}");
                         }
                     }
                 }
@@ -232,7 +240,21 @@ namespace TyniBot
 
             if (SlashCommandDictionary.TryGetValue(command.Data.Name, out SlashCommand slashCommand))
             {
-                await slashCommand.HandleCommandAsync(command, Client, StorageClient, guild);
+                await slashCommand.HandleCommandAsync(command, Client, StorageClient);
+            }
+            else
+            {
+                await command.RespondAsync("Invalid command", ephemeral: true);
+            }
+        }
+
+        private async Task UserCommandTriggeredAsync(SocketUserCommand command)
+        {
+            
+
+            if (UserCommandDictionary.TryGetValue(command.Data.Name, out UserCommand userCommand))
+            {
+                await userCommand.HandleCommandAsync(command, Client, StorageClient);
             }
             else
             {

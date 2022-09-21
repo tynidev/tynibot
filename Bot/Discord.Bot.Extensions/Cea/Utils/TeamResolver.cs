@@ -9,21 +9,11 @@ namespace Discord.Cea
 {
     public static class TeamResolver
     {
-        internal static Team ResolveTeam(string team, SocketUser user)
+        internal static Team ResolveUsersTeam(SocketUser user)
         {
             League league = LeagueManager.League;
-            Team t;
-            if (team != null)
-            {
-                t = league.Bracket.Teams.Where(t => t.Name.Contains(team, StringComparison.OrdinalIgnoreCase)).First();
-            }
-            else
-            {
-                string discordId = $"{user.Username}#{user.Discriminator}";
-                t = league.PlayerDiscordLookup[discordId];
-            }
-
-            return t;
+            string discordId = $"{user.Username}#{user.Discriminator}";
+            return league.PlayerDiscordLookup.ContainsKey(discordId) ? league.PlayerDiscordLookup[discordId] : null;
         }
 
         internal static List<Team> ResolveTeam(IReadOnlyDictionary<SlashCommandOptions, string> options, SocketUser user)

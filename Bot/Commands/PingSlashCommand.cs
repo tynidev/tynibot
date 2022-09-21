@@ -20,7 +20,7 @@ namespace TyniBot.Commands
 
         public override bool IsGlobal => true;
 
-        public override async Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client, StorageClient storageClient, Guild guild)
+        public override async Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client, StorageClient storageClient)
         {
             await command.RespondAsync("Pong!");
         }
