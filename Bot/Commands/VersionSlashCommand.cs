@@ -23,7 +23,7 @@ namespace TyniBot.Commands
 
         public override bool IsGlobal => true;
 
-        public override async Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client, StorageClient storageClient, Guild guild)
+        public override async Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client, StorageClient storageClient)
         {
             var version = FileVersionInfo.GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location);
 

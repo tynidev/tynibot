@@ -13,8 +13,6 @@ namespace Discord.Bot
     {
         public abstract string Name { get; }
 
-        public abstract string Description { get; }
-
         public abstract bool DefaultPermissions { get; }
 
         public abstract bool IsGlobal { get; }

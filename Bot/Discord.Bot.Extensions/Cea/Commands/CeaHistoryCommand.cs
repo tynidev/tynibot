@@ -22,6 +22,11 @@ namespace Discord.Cea
 
         internal override Embed Run(SocketSlashCommand command, DiscordSocketClient client, IReadOnlyDictionary<SlashCommandOptions, string> options, Team team)
         {
+            return GetEmbed(team);
+        }
+
+        internal static Embed GetEmbed(Team team)
+        {
             EmbedBuilder builder = new EmbedBuilder().WithThumbnailUrl(team.ImageURL);
             AddFullHistoryToEmbed(builder, team);
             return builder.Build();

@@ -19,6 +19,11 @@ namespace Discord.Cea
 
         internal override Embed Run(SocketSlashCommand command, DiscordSocketClient client, IReadOnlyDictionary<SlashCommandOptions, string> options, Team team)
         {
+            return GetEmbed(team);
+        }
+
+        internal static Embed GetEmbed(Team team)
+        {
             EmbedBuilder builder = new EmbedBuilder().WithThumbnailUrl(team.ImageURL);
             StringBuilder sb = new();
             sb.AppendLine($"Current Rank: {team.Rank} [{team.Stats.MatchWins}-{team.Stats.MatchLosses}]");

@@ -27,8 +27,10 @@ namespace TyniBot.Commands
 
         public override bool IsGlobal => false;
 
-        public override async Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client, StorageClient storageClient, Guild guild)
+        public override async Task HandleCommandAsync(SocketSlashCommand command, DiscordSocketClient client, StorageClient storageClient)
         {
+            var guild = await Guild.GetGuildAsync(command.GuildId.Value, storageClient);
+
             if (guild.RecruitingChannelId == default)
             {
                 await command.RespondAsync("Channel is not part of a guild that supports recruiting", ephemeral: true);
