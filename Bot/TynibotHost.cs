@@ -12,6 +12,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TyniBot.Commands;
+using TyniBot.Discord.Bot.Extensions.Cea.Utils;
 using TyniBot.Recruiting;
 
 namespace TyniBot
@@ -53,7 +54,7 @@ namespace TyniBot
 
         public async Task RunAsync(
             BotSettings settings,
-            Func<LogMessage, Task> logFunction,
+            Func<string, Task> logFunction,
             CancellationToken? stoppingToken = null)
         {
             this.Settings = settings;
@@ -88,7 +89,7 @@ namespace TyniBot
                 // TODO: Dynamically load these from DLLs
                 //ChannelHandlers.Add("recruiting", new Discord.Recruiting.Recruiting(Client, Services));
 
-                Client.Log += logFunction;
+                Client.Log += async (dMsg) => await logFunction(dMsg.ToString());
                 Client.MessageReceived += MessageReceived;
                 Client.ReactionAdded += ReactionAddedAsync;
                 Client.ReactionRemoved += ReactionRemovedAsync;
@@ -102,6 +103,7 @@ namespace TyniBot
 
                 try
                 {
+                    PlayCEASharp.Configuration.CeaSharpLogging.logger = new CeaLogger(logFunction);
                     // Bootstrap the CEA Data (Otherwise first response will timeout)
                     PlayCEASharp.RequestManagement.LeagueManager.Bootstrap();
                 }
