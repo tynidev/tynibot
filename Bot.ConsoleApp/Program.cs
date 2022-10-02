@@ -28,9 +28,9 @@ namespace TyniBot
             botHost.RunAsync(settings, Log).GetAwaiter().GetResult();
         }
 
-        private static Task Log(LogMessage msg)
+        private static Task Log(string msg)
         {
-            Console.WriteLine(msg.ToString());
+            Console.WriteLine(msg);
             return Task.CompletedTask;
         }
     }

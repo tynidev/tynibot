@@ -27,8 +27,9 @@ namespace Discord.Cea
             bool ephemeral = !options.ContainsKey(SlashCommandOptions.post) || !options[SlashCommandOptions.post].Equals("True");
             BracketSet currentBrackets = LeagueManager.League.Bracket;
             List<BracketRound> currentRounds = currentBrackets.Rounds.Last();
-            string currentStage = StageMatcher.Lookup(currentRounds.First().RoundName);
-            List<StageGroup> stageGroups = ConfigurationManager.Configuration.stageGroups.ToList();
+            League league = LeagueManager.League;
+            string currentStage = league.StageLookup(currentRounds.First().RoundName);
+            List<StageGroup> stageGroups = league.Configuration.stageGroups.ToList();
             List<StageGroup> currentStageGroups = stageGroups.Where(g => g.Stage.Equals(currentStage)).ToList();
 
             List<Embed> embeds = new();

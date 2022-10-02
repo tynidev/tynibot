@@ -2,18 +2,19 @@ using Discord;
 using Discord.Bot;
 using Discord.Bot.Utils;
 using Discord.Cea;
+using Discord.Inhouse;
+using Discord.Mafia;
+using Discord.Matches;
 using Discord.WebSocket;
 using LiteDB;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TyniBot.Commands;
 using TyniBot.Discord.Bot.Extensions.Cea.Utils;
-using TyniBot.Recruiting;
 
 namespace TyniBot
 {
@@ -78,9 +79,9 @@ namespace TyniBot
                 var DefaultCommands = new List<Type>()
                 {
                     //typeof(Clear),
-                    typeof(Discord.Mafia.MafiaCommand),
-                    typeof(Discord.Matches.MatchesCommand),
-                    typeof(Discord.Inhouse.InhouseCommand),
+                    typeof(MafiaCommand),
+                    typeof(MatchesCommand),
+                    typeof(InhouseCommand),
                 };
 
                 foreach (var type in DefaultCommands)
