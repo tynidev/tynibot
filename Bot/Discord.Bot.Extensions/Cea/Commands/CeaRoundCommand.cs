@@ -61,6 +61,11 @@ namespace Discord.Cea
                 BracketRound round = currentRoundLookup[group.Teams.First()];
                 foreach (MatchResult match in round.NonByeMatches)
                 {
+                    if (!group.Teams.Contains(match.HomeTeam))
+                    {
+                        continue;
+                    }
+
                     string homeRank = match.HomeTeam.RoundRanking.ContainsKey(round) ? match.HomeTeam.RoundRanking[round].ToString() : "?";
                     string awayRank = match.AwayTeam.RoundRanking.ContainsKey(round) ? match.AwayTeam.RoundRanking[round].ToString() : "?";
                     result.AppendLine($"[{match.HomeGamesWon}-{match.AwayGamesWon}] (**{homeRank}**){match.HomeTeam} vs (**{awayRank}**){match.AwayTeam}");
@@ -74,6 +79,11 @@ namespace Discord.Cea
 
                 foreach (MatchResult match in round.ByeMatches)
                 {
+                    if (!group.Teams.Contains(match.HomeTeam))
+                    {
+                        continue;
+                    }
+
                     string homeRank = match.HomeTeam.RoundRanking.ContainsKey(round) ? match.HomeTeam.RoundRanking[round].ToString() : "?";
                     result.AppendLine($"[BYE] (**{homeRank}**){match.HomeTeam} vs *BYE*");
                     if (result.Length > 800)
