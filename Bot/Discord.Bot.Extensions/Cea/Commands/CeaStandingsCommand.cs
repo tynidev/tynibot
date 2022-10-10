@@ -58,7 +58,7 @@ namespace Discord.Cea
                 List<Team> teams = group.Teams.OrderBy(t => t.RoundRanking.ContainsKey(currentRoundLookup[t]) ? t.RoundRanking[currentRoundLookup[t]] : 0).ToList();
                 foreach (Team team in teams)
                 {
-                    TeamStatistics stats = team.StageStats[currentStage];
+                    TeamStatistics stats = team.StageCumulativeRoundStats[currentRoundLookup[team]];
                     string roundRanking = team.RoundRanking.ContainsKey(currentRoundLookup[team]) ? team.RoundRanking[currentRoundLookup[team]].ToString() : "?";
                     result.AppendLine($"**{roundRanking}** {team} [**{stats.MatchWins}**-{stats.MatchLosses}] GoalDiff: {stats.TotalGoalDifferential}");
                     if (result.Length > 800)

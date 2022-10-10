@@ -18,8 +18,11 @@
     "legacy": -1,
     "contender": 1
   },
+  "bracketBlacklist": [
+    "lcoTqoft2l"
+  ],
   "matchWord": "match",
-  "matchWordPlural":  "matches",
+  "matchWordPlural": "matches",
   "gameWord": "game",
   "scoreWord": "goal"
 }
