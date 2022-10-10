@@ -10,16 +10,16 @@
   },
   "stageKeywords": {
     "preseason": -1,
-    "1": 0,
+    "playoff": 2,
     "2": 1,
-    "playoff": 2
+    "1": 0
   },
   "orderKeywords": {
     "legacy": -1,
     "contender": 1
   },
   "matchWord": "match",
-  "matchWordPlural": "matches",
+  "matchWordPlural":  "matches",
   "gameWord": "game",
   "scoreWord": "goal"
 }
