@@ -2,17 +2,19 @@ using Discord;
 using Discord.Bot;
 using Discord.Bot.Utils;
 using Discord.Cea;
+using Discord.Inhouse;
+using Discord.Mafia;
+using Discord.Matches;
 using Discord.WebSocket;
 using LiteDB;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TyniBot.Commands;
-using TyniBot.Recruiting;
+using TyniBot.Discord.Bot.Extensions.Cea.Utils;
 
 namespace TyniBot
 {
@@ -53,7 +55,7 @@ namespace TyniBot
 
         public async Task RunAsync(
             BotSettings settings,
-            Func<LogMessage, Task> logFunction,
+            Func<string, Task> logFunction,
             CancellationToken? stoppingToken = null)
         {
             this.Settings = settings;
@@ -77,9 +79,9 @@ namespace TyniBot
                 var DefaultCommands = new List<Type>()
                 {
                     //typeof(Clear),
-                    typeof(Discord.Mafia.MafiaCommand),
-                    typeof(Discord.Matches.MatchesCommand),
-                    typeof(Discord.Inhouse.InhouseCommand),
+                    typeof(MafiaCommand),
+                    typeof(MatchesCommand),
+                    typeof(InhouseCommand),
                 };
 
                 foreach (var type in DefaultCommands)
@@ -88,7 +90,7 @@ namespace TyniBot
                 // TODO: Dynamically load these from DLLs
                 //ChannelHandlers.Add("recruiting", new Discord.Recruiting.Recruiting(Client, Services));
 
-                Client.Log += logFunction;
+                Client.Log += async (dMsg) => await logFunction(dMsg.ToString());
                 Client.MessageReceived += MessageReceived;
                 Client.ReactionAdded += ReactionAddedAsync;
                 Client.ReactionRemoved += ReactionRemovedAsync;
@@ -102,6 +104,7 @@ namespace TyniBot
 
                 try
                 {
+                    PlayCEASharp.Configuration.CeaSharpLogging.logger = new CeaLogger(logFunction);
                     // Bootstrap the CEA Data (Otherwise first response will timeout)
                     PlayCEASharp.RequestManagement.LeagueManager.Bootstrap();
                 }

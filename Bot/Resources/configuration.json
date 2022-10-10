@@ -10,14 +10,17 @@
   },
   "stageKeywords": {
     "preseason": -1,
-    "1": 0,
+    "playoff": 2,
     "2": 1,
-    "playoff": 2
+    "1": 0
   },
   "orderKeywords": {
     "legacy": -1,
     "contender": 1
   },
+  "bracketBlacklist": [
+    "lcoTqoft2l"
+  ],
   "matchWord": "match",
   "matchWordPlural": "matches",
   "gameWord": "game",

@@ -58,7 +58,8 @@ namespace Discord.Cea
                 }
             }
 
-            builder.AddField($"{team.Name}'s {StageMatcher.Lookup(bracket.Rounds.First().First().RoundName)} Match History", sb.ToString());
+            League league = LeagueManager.League;
+            builder.AddField($"{team.Name}'s {league.StageLookup(bracket.Rounds.First().First().RoundName)} Match History", sb.ToString());
         }
     }
 }

@@ -32,9 +32,9 @@ namespace DockerService
             await botHost.RunAsync(settings, Log, stoppingToken);
         }
 
-        private Task Log(Discord.LogMessage msg)
+        private Task Log(string msg)
         {
-            _logger.LogInformation(msg.ToString());
+            _logger.LogInformation(msg);
             return Task.CompletedTask;
         }
     }

@@ -1,11 +1,11 @@
 ﻿using Discord;
 using Discord.Commands;
 using System.Threading.Tasks;
-using Discord.Bot;
+using CommandContext = Discord.Bot.CommandContext;
 
 namespace TyniBot
 {
-    public class Clear : ModuleBase<Discord.Bot.CommandContext>
+    public class Clear : ModuleBase<CommandContext>
     {
         [Command("clear"), Summary("!clear | Clears the entire channel if you hvae owner permissions.")]
         public async Task clear()

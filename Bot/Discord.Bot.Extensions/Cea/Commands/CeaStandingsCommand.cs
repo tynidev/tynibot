@@ -27,8 +27,9 @@ namespace Discord.Cea
             bool ephemeral = !options.ContainsKey(SlashCommandOptions.post) || !options[SlashCommandOptions.post].Equals("True");
             BracketSet currentBrackets = LeagueManager.League.Bracket;
             List<BracketRound> currentRounds = currentBrackets.Rounds.Last();
-            string currentStage = StageMatcher.Lookup(currentRounds.First().RoundName);
-            List<StageGroup> stageGroups = ConfigurationManager.Configuration.stageGroups.ToList();
+            League league = LeagueManager.League;
+            string currentStage = league.StageLookup(currentRounds.First().RoundName);
+            List<StageGroup> stageGroups = league.Configuration.stageGroups.ToList();
             List<StageGroup> currentStageGroups = stageGroups.Where(g => g.Stage.Equals(currentStage)).ToList();
 
             List<Embed> embeds = new();
@@ -57,7 +58,7 @@ namespace Discord.Cea
                 List<Team> teams = group.Teams.OrderBy(t => t.RoundRanking.ContainsKey(currentRoundLookup[t]) ? t.RoundRanking[currentRoundLookup[t]] : 0).ToList();
                 foreach (Team team in teams)
                 {
-                    TeamStatistics stats = team.StageStats[currentStage];
+                    TeamStatistics stats = team.StageCumulativeRoundStats[currentRoundLookup[team]];
                     string roundRanking = team.RoundRanking.ContainsKey(currentRoundLookup[team]) ? team.RoundRanking[currentRoundLookup[team]].ToString() : "?";
                     result.AppendLine($"**{roundRanking}** {team} [**{stats.MatchWins}**-{stats.MatchLosses}] GoalDiff: {stats.TotalGoalDifferential}");
                     if (result.Length > 800)
