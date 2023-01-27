@@ -20,7 +20,7 @@ namespace Discord.Cea
             Type = ApplicationCommandOptionType.SubCommand
         };
 
-        SlashCommandOptions ICeaSubCommand.SupportedOptions => SlashCommandOptions.post;
+        SlashCommandOptions ICeaSubCommand.SupportedOptions => SlashCommandOptions.post | SlashCommandOptions.week;
 
         async Task ICeaSubCommand.Run(SocketSlashCommand command, DiscordSocketClient client, IReadOnlyDictionary<SlashCommandOptions, string> options, Lazy<List<Team>> lazyTeams)
         {
@@ -31,7 +31,9 @@ namespace Discord.Cea
                 await command.RespondAsync(text: "No Current Brackets.", ephemeral: ephemeral);
             }
 
-            List<BracketRound> currentRounds = currentBrackets.Rounds.Last();
+            int? week = (options.ContainsKey(SlashCommandOptions.week)) ? int.Parse(options[SlashCommandOptions.week]) : null;
+            List<BracketRound> currentRounds = (week == null) ? currentBrackets.Rounds.Last() : currentBrackets.Rounds.ElementAt(week.Value);
+
             League league = LeagueManager.League;
             string currentStage = league.StageLookup(currentRounds.First().RoundName);
             List<StageGroup> stageGroups = league.Configuration.stageGroups.ToList();
@@ -58,7 +60,7 @@ namespace Discord.Cea
                 EmbedBuilder builder = new();
                 StringBuilder result = new StringBuilder();
                 int page = 0;
-                BracketRound round = currentRoundLookup[group.Teams.First()];
+                BracketRound round = currentRoundLookup[group.Teams.Where(t => currentRoundLookup.ContainsKey(t)).First()];
                 foreach (MatchResult match in round.NonByeMatches)
                 {
                     if (!group.Teams.Contains(match.HomeTeam))
