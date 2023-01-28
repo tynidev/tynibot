@@ -55,7 +55,8 @@ namespace Discord.Cea
                 EmbedBuilder builder = new();
                 StringBuilder result = new StringBuilder();
                 int page = 0;
-                List<Team> teams = group.Teams.OrderBy(t => t.RoundRanking.ContainsKey(currentRoundLookup[t]) ? t.RoundRanking[currentRoundLookup[t]] : 0).ToList();
+                List<Team> teams = group.Teams.Where(t => currentRoundLookup.ContainsKey(t))
+                    .OrderBy(t => t.RoundRanking.ContainsKey(currentRoundLookup[t]) ? t.RoundRanking[currentRoundLookup[t]] : 0).ToList();
                 foreach (Team team in teams)
                 {
                     TeamStatistics stats = team.StageCumulativeRoundStats[currentRoundLookup[team]];

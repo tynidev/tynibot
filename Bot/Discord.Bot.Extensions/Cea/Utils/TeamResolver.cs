@@ -27,10 +27,7 @@ namespace Discord.Cea
             else
             {
                 string discordId = $"{user.Username}#{user.Discriminator}";
-                if (league?.PlayerDiscordLookup?.ContainsKey(discordId) == true)
-                {
-                    teams.Add(league.PlayerDiscordLookup[discordId]);
-                }
+                teams.AddRange(league.Bracket.Teams.Where(t => HasPlayer(t, discordId)));
             }
 
             return teams;
@@ -56,6 +53,11 @@ namespace Discord.Cea
             }
 
             return match; 
+        }
+
+        private static bool HasPlayer(Team team, string player)
+        {
+            return team.Players.Where(p => p.DiscordId.Equals(player, StringComparison.OrdinalIgnoreCase)).Any();
         }
     }
 }
