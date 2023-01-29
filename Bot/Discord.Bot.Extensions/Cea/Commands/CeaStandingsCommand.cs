@@ -61,7 +61,7 @@ namespace Discord.Cea
                 {
                     TeamStatistics stats = team.StageCumulativeRoundStats[currentRoundLookup[team]];
                     string roundRanking = team.RoundRanking.ContainsKey(currentRoundLookup[team]) ? team.RoundRanking[currentRoundLookup[team]].ToString() : "?";
-                    result.AppendLine($"**{roundRanking}** {team} [**{stats.MatchWins}**-{stats.MatchLosses}] GoalDiff: {stats.TotalGoalDifferential}");
+                    result.AppendLine($"**{roundRanking}** {team} [**{stats.MatchWins}**-{stats.MatchLosses}] {team.NameConfiguration.ScoreWord}Diff: {stats.TotalGoalDifferential}");
                     if (result.Length > 800)
                     {
                         builder.AddField(page == 0 ? $"{group.Name} Standings" : $"{group.Name} Continued", result.ToString());

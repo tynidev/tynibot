@@ -30,7 +30,7 @@ namespace Discord.Cea
 
             foreach (Team t in lazyTeams.Value)
             {
-                embeds.Add(Run(command, client, options, t));
+                embeds.AddRange(Run(command, client, options, t));
             }
 
             Embed[] embedArray = embeds.Where(e => e != null).Take(10).ToArray();
@@ -38,7 +38,7 @@ namespace Discord.Cea
             await command.RespondAsync(embeds: embedArray, ephemeral:ephemeral);
         }
 
-        internal abstract Embed Run(SocketSlashCommand command, DiscordSocketClient client, IReadOnlyDictionary<SlashCommandOptions, string> options, Team team);
+        internal abstract List<Embed> Run(SocketSlashCommand command, DiscordSocketClient client, IReadOnlyDictionary<SlashCommandOptions, string> options, Team team);
 
         async Task ICeaSubCommand.Run(SocketSlashCommand command, DiscordSocketClient client, IReadOnlyDictionary<SlashCommandOptions, string> options, Lazy<List<Team>> lazyTeams)
         {

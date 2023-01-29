@@ -17,21 +17,22 @@ namespace Discord.Cea
             Type = ApplicationCommandOptionType.SubCommand
         };
 
-        internal override Embed Run(SocketSlashCommand command, DiscordSocketClient client, IReadOnlyDictionary<SlashCommandOptions, string> options, Team team)
+        internal override List<Embed> Run(SocketSlashCommand command, DiscordSocketClient client, IReadOnlyDictionary<SlashCommandOptions, string> options, Team team)
         {
             return GetEmbed(team);
         }
 
-        internal static Embed GetEmbed(Team team)
+        internal static List<Embed> GetEmbed(Team team)
         {
+            
             EmbedBuilder builder = new EmbedBuilder().WithThumbnailUrl(team.ImageURL);
             StringBuilder sb = new();
             sb.AppendLine($"Current Rank: {team.Rank} [{team.Stats.MatchWins}-{team.Stats.MatchLosses}]");
-            sb.AppendLine($"Goal Differential: {team.Stats.TotalGoalDifferential}, Goals/Game: {(double)team.Stats.TotalGoals / team.Stats.TotalGames:#.000}");
+            sb.AppendLine($"{team.NameConfiguration.ScoreWord} Differential: {team.Stats.TotalGoalDifferential}, {team.NameConfiguration.ScoreWords}/{team.NameConfiguration.GameWord}: {(double)team.Stats.TotalGoals / team.Stats.TotalGames:#.000}");
             builder.AddField(team.Name, sb.ToString());
             AddRosterToEmbed(builder, team);
 
-            return builder.Build();
+            return new List<Embed>() { builder.Build() };
         }
 
         internal static void AddRosterToEmbed(EmbedBuilder builder, Team team)

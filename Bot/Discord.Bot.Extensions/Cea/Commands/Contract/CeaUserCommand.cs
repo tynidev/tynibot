@@ -20,17 +20,17 @@ namespace Discord.Cea
 
         public override async Task HandleCommandAsync(SocketUserCommand command, DiscordSocketClient client, StorageClient storageClient)
         {
-            Team t = TeamResolver.ResolveUsersTeam(command.Data.Member);
-            if (t == null)
+            List<Team> teams = TeamResolver.ResolveUsersTeam(command.Data.Member);
+            if (teams == null)
             {
                 await command.RespondAsync("That user is not on a team.", ephemeral: true);
                 return;
             }
 
-            await HandleCommandAsync(command, client, storageClient, t);
+            await HandleCommandAsync(command, client, storageClient, teams);
         }
 
-        public abstract Task HandleCommandAsync(SocketUserCommand command, DiscordSocketClient client, StorageClient storageClient, Team team);
+        public abstract Task HandleCommandAsync(SocketUserCommand command, DiscordSocketClient client, StorageClient storageClient, List<Team> teams);
 
         public override ApplicationCommandProperties Build()
         {

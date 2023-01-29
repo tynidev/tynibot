@@ -1,25 +1,58 @@
 {
-  "gameId": "rl",
-  "year": "2022",
-  "season": "FALL",
-  "stageNames": {
-    "-1": "Preseason",
-    "0": "Stage 1",
-    "1": "Stage 2",
-    "2": "Playoffs"
-  },
-  "stageKeywords": {
-    "preseason": -1,
-    "2": 1,
-    "playoff": 2,
-    "1": 0
-  },
-  "orderKeywords": {
-    "legacy": -1,
-    "contender": 1
-  },
-  "matchWord": "match",
-  "matchWordPlural": "matches",
-  "gameWord": "game",
-  "scoreWord": "goal"
+  "configurations": [
+    {
+      "id": "rocketleague",
+      "matchingConfig": {
+        "gameId": "rl",
+        "year": "2022",
+        "season": "FALL",
+        "stageNames": {
+          "-1": "Preseason",
+          "0": "Stage 1",
+          "1": "Stage 2",
+          "2": "Playoffs"
+        },
+        "stageKeywords": {
+          "preseason": -1,
+          "2": 1,
+          "playoff": 2,
+          "1": 0
+        },
+        "orderKeywords": {
+          "legacy": -1,
+          "contender": 1
+        }
+      },
+      "namingConfig": {
+        "matchWord": "match",
+        "matchWordPlural": "matches",
+        "gameWord": "game",
+        "scoreWord": "goal"
+      }
+    },
+    {
+      "id": "overwatch",
+      "matchingConfig": {
+        "gameId": "ow",
+        "year": "2022",
+        "season": "FALL",
+        "stageNames": {
+          "-1": "Preseason",
+          "0": "Swiss",
+          "2": "Playoffs"
+        },
+        "stageKeywords": {
+          "preseason": -1,
+          "playoff": 2,
+          "swiss": 0
+        }
+      },
+      "namingConfig": {
+        "matchWord": "match",
+        "matchWordPlural": "matches",
+        "gameWord": "map",
+        "scoreWord": "point"
+      }
+    }
+  ]
 }
