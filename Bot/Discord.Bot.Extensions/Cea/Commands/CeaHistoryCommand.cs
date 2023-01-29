@@ -20,28 +20,34 @@ namespace Discord.Cea
             Type = ApplicationCommandOptionType.SubCommand
         };
 
-        internal override Embed Run(SocketSlashCommand command, DiscordSocketClient client, IReadOnlyDictionary<SlashCommandOptions, string> options, Team team)
+        internal override List<Embed> Run(SocketSlashCommand command, DiscordSocketClient client, IReadOnlyDictionary<SlashCommandOptions, string> options, Team team)
         {
             return GetEmbed(team);
         }
 
-        internal static Embed GetEmbed(Team team)
+        internal static List<Embed> GetEmbed(Team team)
         {
-            EmbedBuilder builder = new EmbedBuilder().WithThumbnailUrl(team.ImageURL);
-            AddFullHistoryToEmbed(builder, team);
-            return builder.Build();
+            List<Embed> embeds = new List<Embed>();
+            List<League> leagues = LeagueManager.LeagueLookup[team];
+            foreach (League league in leagues)
+            {
+                EmbedBuilder builder = new EmbedBuilder().WithThumbnailUrl(team.ImageURL);
+                AddFullHistoryToEmbed(builder, team, league);
+                embeds.Add(builder.Build());
+            }
+
+            return embeds;
         }
 
-        internal static void AddFullHistoryToEmbed(EmbedBuilder builder, Team team)
+        internal static void AddFullHistoryToEmbed(EmbedBuilder builder, Team team, League league)
         {
-            League league = LeagueManager.League;
             foreach (BracketSet bracket in league.Brackets)
             {
-                AddHistoryToEmbed(builder, team, bracket);
+                AddHistoryToEmbed(builder, team, bracket, league);
             }
         }
 
-        internal static void AddHistoryToEmbed(EmbedBuilder builder, Team team, BracketSet bracket)
+        internal static void AddHistoryToEmbed(EmbedBuilder builder, Team team, BracketSet bracket, League league)
         {
             StringBuilder sb = new();
             foreach (BracketRound round in bracket.Rounds.SelectMany(r => r))
@@ -58,7 +64,6 @@ namespace Discord.Cea
                 }
             }
 
-            League league = LeagueManager.League;
             builder.AddField($"{team.Name}'s {league.StageLookup(bracket.Rounds.First().First().RoundName)} Match History", sb.ToString());
         }
     }

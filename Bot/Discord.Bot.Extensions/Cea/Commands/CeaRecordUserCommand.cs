@@ -14,9 +14,9 @@ namespace Discord.Cea
     {
         public override string Name => "CEA Record";
 
-        public override async Task HandleCommandAsync(SocketUserCommand command, DiscordSocketClient client, StorageClient storageClient, Team team)
+        public override async Task HandleCommandAsync(SocketUserCommand command, DiscordSocketClient client, StorageClient storageClient, List<Team> teams)
         {
-            await command.RespondAsync(embeds:new Embed[] { CeaRecordCommand.GetEmbed(team)}, ephemeral:true);
+            await command.RespondAsync(embeds:teams.SelectMany(t => CeaRecordCommand.GetEmbed(t)).ToArray(), ephemeral:true);
         }
     }
 }

@@ -9,25 +9,26 @@ namespace Discord.Cea
 {
     public static class TeamResolver
     {
-        internal static Team ResolveUsersTeam(SocketUser user)
+        internal static List<Team> ResolveUsersTeam(SocketUser user)
         {
-            League league = LeagueManager.League;
             string discordId = $"{user.Username}#{user.Discriminator}";
-            return league.PlayerDiscordLookup.ContainsKey(discordId) ? league.PlayerDiscordLookup[discordId] : null;
+            return LeagueManager.PlayerLookup.GetValueOrDefault(discordId, null);
         }
 
         internal static List<Team> ResolveTeam(IReadOnlyDictionary<SlashCommandOptions, string> options, SocketUser user)
         {
-            League league = LeagueManager.League;
             List<Team> teams = new();
-            if (options.Keys.Where(o => (o & SlashCommandOptions.TeamsFilteringSupport) != SlashCommandOptions.none).Any())
+            foreach (League league in LeagueManager.Leagues)
             {
-                teams.AddRange(league.Bracket.Teams.Where(t => Matches(t, options)));
-            }
-            else
-            {
-                string discordId = $"{user.Username}#{user.Discriminator}";
-                teams.AddRange(league.Bracket.Teams.Where(t => HasPlayer(t, discordId)));
+                if (options.Keys.Where(o => (o & SlashCommandOptions.TeamsFilteringSupport) != SlashCommandOptions.none).Any())
+                {
+                    teams.AddRange(league.Bracket.Teams.Where(t => Matches(t, options)));
+                }
+                else
+                {
+                    string discordId = $"{user.Username}#{user.Discriminator}";
+                    teams.AddRange(league.Bracket.Teams.Where(t => HasPlayer(t, discordId)));
+                }
             }
 
             return teams;

@@ -14,17 +14,17 @@ namespace Discord.Cea
     {
         public override string Name => "CEA Preview";
 
-        public override async Task HandleCommandAsync(SocketUserCommand command, DiscordSocketClient client, StorageClient storageClient, Team team)
+        public override async Task HandleCommandAsync(SocketUserCommand command, DiscordSocketClient client, StorageClient storageClient, List<Team> teams)
         {
-            Embed response = CeaPreviewCommand.GetEmbed(team);
+            Embed[] response = teams.SelectMany(t => CeaPreviewCommand.GetEmbed(t)).Where(e => e != null).ToArray();
 
-            if (response == null)
+            if (response == null || response.Length == 0)
             {
-                await command.RespondAsync($"No next match found for {team.Name}.");
+                await command.RespondAsync($"No next match found for {command.User.Username}.");
                 return;
             }
 
-            await command.RespondAsync(embeds:new Embed[] { response }, ephemeral:true);
+            await command.RespondAsync(embeds:response, ephemeral:true);
         }
     }
 }

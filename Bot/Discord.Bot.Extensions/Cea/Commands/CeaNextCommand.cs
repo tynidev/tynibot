@@ -18,26 +18,30 @@ namespace Discord.Cea
             Type = ApplicationCommandOptionType.SubCommand
         };
 
-        internal override Embed Run(SocketSlashCommand command, DiscordSocketClient client, IReadOnlyDictionary<SlashCommandOptions, string> options, Team team)
+        internal override List<Embed> Run(SocketSlashCommand command, DiscordSocketClient client, IReadOnlyDictionary<SlashCommandOptions, string> options, Team team)
         {
-            return GetEmbed(team);
+            return GetEmbeds(team);
         }
 
-        internal static Embed GetEmbed(Team team)
+        internal static List<Embed> GetEmbeds(Team team)
         {
-            EmbedBuilder builder = new EmbedBuilder().WithThumbnailUrl(team.ImageURL);
-            if (!AddNextMatchToEmbed(builder, team))
+            List<Embed> embeds = new List<Embed>();
+            List<League> leagues = LeagueManager.LeagueLookup[team];
+            foreach (League league in leagues)
             {
-                return null;
+                EmbedBuilder builder = new EmbedBuilder().WithThumbnailUrl(team.ImageURL);
+                if (!AddNextMatchToEmbed(builder, team, league))
+                {
+                    continue;
+                }
+                embeds.Add(builder.Build());
             }
 
-            return builder.Build();
+            return embeds;
         }
 
-        internal static bool AddNextMatchToEmbed(EmbedBuilder builder, Team team)
+        internal static bool AddNextMatchToEmbed(EmbedBuilder builder, Team team, League league)
         {
-            League league = LeagueManager.League;
-
             if (!league.NextMatchLookup.ContainsKey(team))
             {
                 return false;
@@ -66,10 +70,8 @@ namespace Discord.Cea
             return true;
         }
 
-        internal static string GetNextMatchString(Team team)
+        internal static string GetNextMatchString(Team team, League league)
         {
-            League league = LeagueManager.League;
-
             if (!league.NextMatchLookup.ContainsKey(team))
             {
                 return "No match found.";

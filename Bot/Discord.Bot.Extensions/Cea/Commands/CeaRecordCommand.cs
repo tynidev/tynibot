@@ -18,16 +18,16 @@ namespace Discord.Cea
             Type = ApplicationCommandOptionType.SubCommand
         };
 
-        internal override Embed Run(SocketSlashCommand command, DiscordSocketClient client, IReadOnlyDictionary<SlashCommandOptions, string> options, Team team)
+        internal override List<Embed> Run(SocketSlashCommand command, DiscordSocketClient client, IReadOnlyDictionary<SlashCommandOptions, string> options, Team team)
         {
             return GetEmbed(team);
         }
 
-        internal static Embed GetEmbed(Team team)
+        internal static List<Embed> GetEmbed(Team team)
         {
             EmbedBuilder builder = new EmbedBuilder().WithThumbnailUrl(team.ImageURL);
             AddRecordStatsToEmbed(builder, team);
-            return builder.Build();
+            return new List<Embed>() { builder.Build() };
         }
 
         internal static void AddRecordStatsToEmbed(EmbedBuilder builder, Team team)
