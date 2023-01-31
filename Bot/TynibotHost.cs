@@ -139,7 +139,7 @@ namespace TyniBot
         private async Task ReadyAsync()
         {
             //uncomment to remove all commands before reregistering
-            await Client.Rest.DeleteAllGlobalCommandsAsync();
+            /* await Client.Rest.DeleteAllGlobalCommandsAsync();
 
             var guilds = await Client.Rest.GetGuildsAsync();
 
@@ -152,6 +152,7 @@ namespace TyniBot
                     await command.DeleteAsync();
                 }
             }
+            */
             
 
             foreach (var applicationCommand in ApplicationCommands)
