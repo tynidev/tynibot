@@ -36,12 +36,6 @@ namespace TyniBot
             new VersionSlashCommand(),
             new RecruitingCommand(),
             new AdminRecruitingCommand(),
-            new CeaSlashCommand(),
-            new CeaTeamUserCommand(),
-            new CeaPreviewUserCommand(),
-            new CeaHistoryUserCommand(),
-            new CeaNextUserCommand(),
-            new CeaRecordUserCommand(),
         };
 
         private readonly Dictionary<string, SlashCommand> SlashCommandDictionary;
@@ -144,7 +138,7 @@ namespace TyniBot
 
         private async Task ReadyAsync()
         {
-            /* //uncomment to remove all commands before reregistering
+            //uncomment to remove all commands before reregistering
             await Client.Rest.DeleteAllGlobalCommandsAsync();
 
             var guilds = await Client.Rest.GetGuildsAsync();
@@ -158,8 +152,7 @@ namespace TyniBot
                     await command.DeleteAsync();
                 }
             }
-
-            */
+            
 
             foreach (var applicationCommand in ApplicationCommands)
             {
