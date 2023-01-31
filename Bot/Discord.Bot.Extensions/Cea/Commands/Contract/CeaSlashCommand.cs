@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 
 namespace Discord.Cea
 {
+    [Obsolete("This functionality is handled by a different CEA bot now.")]
     public class CeaSlashCommand : SlashCommand
     {
         public override string Name => "cea";
