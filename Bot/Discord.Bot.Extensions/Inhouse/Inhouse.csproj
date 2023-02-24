@@ -7,7 +7,7 @@
   <ItemGroup>
     <PackageReference Include="Discord.Net" Version="2.3.0" />
     <PackageReference Include="EmojiData" Version="1.1.0" />
-    <PackageReference Include="LiteDB" Version="5.0.10" />
+    <PackageReference Include="LiteDB" Version="5.0.13" />
   </ItemGroup>
 
   <ItemGroup>
